@@ -1,0 +1,15 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExperienceCard from "@/components/ExperienceCard.astro";
+import { services } from "@/config/services";
+import { pricing, formatMoney } from "@/config/pricing";
+import { media } from "@/config/media";
+---
+<BaseLayout title="Sim Racing, PS5 & Cafe | Xerom Klang" description="Compare Xerom’s Regular Sim rigs, Pro Sim rig, PS5 lounges and cafe atmosphere in Bandar Bukit Tinggi, Klang.">
+  <header class="section-shell page-hero"><h1 class="display">Race. Play. <span class="red">Refuel.</span></h1><p class="lede">One place for friendly laps, focused driving, lounge gaming and more time together.</p></header>
+  <section class="section-shell section-space"><div class="experience-grid">
+    {Object.values(services).map((service) => <ExperienceCard title={service.name} copy={service.description} image={service.image} alt={service.imageAlt} price={`${formatMoney(pricing.services[service.id].hourlyRate)}/hour`} href={`/book?service=${service.id}`} />)}
+    <ExperienceCard title="Cafe" copy="A social pause between sessions. Menu details and production photography are coming from the owner." image={media.cafe} alt="Illustrative placeholder for the cafe atmosphere" href="#cafe" />
+  </div></section>
+  <section class="section-shell section-space split-section" id="cafe"><div><h2 class="section-title">Stay for the <span class="red">whole night</span></h2><p class="lede">The cafe is part of the social rhythm of Xerom: a place to regroup between races and lounge sessions. Verified menu details will be added when supplied.</p></div><div class="notice">Cafe imagery is currently illustrative placeholder media and will be replaced with approved Xerom photography before launch.</div></section>
+</BaseLayout>

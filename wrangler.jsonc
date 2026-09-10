@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "xerom-website",
+  "compatibility_date": "2026-09-09",
+  "pages_build_output_dir": "./dist",
+  "vars": {
+    "BOOKING_MODE": "disabled"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BOOKING_COORDINATOR",
+        "class_name": "BookingCoordinator",
+        "script_name": "xerom-booking-coordinator"
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExperienceCard from "@/components/ExperienceCard.astro";
+import { services } from "@/config/services";
+import { formatMoney, pricing } from "@/config/pricing";
+import { media } from "@/config/media";
+import { Image, Picture } from "astro:assets";
+import ArrowIcon from "@/components/ArrowIcon.astro";
+---
+<BaseLayout>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="race-path" aria-label="A night at Xerom">
+      <svg class="route-line" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true"><path d="M42 8 C 6 88, 72 122, 38 194 S 72 314, 38 386 S 60 470, 42 512" /></svg>
+      <article class="path-step">
+        <div class="path-media"><Image src={media.regularRig} alt="Illustrative placeholder for racing experience photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-content"><span class="path-number">01</span><span class="path-label">Race</span><p class="path-copy">Get behind the wheel.</p></div>
+      </article>
+      <article class="path-step">
+        <div class="path-media"><Image src={media.ps5Lounge} alt="Illustrative placeholder for PS5 social gaming photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-content"><span class="path-number">02</span><span class="path-label">Play</span><p class="path-copy">More ways to game together.</p></div>
+      </article>
+      <article class="path-step">
+        <div class="path-media"><Image src={media.cafe} alt="Illustrative placeholder for Xerom cafe atmosphere photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-content"><span class="path-number">03</span><span class="path-label">Refuel</span><p class="path-copy">Take a break with your crew.</p></div>
+      </article>
+    </div>
+    <div class="hero-scene">
+      <Picture class="hero-image" src={media.hero} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" widths={[640, 960, 1600]} sizes="(max-width: 900px) 100vw, 72vw" formats={["avif", "webp"]} fallbackFormat="jpg" loading="eager" />
+      <div class="hero-copy">
+        <h1 class="display hero-display" id="hero-title"><span>Race</span><span class="red">Together</span></h1>
+        <p class="hero-tag">Sim racing · PS5 · Cafe<br />Bandar Bukit Tinggi, Klang</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
+          <a class="button button-secondary" href="/pricing">See pricing</a>
+        </div>
+      </div>
+      <div class="hero-price-proof" aria-label="Current experience prices">
+        <span><b>Regular Rig</b><strong>{formatMoney(pricing.services["regular-sim"].hourlyRate)}/hour</strong></span>
+        <span><b>Pro Rig</b><strong>{formatMoney(pricing.services["pro-sim"].hourlyRate)}/hour</strong></span>
+        <span><b>PS5 Lounge</b><strong>{formatMoney(pricing.services.ps5.hourlyRate)}/hour</strong></span>
+        <span><b>Cafe</b><strong>Stay & refuel</strong></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-shell section-space experience-section" aria-labelledby="choose-title">
+    <h2 class="section-title" id="choose-title">Pick your <span class="red">pace</span></h2>
+    <div class="experience-grid">
+      <ExperienceCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={services["regular-sim"].image} alt={services["regular-sim"].imageAlt} price={`${formatMoney(pricing.services["regular-sim"].hourlyRate)}/hour`} href="/book?service=regular-sim" />
+      <ExperienceCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={services["pro-sim"].image} alt={services["pro-sim"].imageAlt} price={`${formatMoney(pricing.services["pro-sim"].hourlyRate)}/hour`} href="/book?service=pro-sim" />
+      <ExperienceCard title={services.ps5.name} copy={services.ps5.description} image={services.ps5.image} alt={services.ps5.imageAlt} price={`${formatMoney(pricing.services.ps5.hourlyRate)}/hour`} href="/book?service=ps5" />
+      <ExperienceCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Illustrative placeholder for Xerom cafe atmosphere photography" href="/experiences#cafe" />
+    </div>
+  </section>
+
+  <div class="signal-band" aria-hidden="true"><div class="signal-track"><span>Race together</span><span>Play together</span><span>Refuel together</span><span>Race together</span><span>Play together</span><span>Refuel together</span></div></div>
+
+  <section class="section-shell section-space split-section" id="about" aria-labelledby="hardware-title">
+    <div class="hardware-frame"><Image src={media.proRig} alt="Illustrative placeholder for a close photograph of sim-racing hardware" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" /></div>
+    <div>
+      <h2 class="section-title" id="hardware-title">Choose your <span class="red">setup</span></h2>
+      <p class="lede">Start with the accessible Regular Rig, step into the dedicated Pro Rig, or settle into a PS5 lounge. Every option is booked by the hour.</p>
+      <ul class="feature-list">
+        <li><span>Three Regular rigs for casual group racing</span></li>
+        <li><span>One Pro rig for a more focused drive</span></li>
+        <li><span>Two PS5 lounges with two controllers included</span></li>
+      </ul>
+      <a class="button button-secondary" href="/experiences">Compare experiences</a>
+    </div>
+  </section>
+
+  <section class="section-shell section-space">
+    <div class="cta-panel">
+      <div><h2 class="section-title">Your seat is <span class="red">waiting</span></h2><p class="lede">Choose the setup, check the next available slots, and reserve for your crew.</p></div>
+      <a class="button button-primary" href="/book">Check availability <ArrowIcon /></a>
+    </div>
+  </section>
+</BaseLayout>

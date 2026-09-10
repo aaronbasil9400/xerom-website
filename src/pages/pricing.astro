@@ -1,0 +1,16 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { services } from "@/config/services";
+import { pricing, formatMoney } from "@/config/pricing";
+import ArrowIcon from "@/components/ArrowIcon.astro";
+---
+<BaseLayout title="Pricing | Xerom SimRacing & Cafe" description="Current hourly pricing for Regular Sim, Pro Sim and PS5 lounge sessions at Xerom in Klang.">
+  <header class="section-shell page-hero"><h1 class="display">Clear pace. <span class="red">Clear price.</span></h1><p class="lede">Book one or two hours. Your total is calculated from current configuration when you confirm.</p></header>
+  <section class="section-shell pricing-table" aria-label="Current prices">
+    {Object.values(services).map((service) => {
+      const rate = pricing.services[service.id];
+      return <article class="price-row"><div><h2>{service.name}</h2><p>{service.description}</p></div><div class="price-stack"><s>{formatMoney(rate.compareAtHourlyRate)}/hr</s><strong>{formatMoney(rate.hourlyRate)}/hr</strong></div><a class="button button-primary" href={`/book?service=${service.id}`}>Book <ArrowIcon /></a></article>;
+    })}
+    <p class="pricing-note">PS5 lounge pricing includes two controllers. Additional controllers are RM{pricing.services.ps5.additionalControllerRate} each; availability limits require owner confirmation.</p>
+  </section>
+</BaseLayout>

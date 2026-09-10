@@ -1,0 +1,203 @@
+---
+import { services } from "@/config/services";
+import { pricing } from "@/config/pricing";
+import { business } from "@/config/business";
+import ArrowIcon from "./ArrowIcon.astro";
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+---
+<section class="booking-shell" data-booking-app data-whatsapp={business.whatsappNumber}>
+  <div class="booking-progress" aria-label="Booking progress">
+    <span data-progress="1" aria-current="step">1 <b>Setup</b></span>
+    <span data-progress="2">2 <b>Time</b></span>
+    <span data-progress="3">3 <b>Details</b></span>
+  </div>
+
+  <form class="booking-form" novalidate data-booking-form>
+    <section class="booking-step" data-step="1">
+      <h2>Build your session</h2>
+      <p>Choose one setup or mix Regular and Pro rigs for your group.</p>
+      <div class="quantity-list">
+        {Object.values(services).map((service) => (
+          <div class="quantity-row">
+            <div><strong>{service.name}</strong><span>RM{pricing.services[service.id].hourlyRate} per {service.unitLabel}, per hour</span></div>
+            <div class="stepper" data-stepper>
+              <button type="button" aria-label={`Remove one ${service.name}`} data-minus>−</button>
+              <input type="number" name={service.id} value={service.id === "regular-sim" ? "1" : "0"} min="0" max={service.capacity} inputmode="numeric" aria-label={`${service.name} quantity`} />
+              <button type="button" aria-label={`Add one ${service.name}`} data-plus>+</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <fieldset class="duration-choice">
+        <legend>Session length</legend>
+        <label><input type="radio" name="duration" value="60" checked /> <span>1 hour</span></label>
+        <label><input type="radio" name="duration" value="120" /> <span>2 hours</span></label>
+      </fieldset>
+      <p class="form-error" role="alert" data-error="setup"></p>
+      <div class="booking-actions"><button class="button button-primary" type="button" data-next="2">Choose a time <ArrowIcon /></button></div>
+    </section>
+
+    <section class="booking-step" data-step="2" hidden>
+      <h2>Choose a time</h2>
+      <p>Bookings need one hour of notice and open up to three days ahead.</p>
+      <label class="field"><span>Date</span><input type="date" name="date" required /></label>
+      <button class="button button-secondary" type="button" data-check>Check availability</button>
+      <div class="slot-status" aria-live="polite" data-slot-status></div>
+      <div class="slot-grid" data-slots></div>
+      <p class="form-error" role="alert" data-error="time"></p>
+      <div class="booking-actions"><button class="button" type="button" data-back="1">Back</button><button class="button button-primary" type="button" data-next="3" disabled>Enter details <ArrowIcon /></button></div>
+    </section>
+
+    <section class="booking-step" data-step="3" hidden>
+      <h2>Your details</h2>
+      <p>We only collect what Xerom needs to manage this booking.</p>
+      <div class="field-grid">
+        <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" minlength="2" maxlength="80" required /></label>
+        <label class="field"><span>Mobile / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" required /></label>
+      </div>
+      <label class="field"><span>Notes <small>Optional</small></span><textarea name="notes" rows="3" maxlength="300"></textarea></label>
+      <div class="booking-review" data-review></div>
+      {turnstileSiteKey && <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>}
+      <p class="form-error" role="alert" data-error="details"></p>
+      <div class="booking-actions"><button class="button" type="button" data-back="2">Back</button><button class="button button-primary" type="submit" data-submit>Confirm booking <ArrowIcon /></button></div>
+    </section>
+  </form>
+
+  <section class="booking-success" aria-live="polite" hidden data-success>
+    <span class="success-mark" aria-hidden="true">✓</span>
+    <h2>Booking confirmed</h2>
+    <p class="booking-id" data-booking-id></p>
+    <div data-confirmation></div>
+    <div class="hero-actions"><a class="button button-primary" data-whatsapp-link href="#">WhatsApp Xerom</a><a class="button button-secondary" href={business.mapsUrl}>Get directions</a></div>
+    <p>Need to change your booking? Message Xerom on WhatsApp and quote the booking ID.</p>
+  </section>
+</section>
+
+{turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+<script>
+  import { trackConversion } from "@/lib/client/analytics";
+  type ServiceId = "regular-sim" | "pro-sim" | "ps5";
+  const app = document.querySelector<HTMLElement>("[data-booking-app]");
+  const form = app?.querySelector<HTMLFormElement>("[data-booking-form]");
+  let selectedStart = "";
+  let attemptKey = crypto.randomUUID();
+  const submitMarkup = form?.querySelector<HTMLButtonElement>("[data-submit]")?.innerHTML ?? "Confirm booking";
+
+  const toMalaysiaDate = (date: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+  const dateInput = form?.elements.namedItem("date") as HTMLInputElement | null;
+  if (dateInput) {
+    dateInput.min = toMalaysiaDate(new Date());
+    dateInput.max = toMalaysiaDate(new Date(Date.now() + 72 * 60 * 60 * 1000));
+    dateInput.value = dateInput.min;
+  }
+
+  const requestedService = new URLSearchParams(location.search).get("service") as ServiceId | null;
+  if (requestedService && ["regular-sim", "pro-sim", "ps5"].includes(requestedService)) {
+    for (const id of ["regular-sim", "pro-sim", "ps5"] as ServiceId[]) {
+      const input = form?.elements.namedItem(id) as HTMLInputElement | null;
+      if (input) input.value = id === requestedService ? "1" : "0";
+    }
+  }
+  trackConversion("booking_started");
+
+  function quantities() {
+    const value = (name: ServiceId) => Number((form?.elements.namedItem(name) as HTMLInputElement)?.value ?? 0);
+    return { regular: value("regular-sim"), pro: value("pro-sim"), ps5: value("ps5") };
+  }
+  function duration() { return Number((form?.elements.namedItem("duration") as RadioNodeList)?.value ?? 60) as 60 | 120; }
+  function setStep(step: number) {
+    app?.querySelectorAll<HTMLElement>("[data-step]").forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
+    app?.querySelectorAll<HTMLElement>("[data-progress]").forEach((item) => item.toggleAttribute("aria-current", Number(item.dataset.progress) === step));
+    app?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  }
+  function showError(key: string, message = "") { const target = app?.querySelector<HTMLElement>(`[data-error="${key}"]`); if (target) target.textContent = message; }
+  function validSetup() { return Object.values(quantities()).some((quantity) => quantity > 0); }
+  function localTime(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(iso)); }
+  function localDate(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(new Date(iso)); }
+
+  form?.querySelectorAll<HTMLElement>("[data-stepper]").forEach((stepper) => {
+    const input = stepper.querySelector<HTMLInputElement>("input")!;
+    stepper.querySelector("[data-minus]")?.addEventListener("click", () => { input.value = String(Math.max(Number(input.min), Number(input.value) - 1)); selectedStart = ""; });
+    stepper.querySelector("[data-plus]")?.addEventListener("click", () => { input.value = String(Math.min(Number(input.max), Number(input.value) + 1)); selectedStart = ""; });
+  });
+  form?.querySelectorAll<HTMLButtonElement>("[data-next]").forEach((button) => button.addEventListener("click", () => {
+    const next = Number(button.dataset.next);
+    if (next === 2 && !validSetup()) return showError("setup", "Choose at least one rig or lounge.");
+    if (next === 3 && !selectedStart) return showError("time", "Choose an available time.");
+    showError(next === 2 ? "setup" : "time");
+    if (next === 3) renderReview();
+    setStep(next);
+  }));
+  form?.querySelectorAll<HTMLButtonElement>("[data-back]").forEach((button) => button.addEventListener("click", () => setStep(Number(button.dataset.back))));
+
+  form?.querySelector<HTMLButtonElement>("[data-check]")?.addEventListener("click", async () => {
+    if (!dateInput?.value) return showError("time", "Choose a date.");
+    const status = app?.querySelector<HTMLElement>("[data-slot-status]");
+    const slotGrid = app?.querySelector<HTMLElement>("[data-slots]");
+    const next = form.querySelector<HTMLButtonElement>("[data-next='3']");
+    if (!status || !slotGrid || !next) return;
+    selectedStart = ""; next.disabled = true; slotGrid.replaceChildren(); status.textContent = "Checking the calendars…";
+    const q = quantities();
+    const params = new URLSearchParams({ date: dateInput.value, durationMinutes: String(duration()), ...Object.fromEntries(Object.entries(q).map(([k,v]) => [k,String(v)])) });
+    try {
+      trackConversion("availability_checked");
+      const response = await fetch(`/api/availability?${params}`);
+      const data = await response.json() as { error?: string; slots?: Array<{ start: string; available: boolean }> };
+      if (!response.ok) throw new Error(data.error ?? "Availability could not be loaded.");
+      const available = data.slots?.filter((slot) => slot.available) ?? [];
+      status.textContent = available.length ? `${available.length} start times available` : "No times fit this session. Try another date or setup.";
+      for (const slot of available) {
+        const button = document.createElement("button"); button.type = "button"; button.className = "slot"; button.textContent = localTime(slot.start);
+        button.addEventListener("click", () => { slotGrid.querySelectorAll("button").forEach((item) => item.removeAttribute("aria-pressed")); button.setAttribute("aria-pressed", "true"); selectedStart = slot.start; next.disabled = false; trackConversion("booking_slot_selected"); });
+        slotGrid.appendChild(button);
+      }
+    } catch (error) { status.textContent = ""; showError("time", error instanceof Error ? error.message : "Availability could not be loaded."); }
+  });
+
+  function renderReview() {
+    const review = app?.querySelector<HTMLElement>("[data-review]"); if (!review) return;
+    const q = quantities();
+    const names: Record<string,string> = { regular: "Regular rigs", pro: "Pro rigs", ps5: "PS5 lounges" };
+    const selections = Object.entries(q).filter(([,value]) => value > 0).map(([key,value]) => `${value} × ${names[key]}`).join(" · ");
+    review.innerHTML = `<strong>Review your session</strong><span>${selections}</span><span>${localDate(selectedStart)} · ${localTime(selectedStart)} · ${duration() / 60} hour${duration() === 120 ? "s" : ""}</span>`;
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault(); showError("details");
+    if (!form.reportValidity()) return;
+    const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!; submit.disabled = true; submit.textContent = "Confirming…";
+    const q = quantities();
+    const payload = {
+      start: selectedStart,
+      durationMinutes: duration(),
+      items: [
+        { serviceId: "regular-sim", quantity: q.regular },
+        { serviceId: "pro-sim", quantity: q.pro },
+        { serviceId: "ps5", quantity: q.ps5 },
+      ],
+      customer: {
+        name: (form.elements.namedItem("name") as HTMLInputElement).value,
+        phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
+        notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value || undefined,
+      },
+      idempotencyKey: attemptKey,
+      turnstileToken: (form.elements.namedItem("cf-turnstile-response") as HTMLInputElement | null)?.value,
+    };
+    try {
+      const response = await fetch("/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
+      const data = await response.json() as { error?: string; bookingId?: string; total?: number; start?: string };
+      if (!response.ok) throw new Error(data.error ?? "The booking could not be completed.");
+      form.hidden = true; app?.querySelector(".booking-progress")?.setAttribute("hidden", "");
+      const success = app?.querySelector<HTMLElement>("[data-success]")!; success.hidden = false;
+      success.querySelector<HTMLElement>("[data-booking-id]")!.textContent = data.bookingId ?? "";
+      success.querySelector<HTMLElement>("[data-confirmation]")!.textContent = `${localDate(data.start!)} · ${localTime(data.start!)} · RM${data.total}`;
+      const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\n\nI'd like to confirm the booking. Thanks!`;
+      (success.querySelector("[data-whatsapp-link]") as HTMLAnchorElement).href = `https://wa.me/${app?.dataset.whatsapp}?text=${encodeURIComponent(message)}`;
+      trackConversion("booking_completed");
+    } catch (error) { trackConversion("booking_failed"); showError("details", error instanceof Error ? error.message : "The booking could not be completed."); submit.disabled = false; submit.innerHTML = submitMarkup; }
+  });
+  form?.addEventListener("input", () => {
+    const submit = form.querySelector<HTMLButtonElement>("[data-submit]");
+    if (submit && !submit.disabled) attemptKey = crypto.randomUUID();
+  });
+</script>

@@ -1,0 +1,10 @@
+Use case: ui-mockup
+Asset type: visual-direction comparison board for a mobile-first website
+Primary request: Create one polished 2x2 comparison sheet containing four distinct high-fidelity homepage hero/interface concepts for XEROM Sim Racing | PS5 | Cafe. Each quadrant is a self-contained website viewport. Use the supplied pricing graphic only as a brand reference for the XEROM wordmark, black/red/white identity, and factual category.
+Shared hierarchy: social group experience first, racing hardware second, pricing/value third, booking call-to-action fourth. Show diverse Malaysian friends enjoying sim racing in a real-feeling night venue; integrate wheel/cockpit close-ups and a clear red booking action. Keep black, racing red, and white dominant. Avoid generic blue-purple gamer neon, corporate minimalism, glassmorphism, tiny text, and fake sponsor logos.
+Quadrant A: Race Control Broadcast — motorsport broadcast/timing-tower interface, candid group scene, bold condensed typography, timing strips and live-status markers.
+Quadrant B: Pit-Lane Crew Pass — social garage-night zine, large crew photo, numbered bays, pit-pass tags, contact sheets, chequer tape and tactile print.
+Quadrant C: Starting Grid Sequencer — early-80s rhythm-machine discipline translated into a booking/experience timeline, charcoal instrument panel and illuminated step keys.
+Quadrant D: Night Race Sticker Wall — tasteful lowbrow hot-rod poster energy adapted to real people and sim hardware, lacquer-red highlights, black outlines and layered racing stickers.
+Allowed short text: “XEROM”, “RACE TOGETHER”, “REGULAR RM20”, “PRO RM30”, “PS5 RM18”, “BOOK A SESSION”. Do not invent reviews, ratings, games, promotions, or equipment claims. No watermark or browser chrome.
+

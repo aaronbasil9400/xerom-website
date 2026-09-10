@@ -1,0 +1,42 @@
+{
+  "title": "Choose the revised Xerom homepage",
+  "question": "All three keep Race Control Broadcast, remove the leaderboard, add replaceable Regular/Pro/PS5 image modules, make the cafe visible, and include a separately composed mobile version. Choose the replacement structure that should carry forward.",
+  "options": [
+    {
+      "id": "crew-invitation",
+      "label": "Crew Invitation",
+      "kicker": "REVISION A",
+      "lineage": "Race Control Broadcast with a social invitation rail",
+      "thesis": "The left rail tells groups why to come together before the hardware and prices close the decision.",
+      "palette": ["#080808", "#F23B30", "#F5F2EA"],
+      "materials": ["broadcast panels", "venue photography", "track linework"],
+      "viewport": "Bring Your Crew replaces the leaderboard; the social hero dominates, four service/cafe frames prove the offer, and mobile becomes a hero-led vertical feed.",
+      "risk": "The social benefit labels may repeat what the hero already communicates.",
+      "comp": ".impeccable/mocks/home/crew-invitation.png"
+    },
+    {
+      "id": "tonight-at-xerom",
+      "label": "Tonight at Xerom",
+      "kicker": "REVISION B",
+      "lineage": "Race Control Broadcast with a live venue pulse",
+      "thesis": "Race, Play and Refuel become the three clear modes of a complete Xerom night.",
+      "palette": ["#080808", "#F23B30", "#F5F2EA"],
+      "materials": ["broadcast panels", "status markers", "venue photography"],
+      "viewport": "A compact Race/Play/Refuel pulse replaces the leaderboard; product frames and cafe proof create a balanced venue overview on desktop and mobile.",
+      "risk": "Status-marker styling must not imply live availability unless the data is real.",
+      "comp": ".impeccable/mocks/home/tonight-at-xerom.png"
+    },
+    {
+      "id": "race-play-refuel",
+      "label": "Race · Play · Refuel",
+      "kicker": "REVISION C",
+      "lineage": "Race Control Broadcast with a numbered night itinerary",
+      "thesis": "A three-step night gives the cafe a natural role without weakening the racing focus.",
+      "palette": ["#080808", "#F23B30", "#F5F2EA"],
+      "materials": ["oversized numerals", "track connectors", "venue photography"],
+      "viewport": "Numbered Race, Play and Refuel moments replace the leaderboard; four modular proof frames sit below and the mobile layout preserves the same sequence.",
+      "risk": "The itinerary can feel more explanatory and slightly less spontaneous than the other revisions.",
+      "comp": ".impeccable/mocks/home/race-play-refuel.png"
+    }
+  ]
+}

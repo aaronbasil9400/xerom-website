@@ -1,0 +1,6 @@
+This is a human-readable provenance manifest consumed as ordinary JSON by Astro.
+It intentionally uses a local schema marker rather than implying a published JSON Schema.
+
+Every raster in this directory must be listed by relative path with dimensions,
+format, SHA-256, placeholder/production status, origin, generation or edit prompt,
+derivation, alt guidance, and crop guidance before it is referenced by a page.

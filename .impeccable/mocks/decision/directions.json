@@ -1,0 +1,130 @@
+{
+  "title": "Choose Xerom’s visual world",
+  "question": "Each direction keeps Xerom black, red and white, starts with the social group experience, and includes a mobile-first booking path. Choose one, steer a re-roll, or take the familiar category standard.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Race Control Broadcast",
+      "kicker": "THE ROLL",
+      "lineage": "live motorsport timing, race-control screens and broadcast graphics",
+      "thesis": "The whole venue feels like a live race night where the crew is the headline and hardware is the proof.",
+      "palette": ["#080808", "#F23B30", "#F5F2EA", "#4B4B4B"],
+      "materials": ["matte timing panels", "track-map linework", "broadcast lower thirds", "venue-light photography"],
+      "viewport": "A candid crew moment fills the first screen under crossed red-white lights while a live timing tower frames the scene and a red booking action anchors the edge; mobile becomes one vertical live-race feed.",
+      "risk": "Timing graphics could feel competitive rather than welcoming if the people do not remain visibly dominant.",
+      "raised": [
+        {"from": "Monochrome Proof Pairing", "raise": "Every promise must sit beside a real social, hardware or price proof—not decorative telemetry."},
+        {"from": "ASCII Live Scene", "raise": "Navigation, pricing, booking controls and system states must share one broadcast grammar."},
+        {"from": "Brine Calendar", "raise": "Booking progress and slot state must be immediately legible at every step."},
+        {"from": "Sleeping City Fold", "raise": "The venue’s crossed-light geometry must recompose into a purposeful mobile frame."}
+      ],
+      "comp": ".impeccable/mocks/decision/race-control.png"
+    },
+    {
+      "id": "model-pick",
+      "label": "Pit-Lane Crew Pass",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "garage passes, paddock contact sheets and independent motorsport zines",
+      "thesis": "Visitors join a local crew for the night, with every section reading like access to another garage bay.",
+      "palette": ["#090909", "#EF3028", "#F1EEE6", "#8C8C8C"],
+      "materials": ["torn paper", "pit-pass stock", "flash photography", "chequer tape"],
+      "viewport": "One large laughing group photo owns the first screen, surrounded by tactile contact-sheet fragments, a numbered pit pass and a direct booking strip; mobile reads like a tall event pass.",
+      "risk": "This is the most familiar grounded direction and could become a generic streetwear collage if the real venue and booking flow are not disciplined.",
+      "comp": ".impeccable/mocks/decision/pit-lane.png"
+    },
+    {
+      "id": "challenger-sequencer",
+      "label": "Starting Grid Sequencer",
+      "verdict": "competitive",
+      "lineage": "early-80s rhythm-machine step rows translated into a race-night journey",
+      "thesis": "A night at Xerom becomes a playable sequence—bring the crew, choose the rig, see the value, book the slot.",
+      "palette": ["#101010", "#F13A2D", "#F68A2E", "#F2F0E9"],
+      "materials": ["textured instrument panel", "lit step keys", "silkscreen labels", "segmented readouts"],
+      "viewport": "Social photography and hardware crops sit above one unbroken row of large illuminated steps; on mobile the row scales into a thumb-friendly four-step booking story.",
+      "case": "It beats the others on product clarity and interaction memory, but needs strong photography to identify immediately as Xerom rather than a music tool.",
+      "risk": "The control-panel metaphor could overpower the human warmth if every section becomes a machine interface.",
+      "comp": ".impeccable/mocks/decision/sequencer.png",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-drum-machine-step-row.webp"
+    },
+    {
+      "id": "challenger-lowbrow",
+      "label": "Night Race Sticker Wall",
+      "verdict": "competitive",
+      "lineage": "lowbrow hot-rod panels and lacquered racing sticker walls",
+      "thesis": "Xerom is an overflowing night-race poster where the same crew, rigs and venue compete for attention with joyful force.",
+      "palette": ["#070707", "#ED302A", "#FFF9EF", "#7E1714"],
+      "materials": ["heavy ink outline", "lacquer highlight", "ripped sticker edge", "marker lettering"],
+      "viewport": "A bold illustrated-photo crew tableau dominates, with prices pinned as oversized stickers and the booking action ruled across the base; mobile becomes one dense collectible poster.",
+      "case": "It strongly identifies with Xerom’s energetic Instagram audience, but loses to Race Control on scanning and booking clarity.",
+      "risk": "Crowding can damage accessibility and make changing promotions harder unless text remains live and modular.",
+      "comp": ".impeccable/mocks/decision/sticker-wall.png",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-lowbrow-gallery-panel-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/pop-culture-shelf-lowbrow-gallery-panel.webp"
+    },
+    {
+      "id": "challenger-ascii",
+      "label": "ASCII Live Scene",
+      "verdict": "declined",
+      "lineage": "live scenes rendered as monospace glyph density",
+      "thesis": "The venue appears as a live red-on-black character field.",
+      "palette": ["#050505", "#F13A2D", "#FFF8ED"],
+      "materials": ["monospace glyph grid", "phosphor field"],
+      "viewport": "A moving crew scene becomes a character-grid hero with captions inside the same field.",
+      "case": "It loses both audience identification and immediate service clarity.",
+      "kept": "Total visual-system consistency across every control and state.",
+      "risk": "It obscures faces, venue details and accessibility-critical content."
+    },
+    {
+      "id": "challenger-monochrome",
+      "label": "Monochrome Proof Pairing",
+      "verdict": "declined",
+      "lineage": "restrained software product marketing",
+      "thesis": "Every claim is paired with a clean visual proof.",
+      "palette": ["#0A0A0A", "#F3F3F1", "#E8342F"],
+      "materials": ["neutral grid", "precise proof frames"],
+      "viewport": "A quiet claim-and-proof hero with one restrained accent.",
+      "case": "It directly conflicts with Xerom’s energetic, non-minimal Instagram identity.",
+      "kept": "The discipline that every claim must be visibly proven.",
+      "risk": "It would feel overly corporate and minimal."
+    },
+    {
+      "id": "challenger-brine",
+      "label": "Session Maturity Calendar",
+      "verdict": "declined",
+      "lineage": "a pickling-brine calendar of staged change",
+      "thesis": "Booking states mature through a visible sequence.",
+      "palette": ["#090909", "#E4312B", "#F6EEE2"],
+      "materials": ["dated labels", "clear status bands"],
+      "viewport": "Service choices are arranged by stage and availability.",
+      "case": "Its culinary metaphor does not identify with sim racing or explain Xerom faster.",
+      "kept": "Make time, stage and status unmistakable in booking.",
+      "risk": "The metaphor is unrelated to the venue."
+    },
+    {
+      "id": "challenger-city",
+      "label": "Sleeping Night Circuit",
+      "verdict": "declined",
+      "lineage": "a city folding into a shared night world",
+      "thesis": "Klang’s night folds inward around the illuminated venue.",
+      "palette": ["#050505", "#ED332D", "#F5F1E8"],
+      "materials": ["folded map seams", "embroidered light lines"],
+      "viewport": "The venue’s crossed lights reshape a nighttime city field around the crew.",
+      "case": "It loses immediate product clarity and risks making the venue feel fictional.",
+      "kept": "Let the real crossed-light geometry adapt purposefully across viewports.",
+      "risk": "Atmosphere could replace useful information."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "comp", "toggle": true},
+  "canon": true,
+  "canonCard": {
+    "label": "Polished Esports Venue",
+    "thesis": "The familiar premium gaming-venue layout, executed cleanly with Xerom photography and colors.",
+    "palette": ["#080808", "#E9342C", "#FFFFFF"],
+    "materials": ["full-bleed venue photography", "clean pricing cards", "bold geometric type"],
+    "viewport": "A conventional photo hero with headline, two buttons and service cards below.",
+    "risk": "Easy to understand, but less memorable and more similar to other gaming venues."
+  },
+  "steer": true
+}

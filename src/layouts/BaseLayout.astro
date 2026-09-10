@@ -1,0 +1,147 @@
+---
+import "@fontsource/barlow/400.css";
+import "@fontsource/barlow/600.css";
+import "@fontsource/barlow-condensed/600.css";
+import "@fontsource/barlow-condensed/700.css";
+import "@fontsource/barlow-condensed/900.css";
+import "@fontsource/racing-sans-one/400.css";
+import "../styles/global.css";
+import { business, contactLinks } from "@/config/business";
+import ArrowIcon from "@/components/ArrowIcon.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = "Xerom SimRacing & Cafe | Race Together in Klang",
+  description = "Sim racing, PS5 lounge gaming and cafe time for groups in Bandar Bukit Tinggi, Klang.",
+  image = "/og-placeholder.jpg",
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#080808" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": ["LocalBusiness", "EntertainmentBusiness"],
+      name: business.name,
+      url: Astro.site?.toString(),
+      telephone: business.phoneInternational,
+      sameAs: [business.instagramUrl],
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: business.address.street,
+        addressLocality: business.address.city,
+        addressRegion: business.address.region,
+        postalCode: business.address.postalCode,
+        addressCountry: "MY",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: business.coordinates.latitude,
+        longitude: business.coordinates.longitude,
+      },
+      priceRange: "RM",
+    })} />
+  </head>
+  <body>
+    <!--
+    THESIS: Xerom is a shared race night, not a generic gaming catalog; the numbered Race · Play · Refuel path replaces a leaderboard and makes the full venue legible.
+    OWN-WORLD: Near-black broadcast panels, racing-red actions, warm-white compressed type, live venue photography, track-line connectors, and clipped control geometry.
+    STORY: Visitors see people enjoying the venue, understand the three-part night, verify hardware and price, then book an available session.
+    FIRST VIEWPORT: Compact wordmark/nav, crew-first hero and RACE TOGETHER at dominant scale, primary red booking action, then the 01/02/03 path and service proof; mobile preserves this order.
+    FORM: Race Control Broadcast, grounded direction 3, seed 5323fcd4.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header" data-header>
+      <a class="brand" href="/" aria-label={`${business.shortName} home`}>
+        <span class="brand-x" aria-hidden="true"><i></i><b></b></span>
+        <span class="brand-word">XEROM</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/experiences#sim-racing">Sim Racing</a>
+        <a href="/experiences#ps5">PS5</a>
+        <a href="/experiences#cafe">Cafe</a>
+        <a href="/#about">About</a>
+      </nav>
+      <a class="button button-primary header-cta" href="/book">Book a session <ArrowIcon /></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
+        <span class="sr-only">Open menu</span><span></span><span></span>
+      </button>
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden data-mobile-nav>
+        <a href="/experiences#sim-racing">Sim Racing</a>
+        <a href="/experiences#ps5">PS5</a>
+        <a href="/experiences#cafe">Cafe</a>
+        <a href="/#about">About</a>
+        <a class="button button-primary" href="/book">Book a session</a>
+      </nav>
+    </header>
+    <main id="main-content"><slot /></main>
+    <footer class="site-footer section-shell">
+      <div>
+        <p class="footer-mark">XEROM</p>
+        <p>Sim Racing · PS5 · Cafe</p>
+      </div>
+      <div class="footer-links">
+        <a href={contactLinks.whatsapp}>WhatsApp</a>
+        <a href={contactLinks.phone}>Call</a>
+        <a href={contactLinks.directions}>Directions</a>
+        <a href={contactLinks.instagram}>Instagram</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/visit">Visit</a>
+      </div>
+      <p class="footer-note">Bandar Bukit Tinggi, Klang · Malaysia</p>
+    </footer>
+    <script>
+      const button = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+      const menu = document.querySelector<HTMLElement>("[data-mobile-nav]");
+      const label = button?.querySelector<HTMLElement>(".sr-only");
+      const focusable = () => Array.from(menu?.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])') ?? []);
+      const closeMenu = (restore = true) => {
+        if (!button || !menu) return;
+        button.setAttribute("aria-expanded", "false");
+        menu.hidden = true;
+        if (label) label.textContent = "Open menu";
+        if (restore) button.focus();
+      };
+      const openMenu = () => {
+        if (!button || !menu) return;
+        button.setAttribute("aria-expanded", "true");
+        menu.hidden = false;
+        if (label) label.textContent = "Close menu";
+        focusable()[0]?.focus();
+      };
+      button?.addEventListener("click", () => button.getAttribute("aria-expanded") === "true" ? closeMenu(false) : openMenu());
+      menu?.addEventListener("click", (event) => { if ((event.target as Element).closest("a")) closeMenu(false); });
+      document.addEventListener("keydown", (event) => {
+        if (!button || !menu || button.getAttribute("aria-expanded") !== "true") return;
+        if (event.key === "Escape") { event.preventDefault(); closeMenu(); return; }
+        if (event.key !== "Tab") return;
+        const items = focusable();
+        if (!items.length) return;
+        const first = items[0];
+        const last = items.at(-1)!;
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      });
+    </script>
+  </body>
+</html>

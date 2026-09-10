@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "xerom-booking-coordinator",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-09",
+  "durable_objects": {
+    "bindings": [
+      { "name": "BOOKING_COORDINATOR", "class_name": "BookingCoordinator" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["BookingCoordinator"] }
+  ]
+}

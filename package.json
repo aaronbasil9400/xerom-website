@@ -1,0 +1,45 @@
+{
+  "name": "xerom-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log BOOKING_MODE=mock PUBLIC_BOOKING_MODE=mock astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro preview",
+    "check": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro check",
+    "cf:typegen": "wrangler types",
+    "coordinator:dev": "wrangler dev --config coordinator/wrangler.jsonc",
+    "coordinator:deploy": "wrangler deploy --config coordinator/wrangler.jsonc"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "latest",
+    "@fontsource/barlow": "latest",
+    "@fontsource/barlow-condensed": "latest",
+    "@fontsource/racing-sans-one": "latest",
+    "astro": "latest",
+    "jose": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@astrojs/check": "latest",
+    "@cloudflare/workers-types": "latest",
+    "@types/node": "latest",
+    "@playwright/test": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "wrangler": "latest"
+  },
+  "overrides": {
+    "sharp": "0.35.4"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.28.1": true,
+    "workerd@1.20260908.1": true
+  }
+}
