@@ -12,15 +12,15 @@ import ArrowIcon from "@/components/ArrowIcon.astro";
     <div class="race-path" aria-label="A night at Xerom">
       <svg class="route-line" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true"><path d="M42 8 C 6 88, 72 122, 38 194 S 72 314, 38 386 S 60 470, 42 512" /></svg>
       <article class="path-step">
-        <div class="path-media"><Image src={media.regularRig} alt="Illustrative placeholder for racing experience photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-media"><Image src={media.regularRig} alt="Close-up of Xerom’s Regular Rig controls" width={280} height={280} format="webp" loading="eager" /></div>
         <div class="path-content"><span class="path-number">01</span><span class="path-label">Race</span><p class="path-copy">Get behind the wheel.</p></div>
       </article>
       <article class="path-step">
-        <div class="path-media"><Image src={media.ps5Lounge} alt="Illustrative placeholder for PS5 social gaming photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-media"><Image src={media.ps5Lounge} alt="PS5 controllers at the Xerom lounge" width={280} height={280} format="webp" loading="eager" /></div>
         <div class="path-content"><span class="path-number">02</span><span class="path-label">Play</span><p class="path-copy">More ways to game together.</p></div>
       </article>
       <article class="path-step">
-        <div class="path-media"><Image src={media.cafe} alt="Illustrative placeholder for Xerom cafe atmosphere photography" width={280} height={280} format="webp" loading="eager" /></div>
+        <div class="path-media"><Image src={media.cafe} alt="Three colourful drinks from the Xerom cafe" width={280} height={280} format="webp" loading="eager" /></div>
         <div class="path-content"><span class="path-number">03</span><span class="path-label">Refuel</span><p class="path-copy">Take a break with your crew.</p></div>
       </article>
     </div>
@@ -49,14 +49,14 @@ import ArrowIcon from "@/components/ArrowIcon.astro";
       <ExperienceCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={services["regular-sim"].image} alt={services["regular-sim"].imageAlt} price={`${formatMoney(pricing.services["regular-sim"].hourlyRate)}/hour`} href="/book?service=regular-sim" />
       <ExperienceCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={services["pro-sim"].image} alt={services["pro-sim"].imageAlt} price={`${formatMoney(pricing.services["pro-sim"].hourlyRate)}/hour`} href="/book?service=pro-sim" />
       <ExperienceCard title={services.ps5.name} copy={services.ps5.description} image={services.ps5.image} alt={services.ps5.imageAlt} price={`${formatMoney(pricing.services.ps5.hourlyRate)}/hour`} href="/book?service=ps5" />
-      <ExperienceCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Illustrative placeholder for Xerom cafe atmosphere photography" href="/experiences#cafe" />
+      <ExperienceCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
     </div>
   </section>
 
   <div class="signal-band" aria-hidden="true"><div class="signal-track"><span>Race together</span><span>Play together</span><span>Refuel together</span><span>Race together</span><span>Play together</span><span>Refuel together</span></div></div>
 
   <section class="section-shell section-space split-section" id="about" aria-labelledby="hardware-title">
-    <div class="hardware-frame"><Image src={media.proRig} alt="Illustrative placeholder for a close photograph of sim-racing hardware" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" /></div>
+    <div class="hardware-frame"><Image src={media.proRig} alt="Close-up of the Porsche-branded wheel centre on Xerom’s Pro Rig" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" /></div>
     <div>
       <h2 class="section-title" id="hardware-title">Choose your <span class="red">setup</span></h2>
       <p class="lede">Start with the accessible Regular Rig, step into the dedicated Pro Rig, or settle into a PS5 lounge. Every option is booked by the hour.</p>

@@ -15,6 +15,7 @@
     "cf:typegen": "wrangler types",
     "coordinator:dev": "wrangler dev --config coordinator/wrangler.jsonc",
     "coordinator:deploy": "wrangler deploy --config coordinator/wrangler.jsonc"
+    ,"assets:favicon": "node scripts/render-favicon-icons.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "latest",
