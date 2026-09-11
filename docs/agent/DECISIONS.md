@@ -25,6 +25,12 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Final photo/logo asset set.
 - Remaining owner content in `CONTENT_TODO.md`.
 
+## 2026-09-11 — Official logo integration
+
+- Replaced the temporary CSS wordmark with `src/assets/brand/xerom-logo.svg` in the shared header and footer.
+- The SVG is a deterministic red/white path trace of the owner-supplied official raster, not a generative recreation.
+- The original PNG remains at `src/assets/brand/xerom-logo-source.png`; QA render is stored under `.impeccable/review/`.
+
 ## 2026-09-09 — Approved homepage direction
 
 - Direction: Race Control Broadcast.

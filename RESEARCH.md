@@ -40,6 +40,10 @@ The image shows:
 
 The image is suitable for factual reference and concept exploration, but not as the final logo or website photography.
 
+### Official logo
+
+On 2026-09-11 the owner-helper supplied the official XEROM wordmark as a 1548×690 PNG. The visible two-color mark was cropped to an 1119×209 boundary and traced deterministically into separate red and white vector paths at `src/assets/brand/xerom-logo.svg`. The original is retained at `src/assets/brand/xerom-logo-source.png`, and a rasterized vector QA render is stored at `.impeccable/review/logo-vector-preview.png`.
+
 ### Public Instagram inspection
 
 The supplied Instagram profile was inspected in the Codex in-app browser on 2026-09-09. The public profile showed 673 followers, 10 following, the display name “XEROM Sim Racing | PS5 | Cafe,” the phrases “Where speed meets comfort” and “FIRST EVER in Klang, Selangor,” and a Google Maps link.

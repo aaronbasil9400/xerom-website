@@ -9,7 +9,7 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 - [ ] Confirm whether the advertised 5% Instagram follow-and-tag discount is currently active, how staff verify it, whether it applies during booking or at the venue, which services/add-ons it covers, and whether it can combine with sales.
 - [ ] Confirm the maximum controllers supported by each PS5 lounge.
 - [ ] Confirm whether `012-940 1440` is both the public call and WhatsApp number, and provide the preferred international display/link format.
-- [ ] Provide an official transparent PNG or SVG logo and confirm permission to use it.
+- [x] Official logo supplied and converted to a transparent two-color SVG; original retained at `src/assets/brand/xerom-logo-source.png`.
 - [ ] Supply or approve production-quality venue, rig, PS5, cafe, and group photography with usage rights.
 - [ ] Confirm the cancellation/no-show/late-arrival wording customers should see.
 - [ ] Confirm the precise three-day horizon rule: rolling 72 hours or through the third local calendar day.

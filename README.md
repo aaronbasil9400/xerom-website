@@ -26,8 +26,9 @@ The responsive Astro site and mock-mode booking flow are implemented against the
 - [`AGENTS.md`](AGENTS.md) — rules for coding agents working in this repository.
 - [`docs/agent/DECISIONS.md`](docs/agent/DECISIONS.md) — material decisions and rationale.
 - [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md) — current state and next action.
+- [`src/assets/brand/README.md`](src/assets/brand/README.md) — official logo source and SVG conversion provenance.
 
-`DESIGN.md`, integration runbooks, deployment instructions, and `QA_REPORT.md` will be produced from the approved and tested implementation rather than as generic placeholders.
+Integration runbooks, deployment instructions, and `QA_REPORT.md` are maintained from the tested implementation. `DESIGN.md` is generated from the final reviewed visual system.
 
 ## Local development
 

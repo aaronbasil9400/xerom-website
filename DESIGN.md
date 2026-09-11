@@ -1,0 +1,275 @@
+---
+version: alpha
+name: Xerom Race Control Broadcast
+description: A crew-first race-night identity built from broadcast panels, racing red, compressed type, and track-line navigation.
+colors:
+  primary-racing-red: "#f02f2a"
+  action-racing-red: "#d12a25"
+  action-racing-red-hover: "#b92320"
+  primary-red-dark: "#a91616"
+  official-logo-red: "#ff4939"
+  canvas-black: "#080808"
+  panel-black: "#111111"
+  panel-raised: "#181818"
+  structural-line: "#383838"
+  text-muted: "#bcb8b0"
+  text-warm-white: "#f5f2ea"
+  text-on-red: "#ffffff"
+  focus-amber: "#ffd166"
+  error-coral: "#ff9d97"
+  warning-panel: "#221d0d"
+  warning-line: "#8b732b"
+  warning-text: "#fff1b7"
+typography:
+  display-hero:
+    fontFamily: "Racing Sans One, Barlow Condensed, sans-serif"
+    fontSize: "10.5rem"
+    fontWeight: 400
+    lineHeight: 0.68
+    letterSpacing: "-0.03em"
+  display-section:
+    fontFamily: "Racing Sans One, Barlow Condensed, sans-serif"
+    fontSize: "5.5rem"
+    fontWeight: 400
+    lineHeight: 0.9
+    letterSpacing: "-0.03em"
+  title-control:
+    fontFamily: "Barlow Condensed, sans-serif"
+    fontSize: "2rem"
+    fontWeight: 900
+    lineHeight: 0.9
+  label-action:
+    fontFamily: "Barlow Condensed, sans-serif"
+    fontSize: "1.05rem"
+    fontWeight: 700
+    lineHeight: 1
+    letterSpacing: "0.04em"
+  body:
+    fontFamily: "Barlow, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.55
+  body-lede:
+    fontFamily: "Barlow, sans-serif"
+    fontSize: "1.3rem"
+    fontWeight: 400
+    lineHeight: 1.55
+  label-data:
+    fontFamily: "Barlow Condensed, sans-serif"
+    fontSize: "0.78rem"
+    fontWeight: 700
+    lineHeight: 1
+    letterSpacing: "0.06em"
+rounded:
+  none: "0px"
+spacing:
+  xs: "0.5rem"
+  sm: "0.75rem"
+  md: "1rem"
+  lg: "1.25rem"
+  xl: "2rem"
+  xxl: "4rem"
+components:
+  button-primary:
+    backgroundColor: "{colors.action-racing-red}"
+    textColor: "{colors.text-on-red}"
+    typography: "{typography.label-action}"
+    rounded: "{rounded.none}"
+    padding: "0.75rem 1.7rem"
+    height: "3.25rem"
+  button-primary-hover:
+    backgroundColor: "{colors.action-racing-red-hover}"
+    textColor: "{colors.text-on-red}"
+  button-secondary:
+    backgroundColor: "transparent"
+    textColor: "{colors.text-warm-white}"
+    typography: "{typography.label-action}"
+    rounded: "{rounded.none}"
+    padding: "0.75rem 1.25rem"
+    height: "3.25rem"
+  field:
+    backgroundColor: "{colors.canvas-black}"
+    textColor: "{colors.text-warm-white}"
+    typography: "{typography.body}"
+    rounded: "{rounded.none}"
+    padding: "0.8rem 1rem"
+    height: "3.25rem"
+  booking-progress-current:
+    backgroundColor: "{colors.action-racing-red}"
+    textColor: "{colors.text-on-red}"
+    typography: "{typography.label-action}"
+    rounded: "{rounded.none}"
+    padding: "1rem"
+---
+
+# Design System: Xerom Race Control Broadcast
+
+## Overview
+
+**Creative North Star: "Race Control Broadcast"**
+
+Xerom should feel like the shared race night has already started: a near-black broadcast desk cut by racing-red signals, warm-white compressed type, venue imagery, and the track-like route through Race, Play, and Refuel. It is social before it is technical. People and the promise of time together establish the first impression; hardware, live prices, and booking controls supply proof.
+
+The system is direct, kinetic, and operational without becoming a generic esports dashboard. Rectangular panels, fine structural strokes, clipped action controls, and sparse circular markers make the surface feel assembled for a live event. The official red-and-white Xerom wordmark remains an authored brand asset and is never reconstructed from type.
+
+Production imagery must be owner-approved Xerom photography. The current people, venue, equipment, PS5, and cafe rasters are explicitly named AI placeholders and may demonstrate composition only; they are not evidence of the real venue or inventory.
+
+**Key Characteristics:**
+
+- Crew-first photography and action-led language.
+- Near-black tonal panels separated by thin technical rules.
+- Bright brand red reserved for display signals and price emphasis; the deeper action red carries white text and selected states.
+- Compressed uppercase typography with oversized, tightly stacked display words.
+- Route connectors, numbered stages, clipped controls, and square-ended line icons.
+- Booking presented as an extension of race control, not a separate generic form.
+
+## Colors
+
+The palette is a night venue under broadcast lighting: black layers carry the interface, warm white carries reading, bright red draws the racing route, and a deeper red gives filled controls sufficient contrast with white text.
+
+### Primary
+
+- **Bright Racing Red** (`{colors.primary-racing-red}`): Brand/display accent for hero words, route lines and nodes, price emphasis, booking IDs, scrollbar detail, and decorative telemetry marks. It is not a white-text control fill.
+- **Action Racing Red** (`{colors.action-racing-red}`): Filled primary buttons, selected duration and time controls, current booking progress, success marks, and the full-width signal band. White on this red is 5.16:1 in the shipped contrast audit.
+- **Action Red Hover** (`{colors.action-racing-red-hover}`): Darker hover fill for primary actions; it retains strong white-text contrast while keeping the interaction visibly red.
+- **Deep Red** (`{colors.primary-red-dark}`): A darker red reserve for future pressed or low-light accent treatment; it must remain subordinate to the two shipped interface reds.
+- **Official Logo Red** (`{colors.official-logo-red}`): Intrinsic red path in the owner-supplied official SVG trace. It belongs to the logo asset only and is not substituted for either interface red.
+
+### Neutral
+
+- **Canvas Black** (`{colors.canvas-black}`): Page background, inset fields, and the deepest layer.
+- **Broadcast Panel** (`{colors.panel-black}`): Cards, booking shells, route panels, and CTA surfaces.
+- **Raised Control Black** (`{colors.panel-raised}`): Compact interactive controls such as steppers.
+- **Structural Line** (`{colors.structural-line}`): One-pixel panel divisions, field borders, and list rules.
+- **Warm White** (`{colors.text-warm-white}`): Primary type and high-contrast outlines.
+- **Muted Warm Gray** (`{colors.text-muted}`): Supporting copy, secondary navigation, captions, and metadata.
+
+### Tertiary
+
+- **Focus Amber** (`{colors.focus-amber}`): Keyboard focus and text selection only; it is an accessibility signal, not a decorative brand accent.
+- **Error Coral** (`{colors.error-coral}`): Form failure copy against dark panels.
+- **Warm Warning Set** (`{colors.warning-panel}`, `{colors.warning-line}`, `{colors.warning-text}`): Unresolved or operational notices that must be distinct from booking errors.
+
+### Named Rules
+
+**The Two-Red Rule.** Bright Racing Red announces brand and display information. Action Racing Red carries white text, selection, progress, success, and filled controls. Never swap the bright accent into a normal-sized white-text control.
+
+**The Amber Means Keyboard Rule.** Focus Amber is reserved for visible focus and selection feedback so keyboard state is never confused with brand emphasis.
+
+## Typography
+
+**Display Font:** Racing Sans One, falling back to Barlow Condensed and sans-serif.  
+**Control Font:** Barlow Condensed, falling back to sans-serif.  
+**Body Font:** Barlow, falling back to sans-serif.
+
+**Character:** Racing Sans One supplies the headline mass of a race poster; Barlow Condensed makes navigation, prices, labels, and booking controls scan like a broadcast rundown; Barlow keeps explanations calm and readable. Display and control language is mostly uppercase, while paragraph copy remains sentence case.
+
+### Hierarchy
+
+- **Hero Display** (`{typography.display-hero}`): The stacked first-viewport promise. The implementation scales it fluidly down from its 10.5rem ceiling and tightens to 0.68 line height.
+- **Section Display** (`{typography.display-section}`): Short section titles with a maximum measure around 12 characters and fluid scaling below the 5.5rem ceiling.
+- **Control Title** (`{typography.title-control}`): Italic, compressed titles for booking steps, cards, prices, and numbered route stages.
+- **Action Label** (`{typography.label-action}`): Uppercase navigation and button text; buttons add italic posture while navigation stays upright.
+- **Body** (`{typography.body}`): Explanations and operational text, generally limited to 56–65 characters where the layout provides a long measure.
+- **Lede** (`{typography.body-lede}`): Section introductions and booking invitations in muted warm gray.
+- **Data Label** (`{typography.label-data}`): Compact uppercase labels above prices and other proof values.
+
+### Named Rules
+
+**The Three-Voice Rule.** Racing Sans One announces, Barlow Condensed directs, and Barlow explains. Do not interchange those jobs merely to add variety.
+
+**The Short-Lap Rule.** Oversized display type is for brief phrases that can be read in one glance. Longer copy returns to Barlow rather than shrinking the display face into paragraph work.
+
+## Layout
+
+The shared shell is centered within an 88rem maximum width and ordinarily leaves 1rem at each side; below 560px that outer gutter contracts to 0.5rem. Vertical sections use a fluid 4.5rem–9rem rhythm. Layout is panel-based, with one-pixel seams and deliberate 1px grid gaps reinforcing the broadcast assembly.
+
+The approved homepage first viewport is a two-part composition above 900px: a narrow Race / Play / Refuel route column beside a dominant crew image. The headline and primary booking action sit over the photography, while a semantic four-cell price proof rail anchors its lower edge with Regular Rig, Pro Rig, PS5 Lounge, and Cafe proof. At 900px and below, the hero image moves first, the price rail is removed to protect the fold, and the route becomes a three-column strip; at 560px and below, the route becomes a vertical timeline, service cards become compact image/body rows, actions become full width, and booking action rows stack.
+
+The implementation has two responsive thresholds: 900px reorganizes major grids and replaces desktop navigation with the menu; 560px performs the phone-specific composition. Every change must still be inspected at 375, 390, 430, 768, 1024, and 1440+ CSS pixels because the approved phone composition is not just a compressed desktop.
+
+Booking layouts inherit the same geometry. The shell is a bordered broadcast panel; progress is a three-cell strip; quantity rows, duration choices, slots, review blocks, and fields form an inset control grid. Two-column field and visit layouts collapse to one column on phones. Touch actions maintain a minimum implemented height of 3.25rem.
+
+**The Story Before Specification Rule.** Preserve the sequence: people and shared-night promise, Race / Play / Refuel orientation, service and price proof, hardware/value detail, then booking.
+
+## Elevation & Depth
+
+The system is flat by default. Depth comes primarily from tonal black layers, one-pixel structural borders, photographic overlays, and occasional offset red geometry. Shadows are reserved for surfaces that genuinely float: the sticky translucent header, the mobile menu, and the legibility shadow beneath the hero headline.
+
+### Shadow Vocabulary
+
+- **Sticky Broadcast Bar** (`0 12px 34px rgba(0,0,0,.3)`): Supports the translucent sticky header over moving page content.
+- **Mobile Menu Lift** (`0 16px 32px rgba(0,0,0,.45)`): Separates the open menu from the page below.
+- **Hero Type Legibility** (`0 10px 32px rgba(0,0,0,.55)`): Protects the oversized title over photography; never use as a generic text effect.
+
+### Named Rules
+
+**The Flat Control Room Rule.** Resting cards and fields use tone plus border, not drop shadows. Elevation is functional and rare.
+
+## Shapes
+
+The core form language is square and engineered: panels, cards, fields, booking rows, and status blocks use hard 0px corners. Primary actions are clipped into a skewed racing plate using `polygon(7% 0, 100% 0, 93% 100%, 0 100%)`. Circles are reserved for route nodes, round links, and large background telemetry rings; small square diamonds mark feature bullets. Fine red outlines and repeating dash marks may extend beyond an image frame to imply equipment alignment or a traced course.
+
+Icons follow one SVG grammar: unfilled 24×24 geometry, current-color stroke, 1.8 stroke width, square line caps, and miter joins. The canonical arrow is a simple rightward shaft and angled head. Icons support a text action and never replace an accessible label by themselves.
+
+**The Hard Panel, Fast Edge Rule.** Default to square panels and fields. Use the clipped plate for decisive actions and a true circle only for a marker or compact icon control.
+
+## Components
+
+### Buttons
+
+- **Shape:** Square secondary controls use `{rounded.none}`; the primary uses the signature clipped racing plate.
+- **Primary:** Action Racing Red with white text at 5.16:1 contrast, compressed italic uppercase labeling, a 3.25rem minimum height, and wider horizontal padding. The hero instance rises to 4.2rem and becomes the dominant booking action.
+- **Hover / Focus / Active:** Hover lifts by 2px over 300ms using the shipped ease-out curve and darkens to `{components.button-primary-hover.backgroundColor}`. Focus uses the global 3px Focus Amber outline with a 4px offset. Disabled booking actions retain their geometry but become grayscale at 50% opacity and never lift.
+- **Secondary:** Transparent black-ground control with a Warm White one-pixel border; hover inverts to Warm White with Canvas Black text.
+
+### Cards / Containers
+
+- **Corner Style:** Hard 0px corners.
+- **Background:** Broadcast Panel over Canvas Black.
+- **Shadow Strategy:** Flat; hierarchy comes from the Structural Line border and media contrast.
+- **Internal Padding:** Primarily 1rem, expanding to 2rem–5rem in the large CTA panel.
+- **Media:** Full-bleed, cover-cropped imagery; experience media enlarges subtly to 1.035 scale over 800ms on hover.
+
+### Inputs / Fields
+
+- **Style:** Canvas Black field, Warm White text, Structural Line one-pixel border, square corners, and 0.8rem × 1rem padding.
+- **Focus:** The shared 3px Focus Amber outline with 4px offset remains fully visible; radio controls transfer that outline to their visual label.
+- **Error / Disabled:** Error copy uses Error Coral with a reserved minimum-height region to prevent layout jumps. Disabled actions use grayscale and 50% opacity. Carets use Bright Racing Red.
+
+### Navigation
+
+The sticky header is a translucent Canvas Black broadcast bar with a fine Warm White mixed border and 16px backdrop blur. The owner-supplied deterministic SVG trace at `src/assets/brand/xerom-logo.svg` anchors the left at a fluid 7.8rem–11rem width; the footer uses the same asset at 8.5rem. Compressed uppercase service links occupy the center and the primary booking action closes the right. Below 900px, a two-line menu button replaces both link row and header CTA, and the logo settles at 7.5rem on phones. The opened menu is keyboard-contained, Escape-dismissable, and moves focus into its first link.
+
+### Race / Play / Refuel Route
+
+Three numbered media stages use italic Barlow Condensed numerals, a dashed Racing Red SVG path, and circular route nodes. It is a visual itinerary, not a leaderboard or ranking. Desktop uses a vertical route at the hero's left, tablet uses a horizontal three-stage strip, and phone returns to a compact vertical timeline.
+
+### Price Proof and Signal Band
+
+Price proof is a semantic, four-cell rail inside the desktop hero: equal columns pair compact Barlow Condensed labels with Racing Sans One values for Regular Rig, Pro Rig, PS5 Lounge, and Cafe. It sits over a 92% Canvas Black mixture and is hidden at 900px and below. The signal band is the rare full Action Racing Red surface: a continuous italic uppercase Race Together / Play Together / Refuel Together broadcast crawl. It runs for 28 seconds on larger screens and 20 seconds on phones, then collapses to effectively static when reduced motion is requested.
+
+### Booking Controls
+
+The three-step booking flow uses an Action Racing Red current-progress cell, bordered quantity rows with compact steppers, full-width selectable duration and time controls, and a dark-red review block. Selected choices and the success mark use Action Racing Red plus white rather than relying on border alone; the oversized booking ID remains Bright Racing Red display information. Status copy uses a polite live region and failures use alert semantics.
+
+## Do's and Don'ts
+
+### Do:
+
+- **Do** lead shared marketing surfaces with people enjoying the venue before equipment detail and booking mechanics.
+- **Do** preserve the Race / Play / Refuel route as an itinerary with the 01 / 02 / 03 order.
+- **Do** use the owner-supplied deterministic trace at `src/assets/brand/xerom-logo.svg` unchanged in color, path geometry, and aspect ratio.
+- **Do** use Action Racing Red behind normal-sized white text and reserve Bright Racing Red for unfilled display accents.
+- **Do** keep prices, services, hours, and other business facts sourced from centralized configuration and confirmed project documentation.
+- **Do** preserve visible Focus Amber focus, keyboard menu behavior, 3.25rem control heights, semantic live/error states, and reduced-motion handling.
+- **Do** label all temporary photography as placeholder material in source and alt text until owner-approved Xerom assets replace it.
+
+### Don't:
+
+- **Don't** reintroduce a leaderboard, ranking metaphor, or generic neon gaming dashboard.
+- **Don't** invent venue, equipment, cafe, promotion, capacity, or customer-proof claims to fill a composition.
+- **Don't** redraw, typeset, recolor, distort, or decorate the official Xerom wordmark without explicit owner approval.
+- **Don't** treat generated people, equipment, cafe, or venue imagery as production truth or imply that it depicts the real venue.
+- **Don't** round every container, add ambient card shadows, or use either interface red as undifferentiated decoration.
+- **Don't** hide active, selected, error, or focus state behind motion or color differences that disappear in reduced-motion or keyboard use.

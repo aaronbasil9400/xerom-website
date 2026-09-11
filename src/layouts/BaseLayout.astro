@@ -8,6 +8,7 @@ import "@fontsource/racing-sans-one/400.css";
 import "../styles/global.css";
 import { business, contactLinks } from "@/config/business";
 import ArrowIcon from "@/components/ArrowIcon.astro";
+import xeromLogo from "@/assets/brand/xerom-logo.svg";
 
 interface Props {
   title?: string;
@@ -73,8 +74,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header" data-header>
       <a class="brand" href="/" aria-label={`${business.shortName} home`}>
-        <span class="brand-x" aria-hidden="true"><i></i><b></b></span>
-        <span class="brand-word">XEROM</span>
+        <img class="brand-logo" src={xeromLogo.src} alt="" width="1119" height="209" />
       </a>
       <nav class="desktop-nav" aria-label="Primary navigation">
         <a href="/experiences#sim-racing">Sim Racing</a>
@@ -97,7 +97,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <main id="main-content"><slot /></main>
     <footer class="site-footer section-shell">
       <div>
-        <p class="footer-mark">XEROM</p>
+        <img class="footer-logo" src={xeromLogo.src} alt="Xerom" width="1119" height="209" loading="lazy" />
         <p>Sim Racing · PS5 · Cafe</p>
       </div>
       <div class="footer-links">

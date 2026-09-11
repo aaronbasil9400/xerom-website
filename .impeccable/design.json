@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-11T20:38:25+08:00",
+  "title": "Design System: Xerom Race Control Broadcast",
+  "extensions": {
+    "colorMeta": {
+      "primary-racing-red": { "role": "primary", "displayName": "Bright Racing Red", "canonical": "#f02f2a", "contrast": "Display accent only; white text is 4.08:1", "tonalRamp": ["oklch(15% 0.10 27)", "oklch(25% 0.14 27)", "oklch(35% 0.18 27)", "oklch(48% 0.22 27)", "oklch(61% 0.23 27)", "oklch(72% 0.18 27)", "oklch(84% 0.10 27)", "oklch(95% 0.04 27)"] },
+      "action-racing-red": { "role": "primary", "displayName": "Action Racing Red", "canonical": "#d12a25", "contrast": "White text: 5.16:1", "tonalRamp": ["oklch(15% 0.08 27)", "oklch(25% 0.12 27)", "oklch(35% 0.16 27)", "oklch(48% 0.20 27)", "oklch(56% 0.21 27)", "oklch(70% 0.16 27)", "oklch(84% 0.09 27)", "oklch(95% 0.03 27)"] },
+      "action-racing-red-hover": { "role": "primary", "displayName": "Action Red Hover", "canonical": "#b92320", "contrast": "White text: 6.32:1", "tonalRamp": ["oklch(15% 0.07 27)", "oklch(25% 0.11 27)", "oklch(35% 0.15 27)", "oklch(48% 0.18 27)", "oklch(54% 0.19 27)", "oklch(70% 0.14 27)", "oklch(84% 0.08 27)", "oklch(95% 0.03 27)"] },
+      "primary-red-dark": { "role": "primary", "displayName": "Deep Red", "canonical": "#a91616", "tonalRamp": ["oklch(15% 0.08 27)", "oklch(25% 0.11 27)", "oklch(35% 0.14 27)", "oklch(48% 0.17 27)", "oklch(61% 0.16 27)", "oklch(72% 0.12 27)", "oklch(84% 0.07 27)", "oklch(95% 0.03 27)"] },
+      "official-logo-red": { "role": "primary", "displayName": "Official Logo Red", "canonical": "#ff4939", "tonalRamp": ["oklch(15% 0.10 29)", "oklch(25% 0.14 29)", "oklch(35% 0.18 29)", "oklch(48% 0.22 29)", "oklch(64% 0.23 29)", "oklch(74% 0.18 29)", "oklch(85% 0.10 29)", "oklch(95% 0.04 29)"] },
+      "canvas-black": { "role": "neutral", "displayName": "Canvas Black", "canonical": "#080808", "tonalRamp": ["#080808", "#171717", "#292929", "#414141", "#5f5f5f", "#858585", "#b7b7b7", "#f2f2f2"] },
+      "panel-black": { "role": "neutral", "displayName": "Broadcast Panel", "canonical": "#111111", "tonalRamp": ["#080808", "#111111", "#252525", "#3d3d3d", "#5c5c5c", "#838383", "#b6b6b6", "#f2f2f2"] },
+      "panel-raised": { "role": "neutral", "displayName": "Raised Control Black", "canonical": "#181818", "tonalRamp": ["#0a0a0a", "#181818", "#2a2a2a", "#424242", "#606060", "#858585", "#b7b7b7", "#f2f2f2"] },
+      "structural-line": { "role": "neutral", "displayName": "Structural Line", "canonical": "#383838", "tonalRamp": ["#101010", "#232323", "#383838", "#505050", "#6d6d6d", "#929292", "#bfbfbf", "#f3f3f3"] },
+      "text-muted": { "role": "neutral", "displayName": "Muted Warm Gray", "canonical": "#bcb8b0", "tonalRamp": ["#25231f", "#3d3a35", "#57534d", "#736f68", "#918d85", "#bcb8b0", "#d9d5ce", "#f5f2ec"] },
+      "text-warm-white": { "role": "neutral", "displayName": "Warm White", "canonical": "#f5f2ea", "tonalRamp": ["#292720", "#47443c", "#68645b", "#8c887e", "#b2aea4", "#d3cfc6", "#e9e5dd", "#f5f2ea"] },
+      "text-on-red": { "role": "neutral", "displayName": "Signal White", "canonical": "#ffffff", "tonalRamp": ["#262626", "#444444", "#666666", "#898989", "#adadad", "#d0d0d0", "#e9e9e9", "#ffffff"] },
+      "focus-amber": { "role": "tertiary", "displayName": "Focus Amber", "canonical": "#ffd166", "tonalRamp": ["oklch(15% 0.05 80)", "oklch(25% 0.08 80)", "oklch(35% 0.11 80)", "oklch(48% 0.14 80)", "oklch(61% 0.16 80)", "oklch(72% 0.15 80)", "oklch(84% 0.10 80)", "oklch(95% 0.04 80)"] },
+      "error-coral": { "role": "tertiary", "displayName": "Error Coral", "canonical": "#ff9d97", "tonalRamp": ["oklch(15% 0.05 25)", "oklch(25% 0.08 25)", "oklch(35% 0.11 25)", "oklch(48% 0.14 25)", "oklch(61% 0.15 25)", "oklch(72% 0.14 25)", "oklch(84% 0.09 25)", "oklch(95% 0.03 25)"] },
+      "warning-panel": { "role": "tertiary", "displayName": "Warning Panel", "canonical": "#221d0d", "tonalRamp": ["#141106", "#221d0d", "#3a3219", "#574b28", "#78693b", "#9e8d5d", "#cabd91", "#f7f0d8"] },
+      "warning-line": { "role": "tertiary", "displayName": "Warning Line", "canonical": "#8b732b", "tonalRamp": ["#1b1607", "#332a0d", "#504214", "#6c591d", "#8b732b", "#ad944a", "#d4bf7b", "#f8efcd"] },
+      "warning-text": { "role": "tertiary", "displayName": "Warning Text", "canonical": "#fff1b7", "tonalRamp": ["#2b260f", "#4c431d", "#6f622f", "#948442", "#baa85f", "#dfcf88", "#f2e4a3", "#fff1b7"] }
+    },
+    "typographyMeta": {
+      "display-hero": { "displayName": "Hero Display", "purpose": "Short, tightly stacked first-viewport promise." },
+      "display-section": { "displayName": "Section Display", "purpose": "Short section declarations and CTA headlines." },
+      "title-control": { "displayName": "Control Title", "purpose": "Booking steps, cards, prices, and numbered route stages." },
+      "label-action": { "displayName": "Action Label", "purpose": "Navigation, buttons, and compact interactive labels." },
+      "body": { "displayName": "Body", "purpose": "Readable explanations and operational guidance." },
+      "body-lede": { "displayName": "Lede", "purpose": "Muted section introductions and booking invitations." },
+      "label-data": { "displayName": "Data Label", "purpose": "Compact proof labels above prices and values." }
+    },
+    "shadows": [
+      { "name": "sticky-broadcast-bar", "value": "0 12px 34px rgba(0,0,0,.3)", "purpose": "Separates the translucent sticky header from moving content." },
+      { "name": "mobile-menu-lift", "value": "0 16px 32px rgba(0,0,0,.45)", "purpose": "Lifts the expanded mobile navigation over the page." },
+      { "name": "hero-type-legibility", "value": "0 10px 32px rgba(0,0,0,.55)", "purpose": "Protects oversized hero type over venue photography." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "Shipped easing for button lift and media scale transitions." },
+      { "name": "control-state", "value": "300ms", "purpose": "Button background, color, and transform transitions." },
+      { "name": "media-reveal", "value": "800ms", "purpose": "Subtle 1.035 experience-card image scale on hover." },
+      { "name": "signal-desktop", "value": "28s linear infinite", "purpose": "Large-screen Race / Play / Refuel signal crawl." },
+      { "name": "signal-phone", "value": "20s linear infinite", "purpose": "Phone signal crawl with the same reading order." },
+      { "name": "reduced-motion", "value": ".01ms; 1 iteration", "purpose": "Effectively removes animation and transitions when reduced motion is requested." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "560px" },
+      { "name": "navigation-and-major-grid", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Booking Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The clipped Action Racing Red control used for the next decisive booking action; white text measures 5.16:1.",
+      "html": "<button class=\"ds-button-primary\">BOOK A SESSION <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h13M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-button-primary{display:inline-flex;min-height:3.25rem;align-items:center;justify-content:center;gap:.9rem;padding:.75rem 1.7rem;border:1px solid var(--red-action,#d12a25);background:var(--red-action,#d12a25);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-style:italic;font-weight:700;letter-spacing:.04em;text-transform:uppercase;clip-path:polygon(7% 0,100% 0,93% 100%,0 100%);transition:background .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1);cursor:pointer}.ds-button-primary svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:square;stroke-linejoin:miter}.ds-button-primary:hover{background:#b92320;transform:translateY(-2px)}.ds-button-primary:focus-visible{outline:3px solid var(--focus,#ffd166);outline-offset:4px}.ds-button-primary:disabled{cursor:not-allowed;filter:grayscale(1);opacity:.5;transform:none}"
+    },
+    {
+      "name": "Secondary Outline Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A square Warm White outline for supportive actions.",
+      "html": "<button class=\"ds-button-secondary\">SEE PRICING</button>",
+      "css": ".ds-button-secondary{display:inline-flex;min-height:3.25rem;align-items:center;justify-content:center;padding:.75rem 1.25rem;border:1px solid var(--paper,#f5f2ea);background:transparent;color:var(--paper,#f5f2ea);font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-style:italic;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transition:background .3s cubic-bezier(.16,1,.3,1),color .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1);cursor:pointer}.ds-button-secondary:hover{background:var(--paper,#f5f2ea);color:var(--ink,#080808);transform:translateY(-2px)}.ds-button-secondary:focus-visible{outline:3px solid var(--focus,#ffd166);outline-offset:4px}"
+    },
+    {
+      "name": "Broadcast Navigation",
+      "kind": "nav",
+      "description": "Sticky translucent service navigation; the preview reserves the official logo footprint rather than duplicating its protected path data.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary navigation\"><span class=\"ds-brand-slot\" aria-label=\"Official Xerom SVG asset\">OFFICIAL SVG</span><a href=\"#\">SIM RACING</a><a href=\"#\">PS5</a><a href=\"#\">CAFE</a><a class=\"ds-nav-action\" href=\"#\">BOOK A SESSION <svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h13M13 6l6 6-6 6\"/></svg></a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:2rem;padding:.85rem 1.25rem;border:1px solid color-mix(in srgb,var(--paper,#f5f2ea) 18%,transparent);background:color-mix(in srgb,var(--ink,#080808) 92%,transparent);box-shadow:0 12px 34px rgba(0,0,0,.3);backdrop-filter:blur(16px);color:var(--paper,#f5f2ea)}.ds-brand-slot{margin-right:auto;width:8.5rem;padding:.4rem;border:1px dashed var(--line,#383838);color:var(--muted,#bcb8b0);font:700 .65rem 'Barlow Condensed',sans-serif;text-align:center}.ds-nav a{color:var(--muted,#bcb8b0);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.08em;text-decoration:none}.ds-nav a:hover{color:var(--paper,#f5f2ea)}.ds-nav a:focus-visible{outline:3px solid var(--focus,#ffd166);outline-offset:4px}.ds-nav .ds-nav-action{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1rem;background:var(--red-action,#d12a25);color:#fff;clip-path:polygon(7% 0,100% 0,93% 100%,0 100%)}.ds-nav svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:square;stroke-linejoin:miter}"
+    },
+    {
+      "name": "Experience Card",
+      "kind": "card",
+      "description": "A flat proof card pairing cover-cropped venue media with compressed title and price.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card-media\" aria-hidden=\"true\"></div><div class=\"ds-card-body\"><div><h3>REGULAR RIG</h3><strong>RM20/HOUR</strong></div><a href=\"#\" aria-label=\"Explore Regular Rig\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h13M13 6l6 6-6 6\"/></svg></a><p>Approachable racing for casual laps and friendly competition.</p></div></article>",
+      "css": ".ds-card{overflow:hidden;border:1px solid var(--line,#383838);background:var(--panel,#111111);color:var(--paper,#f5f2ea)}.ds-card-media{aspect-ratio:16/9;background:linear-gradient(135deg,#282828,#0b0b0b);transition:transform .8s cubic-bezier(.16,1,.3,1)}.ds-card:hover .ds-card-media{transform:scale(1.035)}.ds-card-body{display:grid;grid-template-columns:1fr auto;gap:.5rem 1rem;padding:1rem}.ds-card h3{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-style:italic;text-transform:uppercase}.ds-card strong{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-variant-numeric:tabular-nums}.ds-card p{grid-column:1/-1;margin:0;color:var(--muted,#bcb8b0);font-family:Barlow,sans-serif}.ds-card a{display:grid;width:2.8rem;height:2.8rem;place-items:center;border:1px solid var(--paper,#f5f2ea);border-radius:50%;color:inherit;text-decoration:none}.ds-card a svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:square;stroke-linejoin:miter}.ds-card a:focus-visible{outline:3px solid var(--focus,#ffd166);outline-offset:4px}"
+    },
+    {
+      "name": "Booking Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A square inset field with a compressed uppercase label and amber keyboard focus.",
+      "html": "<label class=\"ds-field\"><span>MOBILE / WHATSAPP</span><input type=\"tel\" placeholder=\"012-345 6789\"></label>",
+      "css": ".ds-field{display:grid;gap:.45rem;color:var(--paper,#f5f2ea)}.ds-field span{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase}.ds-field input{width:100%;min-height:3.25rem;padding:.8rem 1rem;border:1px solid var(--line,#383838);border-radius:0;background:var(--ink,#080808);color:var(--paper,#f5f2ea);font-family:Barlow,sans-serif;caret-color:var(--red,#f02f2a)}.ds-field input:focus-visible{outline:3px solid var(--focus,#ffd166);outline-offset:4px}"
+    },
+    {
+      "name": "Duration Choice",
+      "kind": "chip",
+      "description": "A square booking option that fills Action Racing Red when selected.",
+      "html": "<label class=\"ds-choice\"><input type=\"radio\" name=\"duration\" checked><span>1 HOUR</span></label>",
+      "css": ".ds-choice{display:inline-block;cursor:pointer}.ds-choice input{position:absolute;opacity:0;pointer-events:none}.ds-choice span{display:grid;min-width:8rem;min-height:3.25rem;place-items:center;border:1px solid var(--line,#383838);background:var(--ink,#080808);color:var(--paper,#f5f2ea);font-family:'Barlow Condensed',sans-serif;font-weight:700}.ds-choice input:checked+span{border-color:var(--red-action,#d12a25);background:var(--red-action,#d12a25);color:#fff}.ds-choice input:focus-visible+span{outline:3px solid var(--focus,#ffd166);outline-offset:4px}"
+    },
+    {
+      "name": "Booking Progress",
+      "kind": "custom",
+      "refersTo": "booking-progress-current",
+      "description": "A three-cell broadcast strip with the current booking stage filled red.",
+      "html": "<div class=\"ds-progress\" aria-label=\"Booking progress\"><span aria-current=\"step\">1 <b>SETUP</b></span><span>2 <b>TIME</b></span><span>3 <b>DETAILS</b></span></div>",
+      "css": ".ds-progress{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line,#383838);background:var(--panel,#111111);color:var(--muted,#bcb8b0)}.ds-progress span{display:flex;gap:.65rem;align-items:center;padding:1rem;border-right:1px solid var(--line,#383838);font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;text-transform:uppercase}.ds-progress span:last-child{border-right:0}.ds-progress span[aria-current]{background:var(--red-action,#d12a25);color:#fff}"
+    },
+    {
+      "name": "Race Play Refuel Route",
+      "kind": "custom",
+      "description": "The signature three-stage itinerary connected by dashed Racing Red linework.",
+      "html": "<div class=\"ds-route\"><svg viewBox=\"0 0 260 24\" aria-hidden=\"true\"><path d=\"M8 12 C55 2 84 22 128 12 S205 2 252 12\"/></svg><div><b>01</b><span>RACE</span></div><div><b>02</b><span>PLAY</span></div><div><b>03</b><span>REFUEL</span></div></div>",
+      "css": ".ds-route{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;padding:1.25rem;border:1px solid var(--line,#383838);background:linear-gradient(140deg,#151515,var(--ink,#080808));color:var(--paper,#f5f2ea)}.ds-route svg{position:absolute;top:50%;left:8%;width:84%;height:2rem;transform:translateY(-50%);fill:none;stroke:var(--red,#f02f2a);stroke-width:2;stroke-dasharray:8 8;stroke-linecap:square}.ds-route div{position:relative;display:grid;justify-items:center;padding:.75rem;background:var(--panel,#111111);border:1px solid var(--line,#383838)}.ds-route b{color:var(--red,#f02f2a);font-family:'Barlow Condensed',sans-serif;font-size:2.7rem;font-style:italic;font-weight:900;line-height:.8}.ds-route span{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-style:italic;font-weight:900}"
+    },
+    {
+      "name": "Hero Price Proof Rail",
+      "kind": "custom",
+      "description": "The desktop-only semantic four-cell proof rail for the three bookable services and Cafe.",
+      "html": "<div class=\"ds-price-proof\" aria-label=\"Current experience prices\"><span><b>REGULAR RIG</b><strong>RM20/HOUR</strong></span><span><b>PRO RIG</b><strong>RM30/HOUR</strong></span><span><b>PS5 LOUNGE</b><strong>RM18/HOUR</strong></span><span><b>CAFE</b><strong>STAY &amp; REFUEL</strong></span></div>",
+      "css": ".ds-price-proof{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid color-mix(in srgb,var(--paper,#f5f2ea) 28%,transparent);background:color-mix(in srgb,var(--ink,#080808) 92%,transparent);color:var(--paper,#f5f2ea)}.ds-price-proof span{display:grid;gap:.1rem;padding:.7rem .85rem;border-right:1px solid var(--line,#383838)}.ds-price-proof span:last-child{border-right:0}.ds-price-proof b{color:var(--muted,#bcb8b0);font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}.ds-price-proof strong{font-family:'Racing Sans One','Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:400;text-transform:uppercase}@media(max-width:900px){.ds-price-proof{display:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Race Control Broadcast",
+    "overview": "Xerom should feel like the shared race night has already started: a near-black broadcast desk cut by racing-red signals, warm-white compressed type, venue imagery, and the track-like route through Race, Play, and Refuel. It is social before it is technical. People and the promise of time together establish the first impression; hardware, live prices, and booking controls supply proof.\n\nThe system is direct, kinetic, and operational without becoming a generic esports dashboard. Rectangular panels, fine structural strokes, clipped action controls, and sparse circular markers make the surface feel assembled for a live event. The official red-and-white Xerom wordmark remains an authored brand asset and is never reconstructed from type.\n\nProduction imagery must be owner-approved Xerom photography. The current people, venue, equipment, PS5, and cafe rasters are explicitly named AI placeholders and may demonstrate composition only; they are not evidence of the real venue or inventory.",
+    "keyCharacteristics": [
+      "Crew-first photography and action-led language.",
+      "Near-black tonal panels separated by thin technical rules.",
+      "Bright brand red reserved for display signals and price emphasis; the deeper action red carries white text and selected states.",
+      "Compressed uppercase typography with oversized, tightly stacked display words.",
+      "Route connectors, numbered stages, clipped controls, and square-ended line icons.",
+      "Booking presented as an extension of race control, not a separate generic form."
+    ],
+    "rules": [
+      { "name": "The Two-Red Rule", "body": "Bright Racing Red announces brand and display information. Action Racing Red carries white text, selection, progress, success, and filled controls. Never swap the bright accent into a normal-sized white-text control.", "section": "colors" },
+      { "name": "The Amber Means Keyboard Rule", "body": "Focus Amber is reserved for visible focus and selection feedback so keyboard state is never confused with brand emphasis.", "section": "colors" },
+      { "name": "The Three-Voice Rule", "body": "Racing Sans One announces, Barlow Condensed directs, and Barlow explains. Do not interchange those jobs merely to add variety.", "section": "typography" },
+      { "name": "The Short-Lap Rule", "body": "Oversized display type is for brief phrases that can be read in one glance. Longer copy returns to Barlow rather than shrinking the display face into paragraph work.", "section": "typography" },
+      { "name": "The Story Before Specification Rule", "body": "Preserve the sequence: people and shared-night promise, Race / Play / Refuel orientation, service and price proof, hardware/value detail, then booking.", "section": "layout" },
+      { "name": "The Flat Control Room Rule", "body": "Resting cards and fields use tone plus border, not drop shadows. Elevation is functional and rare.", "section": "elevation" },
+      { "name": "The Hard Panel, Fast Edge Rule", "body": "Default to square panels and fields. Use the clipped plate for decisive actions and a true circle only for a marker or compact icon control.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do lead shared marketing surfaces with people enjoying the venue before equipment detail and booking mechanics.",
+      "Do preserve the Race / Play / Refuel route as an itinerary with the 01 / 02 / 03 order.",
+      "Do use the owner-supplied deterministic trace at `src/assets/brand/xerom-logo.svg` unchanged in color, path geometry, and aspect ratio.",
+      "Do use Action Racing Red behind normal-sized white text and reserve Bright Racing Red for unfilled display accents.",
+      "Do keep prices, services, hours, and other business facts sourced from centralized configuration and confirmed project documentation.",
+      "Do preserve visible Focus Amber focus, keyboard menu behavior, 3.25rem control heights, semantic live/error states, and reduced-motion handling.",
+      "Do label all temporary photography as placeholder material in source and alt text until owner-approved Xerom assets replace it."
+    ],
+    "donts": [
+      "Don't reintroduce a leaderboard, ranking metaphor, or generic neon gaming dashboard.",
+      "Don't invent venue, equipment, cafe, promotion, capacity, or customer-proof claims to fill a composition.",
+      "Don't redraw, typeset, recolor, distort, or decorate the official Xerom wordmark without explicit owner approval.",
+      "Don't treat generated people, equipment, cafe, or venue imagery as production truth or imply that it depicts the real venue.",
+      "Don't round every container, add ambient card shadows, or use either interface red as undifferentiated decoration.",
+      "Don't hide active, selected, error, or focus state behind motion or color differences that disappear in reduced-motion or keyboard use."
+    ]
+  }
+}

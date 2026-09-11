@@ -35,7 +35,7 @@ If documents conflict, confirmed owner input in `PRODUCT.md` wins over public pr
 
 - The project uses Impeccable in comp-first mode. Read `PRODUCT.md` before design work.
 - Do not create or finalize `DESIGN.md` before the owner selects a visual concept and the implemented surface is visually verified. `DESIGN.md` must describe the shipped world, not an aspiration.
-- Preserve the supplied Xerom wordmark as a brand commitment; any recreation from the screenshot is temporary until an official transparent/vector logo is supplied.
+- Preserve the official Xerom wordmark at `src/assets/brand/xerom-logo.svg`. Its red and white paths were traced from the owner-supplied raster; do not redraw, typeset, recolor, or distort it without explicit owner approval.
 - Visual concept selection is an explicit approval gate. Do not silently choose a generic neon gaming template.
 - Meet WCAG 2.2 AA where applicable, support reduced motion, and keep booking usable with keyboard and screen readers.
 - Visual QA must cover 375, 390, 430, 768, 1024, and 1440+ CSS-pixel widths.
@@ -53,4 +53,3 @@ Keep `QA_REPORT.md` evidence-based. Record commands, dates, environments, result
 - Add an entry to `docs/agent/DECISIONS.md` for material architecture, policy, integration, or design decisions.
 - Leave a concise update in `docs/agent/HANDOFF.md` when stopping with incomplete work.
 - Use explicit placeholders such as `TODO(owner): ...`; never disguise a placeholder as final business copy.
-

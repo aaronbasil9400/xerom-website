@@ -28,8 +28,8 @@
   "devDependencies": {
     "@astrojs/check": "latest",
     "@cloudflare/workers-types": "latest",
-    "@types/node": "latest",
     "@playwright/test": "latest",
+    "@types/node": "latest",
     "typescript": "latest",
     "vitest": "latest",
     "wrangler": "latest"

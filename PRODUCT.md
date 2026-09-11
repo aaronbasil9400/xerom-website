@@ -59,7 +59,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - Use the name “Xerom SimRacing & Cafe.”
 - Preserve the recognizable supplied XEROM wordmark. Black, red, and white must remain the dominant identity colors.
 - Instagram `@xerom.my` is a primary public identity and photography reference.
-- The current logo screenshot is reference material, not a production-quality master asset.
+- The owner supplied the official XEROM logo raster on 2026-09-11. A deterministic red/white vector trace is stored at `src/assets/brand/xerom-logo.svg`; the original supplied PNG is retained beside it as provenance.
 - Tone should welcome casual local groups without alienating families or serious sim racers.
 - The marketing sequence should lead with the social group experience, then reveal racing hardware, pricing/value, and booking.
 - Avoid an overly corporate or sparse/minimalist presentation. The public Instagram’s energetic posters, close hardware crops, social footage, and illuminated venue geometry are binding reference cues, not production assets to copy blindly.
