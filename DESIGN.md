@@ -191,7 +191,7 @@ The implementation has two responsive thresholds: 900px reorganizes major grids 
 
 Booking layouts inherit the same geometry. The shell is a bordered broadcast panel; progress is a three-cell strip; quantity rows, duration choices, slots, review blocks, and fields form an inset control grid. Two-column field and visit layouts collapse to one column on phones. Touch actions maintain a minimum implemented height of 3.25rem.
 
-**The Story Before Specification Rule.** Preserve the sequence: people and shared-night promise, Race / Play / Refuel orientation, service and price proof, hardware/value detail, then booking.
+**The Story Before Specification Rule.** Preserve the sequence: people and shared-night promise with the Race / Play / Refuel route, practical opening hours in the hero, service and price proof, hardware/value detail, then booking.
 
 ## Elevation & Depth
 
@@ -253,6 +253,10 @@ Three numbered media stages use italic Barlow Condensed numerals, a dashed Racin
 ### Price Proof and Signal Band
 
 Price proof is a semantic, four-cell rail inside the desktop hero: equal columns pair compact Barlow Condensed labels with Racing Sans One values for Regular Rig, Pro Rig, PS5 Lounge, and Cafe. It sits over a 92% Canvas Black mixture and is hidden at 900px and below. The signal band is the rare full Action Racing Red surface: a continuous italic uppercase Race Together / Play Together / Refuel Together broadcast crawl. It runs for 28 seconds on larger screens and 20 seconds on phones, then collapses to effectively static when reduced motion is requested.
+
+### Opening Hours
+
+A compact one-line hours strip sits at the foot of the hero copy, above the desktop price rail, so opening hours are fully visible without scrolling at every breakpoint including phones. A red `Opening hours` label precedes two condensed day/time pairs (Monday–Thursday 2PM–1AM, Friday–Sunday 12PM–1AM) separated from the actions by a hairline rule. Hours derive from the same centralized `bookingRules.weeklyHours` configuration that drives availability, so published hours and bookable slots cannot drift. The Visit page renders the same configuration as a compact row list.
 
 ### Booking Controls
 

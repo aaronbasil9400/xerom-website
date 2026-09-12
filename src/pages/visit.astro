@@ -1,12 +1,13 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { business, contactLinks } from "@/config/business";
+import { openingHours } from "@/config/hours";
 ---
 <BaseLayout title="Visit Xerom | Bandar Bukit Tinggi, Klang" description="Find Xerom SimRacing & Cafe in Bandar Bukit Tinggi, Klang, or contact the team by WhatsApp and phone.">
   <header class="section-shell page-hero"><h1 class="display">Meet at <span class="red">Xerom</span></h1><p class="lede">Sim racing, PS5 lounge gaming and cafe time in Bandar Bukit Tinggi, Klang.</p></header>
   <section class="section-shell visit-grid">
     <div><h2>Find us</h2><address>{business.address.street}<br />{business.address.locality}<br />{business.address.postalCode} {business.address.city}, {business.address.region}<br />{business.address.country}</address><a class="button button-primary" href={contactLinks.directions}>Get directions</a></div>
     <div><h2>Contact</h2><p><a href={contactLinks.phone}>{business.phoneDisplay}</a><br /><a href={contactLinks.whatsapp}>WhatsApp Xerom</a><br /><a href={contactLinks.instagram}>@{business.instagramHandle}</a></p></div>
-    <div><h2>Hours</h2><p>Public sources currently conflict on weekday opening time. Please confirm hours on WhatsApp before travelling.</p><div class="notice">Final operating hours will be published after owner confirmation.</div></div>
+    <div><h2>Hours</h2><dl class="hours-list">{openingHours.map((group) => (<div><dt>{group.days}</dt><dd>{group.hours}</dd></div>))}</dl></div>
   </section>
 </BaseLayout>

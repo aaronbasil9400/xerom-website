@@ -49,3 +49,10 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Keep Cafe secondary to racing but unmistakably present through the Refuel step and a dedicated proof module.
 - Treat the 390px mobile composition as a first-class reference, not a stacked desktop fallback.
 - Generated people, venue, food, and equipment imagery is placeholder material only. Generated slogans and menu language are not approved business facts.
+
+## 2026-09-12 — Confirmed opening hours and homepage hours module
+
+- Owner confirmed Monday–Thursday 2:00 PM–1:00 AM and Friday–Sunday 12:00 PM–1:00 AM, resolving the pricing-image/Instagram conflict in favour of the Instagram weekday schedule.
+- `bookingRules.weeklyHours` remains the single source of truth for availability; `src/config/hours.ts` derives grouped display hours from it so published hours and bookable slots cannot drift.
+- Opening hours surface once as a compact strip inside the hero, visible without scrolling at every breakpoint, and again as a row list on the Visit page. An earlier standalone homepage hours panel was removed as redundant.
+- Public-holiday and shortened-hour handling remain open in `CONTENT_TODO.md`.

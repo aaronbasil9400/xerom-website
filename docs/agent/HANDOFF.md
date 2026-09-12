@@ -16,4 +16,4 @@ Project Playwright Chromium is installed and the six-width local suite passes. T
 
 ## Known blockers
 
-See `CONTENT_TODO.md`. Most items do not block concept work, but verified address/contact/hours, promotion behavior, official logo, production media, and Cloudflare/Google credentials block launch.
+See `CONTENT_TODO.md`. Most items do not block concept work, but verified address/contact, public-holiday hours, promotion behavior, production media, and Cloudflare/Google credentials block launch.

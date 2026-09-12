@@ -65,6 +65,10 @@ A September 7, 2026 promotional post appears to advertise Monday–Thursday 2:00
 
 The supplied Instagram and Google Maps URLs remain the intended primary business sources. The Google Maps page still requires a fuller interactive inspection. Reviews, exact listing details, and asset usage rights remain unverified.
 
+### Owner-confirmed opening hours (2026-09-12)
+
+The owner confirmed opening hours of Monday–Thursday 2:00 PM–1:00 AM and Friday–Sunday 12:00 PM–1:00 AM. This resolves the conflict between the supplied pricing image’s “open everyday / 12PM to 1AM” message and the September 7, 2026 Instagram post in favour of the Instagram weekday schedule. Hours cross midnight, so the close time belongs to the following day. Public-holiday and shortened-hour handling remain unconfirmed and are tracked in `CONTENT_TODO.md`.
+
 Do not substitute similarly named Klang businesses returned by broad search.
 
 ## Technical findings
@@ -90,5 +94,5 @@ Do not substitute similarly named Klang businesses returned by broad search.
 ## Research still required
 
 - Reinspect Instagram through project Playwright tests after its browser runtime is configured, and complete the live Google Maps review.
-- Confirm the exact formatted address, map place ID/directions link, hours across midnight, promotion rules, equipment wording, controller limits, cafe offer, and current imagery with the owner.
+- Confirm the exact formatted address, map place ID/directions link, public-holiday/shortened-hour handling, promotion rules, equipment wording, controller limits, cafe offer, and current imagery with the owner.
 - Obtain original or explicitly licensed production assets.

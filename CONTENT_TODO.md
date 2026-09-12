@@ -1,17 +1,21 @@
 # Content and Owner TODO
 
-Only unresolved or replaceable items belong here. Remove an item only after its replacement is verified and its source is recorded in `RESEARCH.md` or configuration.
+Only unresolved or replaceable items belong here. Remove an item only after its replacement is verified and its source is recorded in `RESEARCH.md` or configuration. Engineering and security follow-ups from the 2026-09-12 test are tracked in `docs/agent/ENGINEERING_TODO.md`.
 
 ## Blocking production launch
 
 - [ ] Confirm the full official address and exact Google Maps place/directions URL.
-- [ ] Resolve the hours conflict: the pricing image says 12:00 PM–1:00 AM every day, while a September 7 Instagram post advertises Monday–Thursday 2:00 PM–1:00 AM and Friday–Sunday 12:00 PM–1:00 AM. Also define public-holiday and shortened-hour handling.
+- [x] Owner-confirmed opening hours (2026-09-12): Monday–Thursday 2:00 PM–1:00 AM, Friday–Sunday 12:00 PM–1:00 AM. Resolves the earlier pricing-image/Instagram conflict in favour of the Instagram weekday schedule.
+- [x] Publish the confirmed hours from centralized config (`src/config/booking.ts` via `src/config/hours.ts`) on the homepage and the Visit page.
+- [ ] Define public-holiday and shortened-hour handling, and how closures are announced.
 - [ ] Confirm whether the advertised 5% Instagram follow-and-tag discount is currently active, how staff verify it, whether it applies during booking or at the venue, which services/add-ons it covers, and whether it can combine with sales.
-- [ ] Confirm the maximum controllers supported by each PS5 lounge.
+- [ ] Confirm the displayed previous/compare-at prices (Regular RM22, Pro RM35, PS5 RM20) are currently valid and may be shown as struck-through anchors on `/pricing`; otherwise remove them.
+- [ ] Confirm the maximum controllers supported by each PS5 lounge, and whether the advertised RM3 additional-controller add-on should be bookable online (the booking UI does not currently collect controllers).
 - [ ] Confirm whether `012-940 1440` is both the public call and WhatsApp number, and provide the preferred international display/link format.
 - [x] Official logo supplied and converted to a transparent two-color SVG; original retained at `src/assets/brand/xerom-logo-source.png`.
 - [x] Supply owner-approved Regular Rig, Pro Rig, PS5 Lounge, and cafe photography.
 - [ ] Supply the final owner-approved social-group hero/venue photograph with usage rights.
+- [ ] Supply an owner-approved social share/OG image to replace `public/og-placeholder.jpg`, which is currently used as `og:image` on every page.
 - [ ] Confirm the cancellation/no-show/late-arrival wording customers should see.
 - [ ] Confirm the precise three-day horizon rule: rolling 72 hours or through the third local calendar day.
 - [ ] Confirm the current domain and preferred canonical hostname.

@@ -88,6 +88,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-price-proof b { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; }
 .hero-price-proof strong { font-family: "Racing Sans One", "Barlow Condensed", sans-serif; font-size: 1.15rem; font-weight: 400; text-transform: uppercase; }
 .hero-tag { max-width: 22rem; margin: 1.5rem 0 0 auto; font-family: "Barlow Condensed", sans-serif; font-size: 1.15rem; font-style: italic; font-weight: 700; letter-spacing: .07em; text-align: right; text-transform: uppercase; }
+.hero-hours { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem; margin-top: 1.75rem; padding-top: 1rem; border-top: 1px solid color-mix(in srgb, var(--paper) 24%, transparent); font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; }
+.hero-hours-label { color: var(--red); font-size: .78rem; font-weight: 700; letter-spacing: .16em; }
+.hero-hours-slot { color: var(--paper); font-size: .98rem; font-weight: 700; letter-spacing: .04em; }
+.hero-hours-slot b { color: var(--muted); font-weight: 700; }
 
 .experience-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 .experience-section { padding-top: clamp(2rem, 3vw, 3rem); }
@@ -120,6 +124,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cta-panel { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; padding: clamp(2rem, 6vw, 5rem); border: 1px solid var(--line); background: var(--panel); overflow: hidden; }
 .cta-panel::after { content: ""; position: absolute; right: -8%; bottom: -75%; width: 34rem; height: 34rem; border: 1px solid var(--red); border-radius: 50%; opacity: .5; }
 .cta-panel > * { position: relative; z-index: 1; }
+.cta-section { padding-top: 0; }
 
 .site-footer { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; padding-block: 3rem; border-top: 1px solid var(--line); }
 .site-footer p { margin: 0; color: var(--muted); }
@@ -187,6 +192,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .visit-grid h2 { font-size: 2.5rem; }
 .visit-grid address { margin-block: 1rem 2rem; color: var(--muted); font-style: normal; }
 .visit-grid p { color: var(--muted); }
+.hours-list { display: grid; margin: 1rem 0 0; }
+.hours-list > div { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: baseline; padding-block: .8rem; border-bottom: 1px solid var(--line); }
+.hours-list > div:first-child { border-top: 1px solid var(--line); }
+.hours-list dt { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .95rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.hours-list dd { margin: 0; font-family: "Racing Sans One", "Barlow Condensed", sans-serif; font-size: 1.3rem; font-weight: 400; line-height: 1; text-transform: uppercase; }
 
 @media (max-width: 900px) {
   .site-header { grid-template-columns: 1fr auto; }
@@ -226,6 +236,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .hero-actions .button { width: 100%; }
   .hero-display { font-size: clamp(4rem, 19vw, 5.4rem); line-height: .68; }
   .hero .button-primary { min-height: 3.8rem; font-size: 1.2rem; }
+  .hero-hours { gap: .3rem .7rem; margin-top: 1.25rem; }
+  .hero-hours-slot { font-size: .9rem; }
   .race-path { grid-template-columns: 1fr; gap: .65rem; }
   .route-line { top: 2rem; bottom: 2rem; left: 3.2rem; width: 2rem; height: calc(100% - 4rem); transform: none; }
   .path-step { grid-template-columns: 5rem 1fr; min-height: 5.4rem; }

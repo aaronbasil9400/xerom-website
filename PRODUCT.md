@@ -31,7 +31,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - Business: Xerom SimRacing & Cafe.
 - Address supplied in the project brief: 30-1, 3/KS06, Jalan Batu Nilam, Bandar Bukit Tinggi 1, 41200 Klang, Selangor, Malaysia. Owner verification remains open.
 - Phone and WhatsApp: `012-940 1440`, as shown in the supplied current pricing image.
-- Advertised opening hours: every day, 12:00 PM–1:00 AM. Owner verification remains open because the hours cross midnight.
+- Opening hours (owner-confirmed 2026-09-12): Monday–Thursday 2:00 PM–1:00 AM, Friday–Sunday 12:00 PM–1:00 AM. Hours cross midnight, so the close time belongs to the following day. Public-holiday and shortened-hour handling remain unconfirmed.
 - Resources: 3 Regular Sim rigs, 1 Pro Sim rig, and 2 PS5 lounges.
 - Customers choose Regular Sim, Pro Sim, or PS5. A mixed Regular + Pro group booking is permitted.
 - Sessions are one hour. A booking may contain one or two consecutive hours; longer visits require another booking.

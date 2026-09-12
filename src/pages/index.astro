@@ -4,6 +4,7 @@ import ExperienceCard from "@/components/ExperienceCard.astro";
 import { services } from "@/config/services";
 import { formatMoney, pricing } from "@/config/pricing";
 import { media } from "@/config/media";
+import { openingHours } from "@/config/hours";
 import { Image, Picture } from "astro:assets";
 import ArrowIcon from "@/components/ArrowIcon.astro";
 ---
@@ -32,6 +33,12 @@ import ArrowIcon from "@/components/ArrowIcon.astro";
         <div class="hero-actions">
           <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
           <a class="button button-secondary" href="/pricing">See pricing</a>
+        </div>
+        <div class="hero-hours" aria-label="Opening hours">
+          <span class="hero-hours-label">Opening hours</span>
+          {openingHours.map((group) => (
+            <span class="hero-hours-slot"><b>{group.days}</b> {group.hours}</span>
+          ))}
         </div>
       </div>
       <div class="hero-price-proof" aria-label="Current experience prices">
@@ -69,7 +76,7 @@ import ArrowIcon from "@/components/ArrowIcon.astro";
     </div>
   </section>
 
-  <section class="section-shell section-space">
+  <section class="section-shell section-space cta-section">
     <div class="cta-panel">
       <div><h2 class="section-title">Your seat is <span class="red">waiting</span></h2><p class="lede">Choose the setup, check the next available slots, and reserve for your crew.</p></div>
       <a class="button button-primary" href="/book">Check availability <ArrowIcon /></a>
