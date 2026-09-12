@@ -12,7 +12,7 @@ interface Props {
 }
 const { title, copy, image, alt, price, href } = Astro.props;
 ---
-<article class="experience-card">
+<article class:list={["experience-card", { "experience-card-regular": title === "Regular Rig" }]}>
   <Image src={image} alt={alt} widths={[480, 800, 1200]} sizes="(max-width: 560px) 38vw, (max-width: 900px) 50vw, 25vw" format="webp" loading="lazy" />
   <div class="experience-body">
     <div>

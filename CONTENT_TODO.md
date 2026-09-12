@@ -10,7 +10,8 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 - [ ] Confirm the maximum controllers supported by each PS5 lounge.
 - [ ] Confirm whether `012-940 1440` is both the public call and WhatsApp number, and provide the preferred international display/link format.
 - [x] Official logo supplied and converted to a transparent two-color SVG; original retained at `src/assets/brand/xerom-logo-source.png`.
-- [ ] Supply or approve production-quality venue, rig, PS5, cafe, and group photography with usage rights.
+- [x] Supply owner-approved Regular Rig, Pro Rig, PS5 Lounge, and cafe photography.
+- [ ] Supply the final owner-approved social-group hero/venue photograph with usage rights.
 - [ ] Confirm the cancellation/no-show/late-arrival wording customers should see.
 - [ ] Confirm the precise three-day horizon rule: rolling 72 hours or through the third local calendar day.
 - [ ] Confirm the current domain and preferred canonical hostname.

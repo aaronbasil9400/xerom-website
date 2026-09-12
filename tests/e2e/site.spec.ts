@@ -43,3 +43,10 @@ test("core routes render without console errors or broken images", async ({ page
   }
   expect(consoleErrors).toEqual([]);
 });
+
+test("favicon and web manifest are available", async ({ request }) => {
+  for (const path of ["/favicon.svg", "/favicon-32x32.png", "/apple-touch-icon.png", "/site.webmanifest"]) {
+    const response = await request.get(path);
+    expect(response.ok(), `${path} should load`).toBe(true);
+  }
+});

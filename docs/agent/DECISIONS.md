@@ -31,6 +31,13 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - The SVG is a deterministic red/white path trace of the owner-supplied official raster, not a generative recreation.
 - The original PNG remains at `src/assets/brand/xerom-logo-source.png`; QA render is stored under `.impeccable/review/`.
 
+## 2026-09-12 — Production service imagery and site icon
+
+- Replaced AI placeholders for Regular Rig, Pro Rig, PS5 Lounge, and Cafe with owner-supplied photography.
+- Each source uses a focal 4:3 crop and proportional 480×360, 800×600, and 1200×900 derivatives; no image is stretched.
+- The social-group hero remains the only AI placeholder.
+- The favicon and application icons reuse the official wordmark’s exact X path geometry without redrawing it.
+
 ## 2026-09-09 — Approved homepage direction
 
 - Direction: Race Control Broadcast.

@@ -112,11 +112,12 @@ Xerom should feel like the shared race night has already started: a near-black b
 
 The system is direct, kinetic, and operational without becoming a generic esports dashboard. Rectangular panels, fine structural strokes, clipped action controls, and sparse circular markers make the surface feel assembled for a live event. The official red-and-white Xerom wordmark remains an authored brand asset and is never reconstructed from type.
 
-Production imagery must be owner-approved Xerom photography. The current people, venue, equipment, PS5, and cafe rasters are explicitly named AI placeholders and may demonstrate composition only; they are not evidence of the real venue or inventory.
+Production service imagery is owner-approved Xerom photography. The Regular Rig, Pro Rig, PS5 Lounge, and cafe rasters are real owner-supplied media with deterministic 4:3 derivatives recorded in `src/assets/images/media-manifest.json`. Only the social-group hero remains an explicitly named AI placeholder and may demonstrate composition only; it is not evidence of the real venue or customers.
 
 **Key Characteristics:**
 
 - Crew-first photography and action-led language.
+- Owner-supplied service photography with one explicit social-group hero replacement gate.
 - Near-black tonal panels separated by thin technical rules.
 - Bright brand red reserved for display signals and price emphasis; the deeper action red carries white text and selected states.
 - Compressed uppercase typography with oversized, tightly stacked display words.
@@ -210,7 +211,9 @@ The system is flat by default. Depth comes primarily from tonal black layers, on
 
 The core form language is square and engineered: panels, cards, fields, booking rows, and status blocks use hard 0px corners. Primary actions are clipped into a skewed racing plate using `polygon(7% 0, 100% 0, 93% 100%, 0 100%)`. Circles are reserved for route nodes, round links, and large background telemetry rings; small square diamonds mark feature bullets. Fine red outlines and repeating dash marks may extend beyond an image frame to imply equipment alignment or a traced course.
 
-Icons follow one SVG grammar: unfilled 24×24 geometry, current-color stroke, 1.8 stroke width, square line caps, and miter joins. The canonical arrow is a simple rightward shaft and angled head. Icons support a text action and never replace an accessible label by themselves.
+Functional interface icons follow one SVG grammar: unfilled 24×24 geometry, current-color stroke, 1.8 stroke width, square line caps, and miter joins. The canonical arrow is a simple rightward shaft and angled head. Icons support a text action and never replace an accessible label by themselves.
+
+The brand glyph is the deliberate exception to the stroked icon family. `public/favicon.svg` reuses the exact red and white X path geometry from the official wordmark, cropped to a 333×209 viewBox; it is neither redrawn nor simplified. Its transparent 32px favicon, 180px Apple touch icon, and 192px and 512px web-app derivatives belong to the same official mark family. Preserve the intrinsic Official Logo Red and white fills.
 
 **The Hard Panel, Fast Edge Rule.** Default to square panels and fields. Use the clipped plate for decisive actions and a true circle only for a marker or compact icon control.
 
@@ -229,7 +232,9 @@ Icons follow one SVG grammar: unfilled 24×24 geometry, current-color stroke, 1.
 - **Background:** Broadcast Panel over Canvas Black.
 - **Shadow Strategy:** Flat; hierarchy comes from the Structural Line border and media contrast.
 - **Internal Padding:** Primarily 1rem, expanding to 2rem–5rem in the large CTA panel.
-- **Media:** Full-bleed, cover-cropped imagery; experience media enlarges subtly to 1.035 scale over 800ms on hover.
+- **Media:** Regular Rig, Pro Rig, PS5 Lounge, and Cafe cards use owner-supplied production photographs. Each family has verified 480×360, 800×600, and 1200×900 JPEG derivatives and focal/crop guidance in `src/assets/images/media-manifest.json`; Astro imports the 1200px master and generates optimized delivery formats. The design may crop these 4:3 sources to square route tiles, 16:9 homepage proof cards, 4:3 hardware frames, or compact phone rows only while preserving the documented subject focal point. The Regular Rig is a reviewed exception with exact responsive behavior: its desktop/tablet 16:9 card uses `object-position: 43% 58%` so the Fanatec marking remains visible, while phone rows at 560px and below reset to `object-position: center`. Experience media enlarges subtly to 1.035 scale over 800ms on hover. The 16:9 social-group hero remains AI placeholder media and must keep placeholder filename and alt language until owner-approved photography replaces it.
+
+**The Provenance Gate Rule.** A service photograph may be treated as production media only when its owner-supplied status and derivatives are recorded in the media manifest. The current social-group hero does not pass that gate.
 
 ### Inputs / Fields
 
@@ -263,13 +268,13 @@ The three-step booking flow uses an Action Racing Red current-progress cell, bor
 - **Do** use Action Racing Red behind normal-sized white text and reserve Bright Racing Red for unfilled display accents.
 - **Do** keep prices, services, hours, and other business facts sourced from centralized configuration and confirmed project documentation.
 - **Do** preserve visible Focus Amber focus, keyboard menu behavior, 3.25rem control heights, semantic live/error states, and reduced-motion handling.
-- **Do** label all temporary photography as placeholder material in source and alt text until owner-approved Xerom assets replace it.
+- **Do** keep the social-group hero labelled as placeholder material in source and alt text until owner-approved Xerom photography replaces it.
 
 ### Don't:
 
 - **Don't** reintroduce a leaderboard, ranking metaphor, or generic neon gaming dashboard.
 - **Don't** invent venue, equipment, cafe, promotion, capacity, or customer-proof claims to fill a composition.
 - **Don't** redraw, typeset, recolor, distort, or decorate the official Xerom wordmark without explicit owner approval.
-- **Don't** treat generated people, equipment, cafe, or venue imagery as production truth or imply that it depicts the real venue.
+- **Don't** treat the generated social-group hero as production truth or imply that its people or venue depict real Xerom customers or premises.
 - **Don't** round every container, add ambient card shadows, or use either interface red as undifferentiated decoration.
 - **Don't** hide active, selected, error, or focus state behind motion or color differences that disappear in reduced-motion or keyboard use.
