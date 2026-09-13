@@ -30,7 +30,7 @@ For each resource and control calendar:
 
 1. Open Settings and sharing.
 2. Add the service-account email under “Share with specific people or groups.”
-3. Grant permission to make changes to events.
+3. Grant **Make changes and see event details**. The newer “Make changes (see private events as free/busy)” role cannot create or edit the private events used by this integration.
 4. Do not grant permission to manage sharing.
 
 The integration needs to read Busy periods, create bookings, and delete partially created events during rollback.
@@ -74,4 +74,3 @@ Use test calendars first. Confirm that:
 - Searching the booking ID finds every event in the group.
 
 Only switch `BOOKING_MODE` to `live` after these checks and Turnstile verification pass.
-

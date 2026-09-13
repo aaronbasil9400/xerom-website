@@ -145,7 +145,7 @@ The total is the sum of each line item multiplied by duration hours, plus config
 
 ## Authentication and secrets
 
-Use a dedicated Google service account for server-to-server authentication. Share only the Xerom resource/control calendars with that identity and grant the minimum access required. Store the service-account email/private key, Turnstile keys, and calendar IDs as encrypted Cloudflare configuration. Never commit a service-account JSON file.
+Use a dedicated Google service account for server-to-server authentication. Share only the Xerom resource/control calendars with that identity and grant **Make changes and see event details** (the minimum Google role that can create/delete the private opaque events used for bookings; do not grant manage-sharing access). Store the service-account email/private key, Turnstile keys, and calendar IDs as encrypted Cloudflare configuration. Never commit a service-account JSON file.
 
 Expected names will be finalized during implementation and documented in `.dev.vars.example` and `GOOGLE_CALENDAR_SETUP.md`.
 
@@ -174,4 +174,3 @@ MVP cancellation/rescheduling happens through WhatsApp. Staff search the private
 - Partial insert failure removes previously created events.
 - Rollback failure is logged and never returned as success.
 - Turnstile, Google auth, rate limit, malformed input, timeout, and network failure states.
-
