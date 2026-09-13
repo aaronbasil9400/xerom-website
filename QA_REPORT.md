@@ -39,6 +39,7 @@ The client-demo Worker is live on its temporary `workers.dev` hostname with Goog
 | Coordinator deployment | Pass | `xerom-booking-coordinator` deployed at its `workers.dev` endpoint; logs captured the prior 403 diagnosis and are now enabled |
 | Public Worker binding | Pass | Root deployment log shows `env.BOOKING_COORDINATOR (BookingCoordinator, defined in xerom-booking-coordinator)` |
 | Temporary-event cleanup | Pass | Calendar API audit query found zero remaining smoke/race/idempotency/diagnostic events |
+| Browser UI live flow | Pass | Public `/book` page rendered Turnstile “Success!”, loaded 11 live start times, and reached “Booking confirmed” after a real form submit; event was deleted afterward |
 
 ## Screenshot evidence
 
