@@ -3,6 +3,17 @@ import type { AvailabilitySlot, BusyByCalendar } from "./types";
 import type { ServiceId } from "@/config/service-core";
 
 const MALAYSIA_OFFSET = "+08:00";
+const localFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: bookingRules.timezone,
+  calendar: "gregory",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
 
 export function localIso(date: string, minutes: number): string {
   const nextDate = new Date(`${date}T00:00:00${MALAYSIA_OFFSET}`);
@@ -29,6 +40,28 @@ function minutesFromClock(value: string): number {
   return hours * 60 + minutes;
 }
 
+type MalaysiaLocalParts = { year: number; month: number; day: number; hour: number; minute: number; second: number };
+
+function malaysiaLocalParts(value: Date): MalaysiaLocalParts {
+  const parts = Object.fromEntries(localFormatter.formatToParts(value).map(({ type, value: part }) => [type, Number(part)]));
+  return {
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    hour: parts.hour,
+    minute: parts.minute,
+    second: parts.second,
+  };
+}
+
+function localCalendarMinutes(parts: MalaysiaLocalParts): number {
+  return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) / 60_000;
+}
+
+function localWeekdayFromParts(parts: MalaysiaLocalParts): keyof typeof bookingRules.weeklyHours {
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay() as keyof typeof bookingRules.weeklyHours;
+}
+
 export function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return Date.parse(aStart) < Date.parse(bEnd) && Date.parse(bStart) < Date.parse(aEnd);
 }
@@ -39,6 +72,42 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
   if (startMs < now.getTime() + bookingRules.minimumNoticeMinutes * 60_000) return "Bookings need at least one hour of notice.";
   if (startMs > now.getTime() + bookingRules.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
   if (!bookingRules.allowedDurationsMinutes.includes(durationMinutes as 60 | 120)) return "Choose a one- or two-hour session.";
+
+  const startParts = malaysiaLocalParts(new Date(startMs));
+  if (startParts.second !== 0) return "Choose an hourly slot.";
+  const endParts = malaysiaLocalParts(new Date(startMs + durationMinutes * 60_000));
+  const startLocalMinutes = localCalendarMinutes(startParts);
+  const endLocalMinutes = localCalendarMinutes(endParts);
+  const elapsedLocalMinutes = endLocalMinutes - startLocalMinutes;
+  const startDayMinutes = Date.UTC(startParts.year, startParts.month - 1, startParts.day) / 60_000;
+  // An overnight window (for example Sunday 12:00–25:00) owns the
+  // after-midnight slots on the following local date. Check both the start
+  // date and the previous date so a 00:00 Monday booking remains valid.
+  const windowContexts = [startDayMinutes, startDayMinutes - 24 * 60].map((dayMinutes) => {
+    const day = new Date(dayMinutes * 60_000);
+    const parts = { year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate(), hour: 0, minute: 0, second: 0 };
+    return { dayMinutes, windows: bookingRules.weeklyHours[localWeekdayFromParts(parts)] ?? [] };
+  });
+  const containingWindow = windowContexts.some(({ dayMinutes, windows }) => {
+    const relativeStart = startLocalMinutes - dayMinutes;
+    return windows.some((window) => {
+      const open = minutesFromClock(window.open);
+      const close = minutesFromClock(window.close);
+      return relativeStart >= open && relativeStart + elapsedLocalMinutes <= close;
+    });
+  });
+  if (!containingWindow) return "Choose a slot during opening hours.";
+  const alignedToHourlyGrid = windowContexts.some(({ dayMinutes, windows }) => {
+    const relativeStart = startLocalMinutes - dayMinutes;
+    return windows.some((window) => {
+      const open = minutesFromClock(window.open);
+      const close = minutesFromClock(window.close);
+      return relativeStart >= open
+        && relativeStart + elapsedLocalMinutes <= close
+        && (relativeStart - open) % bookingRules.slotIntervalMinutes === 0;
+    });
+  });
+  if (!alignedToHourlyGrid) return "Choose an hourly slot.";
   return null;
 }
 

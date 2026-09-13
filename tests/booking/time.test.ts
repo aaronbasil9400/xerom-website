@@ -23,7 +23,14 @@ describe("booking time rules", () => {
     const now = new Date("2026-09-09T10:00:00+08:00");
     expect(validateBookingWindow("2026-09-09T10:30:00+08:00", 60, now)).toMatch(/one hour/i);
     expect(validateBookingWindow("2026-09-13T10:00:00+08:00", 60, now)).toMatch(/three days/i);
-    expect(validateBookingWindow("2026-09-10T12:00:00+08:00", 60, now)).toBeNull();
+    expect(validateBookingWindow("2026-09-10T14:00:00+08:00", 60, now)).toBeNull();
+  });
+
+  it("rejects times outside opening hours and off the hourly grid", () => {
+    const now = new Date("2026-09-09T10:00:00+08:00");
+    expect(validateBookingWindow("2026-09-10T13:00:00+08:00", 60, now)).toMatch(/opening hours/i);
+    expect(validateBookingWindow("2026-09-10T14:30:00+08:00", 60, now)).toMatch(/hourly slot/i);
+    expect(validateBookingWindow("2026-09-13T23:00:00+08:00", 120, new Date("2026-09-13T10:00:00+08:00"))).toBeNull();
   });
 });
 

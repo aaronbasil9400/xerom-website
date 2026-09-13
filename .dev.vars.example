@@ -1,5 +1,7 @@
 BOOKING_MODE=mock
 TURNSTILE_SECRET_KEY=replace-with-turnstile-secret
+TURNSTILE_EXPECTED_HOSTNAME=xerom-website.aaronbasil9400.workers.dev
+TURNSTILE_EXPECTED_ACTION=booking
 PUBLIC_TURNSTILE_SITE_KEY=replace-with-turnstile-site-key
 GOOGLE_SERVICE_ACCOUNT_EMAIL=booking-service@example-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nREPLACE_ME\n-----END PRIVATE KEY-----\n"
@@ -10,4 +12,3 @@ PRO_SIM_01_CALENDAR_ID=replace-me
 PS5_01_CALENDAR_ID=replace-me
 PS5_02_CALENDAR_ID=replace-me
 BOOKING_CONTROL_CALENDAR_ID=replace-me
-

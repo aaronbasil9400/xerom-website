@@ -18,6 +18,8 @@ interface CloudflareEnv {
   BOOKING_COORDINATOR?: BookingCoordinatorNamespace;
   BOOKING_MODE?: "mock" | "live" | "disabled";
   TURNSTILE_SECRET_KEY?: string;
+  TURNSTILE_EXPECTED_HOSTNAME?: string;
+  TURNSTILE_EXPECTED_ACTION?: string;
   GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
   GOOGLE_PRIVATE_KEY?: string;
   REGULAR_SIM_01_CALENDAR_ID?: string;

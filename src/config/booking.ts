@@ -16,5 +16,3 @@ export const bookingRules = {
     6: [{ open: "12:00", close: "25:00" }],
   },
 } as const;
-
-export const bookingMode = (import.meta.env.PUBLIC_BOOKING_MODE ?? "mock") as "mock" | "live" | "disabled";

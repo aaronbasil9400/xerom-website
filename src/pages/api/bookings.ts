@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (mode === "disabled") return json({ error: "Online booking is being configured. Please WhatsApp Xerom." }, 503);
 
   if (mode === "live") {
-    const turnstileOk = await verifyTurnstile(env.TURNSTILE_SECRET_KEY, token, clientAddress);
+    const turnstileOk = await verifyTurnstile(env.TURNSTILE_SECRET_KEY, token, clientAddress, env.TURNSTILE_EXPECTED_HOSTNAME, env.TURNSTILE_EXPECTED_ACTION);
     if (!turnstileOk) return json({ error: "We could not verify this request. Please try again." }, 403);
     if (!env.BOOKING_COORDINATOR) return json({ error: "Booking coordination is unavailable. Please WhatsApp Xerom." }, 503);
     const id = env.BOOKING_COORDINATOR.idFromName("xerom-global-booking-coordinator");
