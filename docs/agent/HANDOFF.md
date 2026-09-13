@@ -8,7 +8,7 @@ The responsive Astro site, mock booking flow, Google Calendar adapters, booking 
 
 ## Next action
 
-Store the Google service-account credentials and calendar IDs as encrypted secrets on both Workers, configure a hostname-appropriate Turnstile widget, run the live integration and concurrency acceptance tests from `QA_REPORT.md`, then enable `BOOKING_MODE=live`. Resolve the remaining owner items in `CONTENT_TODO.md` before public launch.
+Google service-account credentials and calendar IDs are stored as encrypted secrets on both Workers, the coordinator is deployed, and live availability/booking, idempotency, and concurrency smoke tests have passed. The client demo Worker is live with Cloudflare's always-pass Turnstile test pair; replace those test values with a hostname-scoped widget before public launch. Resolve the remaining owner items in `CONTENT_TODO.md` before public launch.
 
 ## Tooling note
 

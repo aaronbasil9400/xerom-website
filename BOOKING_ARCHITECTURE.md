@@ -6,8 +6,8 @@ Status: approved planning architecture; implementation details must be verified 
 
 ```mermaid
 flowchart LR
-    U[Customer browser] -->|Static pages + booking UI| P[Cloudflare Pages]
-    U -->|Availability / booking requests| F[Astro server endpoints on Pages Functions]
+    U[Customer browser] -->|Static pages + booking UI| P[Cloudflare Worker / Pages]
+    U -->|Availability / booking requests| F[Astro server endpoints]
     F --> T[Cloudflare Turnstile]
     F -->|FreeBusy + events| G[Google Calendar API]
     F -->|Serialized create request| D[Booking Coordinator Durable Object]
@@ -18,7 +18,7 @@ flowchart LR
     F -->|Sanitized result only| U
 ```
 
-Cloudflare currently requires a Durable Object used by Pages to live in a separately deployed Worker and be bound to the Pages project. This is an extra deployable, not a traditional server or booking database.
+Cloudflare requires the SQLite Durable Object to live in a separately deployed Worker and be bound to the public website Worker (or Pages project). This is an extra deployable, not a traditional server or booking database.
 
 ## Calendar model
 

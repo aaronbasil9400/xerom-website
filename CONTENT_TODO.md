@@ -23,10 +23,10 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 
 ## Required before booking integration
 
-- [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in the Xerom Booking Google account on 2026-09-13; coordinator granted Make changes / see private events as free/busy).
+- [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in the Xerom Booking Google account on 2026-09-13; coordinator granted Make changes and see all event details so it can create private booking events).
 - [ ] Provide server-side calendar IDs through secrets; never paste them into documentation or client code.
 - [x] Create the dedicated Google service account and agree on its calendar permissions (Xerom Booking Coordinator identity created in the dedicated Xerom Booking Cloud project on 2026-09-13).
-- [ ] Create/configure the Cloudflare Turnstile widget and store its production secret; the booking-coordinator Worker was created and deployed on 2026-09-13.
+- [ ] Create/configure a hostname-scoped Cloudflare Turnstile widget and replace the demo test credentials with its production secret; the booking-coordinator Worker was created and deployed on 2026-09-13.
 - [ ] Confirm whether optional customer notes should be collected.
 - [ ] Confirm event reminder behavior and whether staff want a Calendar event color convention.
 - [ ] Confirm the staff-readable booking-title format.

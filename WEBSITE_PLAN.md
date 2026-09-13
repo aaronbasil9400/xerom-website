@@ -6,7 +6,7 @@ Mobile is a first-class authored surface. The mobile concept must preserve the s
 
 ## Outcome
 
-Deliver a mobile-first marketing website and booking flow that accurately represents Xerom, reads availability from private Google resource calendars, prevents double bookings, creates complete Calendar reservations, and deploys through Cloudflare Pages without a conventional application database.
+Deliver a mobile-first marketing website and booking flow that accurately represents Xerom, reads availability from private Google resource calendars, prevents double bookings, creates complete Calendar reservations, and deploys through Cloudflare Workers or Pages without a conventional application database. The current client demo uses the existing `xerom-website` Worker.
 
 ## Planned experience
 

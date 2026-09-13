@@ -60,6 +60,7 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 ## 2026-09-13 — Live integration resources
 
 - Created a dedicated Google Cloud project and Calendar API integration for the booking coordinator.
-- Created seven private calendars (three Regular Sim, one Pro Sim, two PS5 Lounge, and Booking Control) in `Asia/Kuala_Lumpur` and shared each with a dedicated service account using the minimum event permission needed for FreeBusy, create, and rollback operations.
+- Created seven private calendars (three Regular Sim, one Pro Sim, two PS5 Lounge, and Booking Control) in `Asia/Kuala_Lumpur` and shared each with a dedicated service account using `Make changes and see all event details`, the minimum role that can create/delete the private booking events used by this integration.
 - Created and deployed `xerom-booking-coordinator` as a separate Cloudflare Worker with the `BookingCoordinator` SQLite Durable Object. The website Worker remains the public surface and binds to that external Durable Object.
 - Keep the public Worker in `BOOKING_MODE=disabled` until encrypted Google credentials, calendar IDs, and a hostname-appropriate Turnstile widget are configured and the deployed smoke/race checks pass.
+- For the client demo, the public Worker is temporarily in `BOOKING_MODE=live` with Cloudflare's documented always-pass Turnstile test pair; a real hostname-scoped widget must replace it before public launch.

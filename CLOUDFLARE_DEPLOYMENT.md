@@ -1,16 +1,16 @@
 # Cloudflare Deployment
 
-The production system has two deployables:
+The production/demo system has two deployables:
 
 1. `xerom-booking-coordinator` — a small Worker that hosts the Durable Object and owns serialized Calendar booking creation.
-2. `xerom-website` — the Astro website deployed to Cloudflare Pages and bound to that Durable Object.
+2. `xerom-website` — the Astro website deployed as the existing Cloudflare Worker and bound to that Durable Object (the Astro output is also Pages-compatible).
 
 Google Calendar remains the booking record. The Durable Object stores only short-lived coordination/idempotency state.
 
 ## Prerequisites
 
-- Cloudflare account and a Pages project.
-- GitHub repository connected to Pages.
+- Cloudflare account and the existing `xerom-website` Worker.
+- GitHub repository connected to Workers CI/CD.
 - Google Calendar setup completed from `GOOGLE_CALENDAR_SETUP.md`.
 - Cloudflare Turnstile widget for the production hostname.
 - Confirmed domain, business hours, promotion rules, logo, and launch photography.
@@ -42,9 +42,9 @@ npx wrangler secret put BOOKING_CONTROL_CALENDAR_ID --config coordinator/wrangle
 npm run coordinator:deploy
 ```
 
-Never place secrets in `wrangler.jsonc`. Cloudflare requires this Durable Object to be deployed as a Worker and then bound to Pages using the `script_name` recorded in the root `wrangler.jsonc`.
+Never place secrets in `wrangler.jsonc`. Cloudflare requires this Durable Object to be deployed as a Worker and then bound to the public Worker using the `script_name` recorded in the root `wrangler.jsonc`.
 
-## Configure Pages
+## Configure the public Worker
 
 Production environment variables/secrets:
 
@@ -64,6 +64,10 @@ Preview environments should use `BOOKING_MODE=disabled` unless they are connecte
 2. Store the secret only in Cloudflare encrypted secrets.
 3. Expose only the site key as `PUBLIC_TURNSTILE_SITE_KEY`.
 4. Test success, expiry, retry, and failure before enabling live booking.
+
+### Current demo note
+
+The `xerom-website` Worker currently uses Cloudflare's documented always-pass Turnstile test pair so the client demo can exercise the live Google Calendar flow on its temporary `workers.dev` hostname. Replace both test values with a real hostname-scoped widget before public launch; test credentials must never remain on a production hostname.
 
 ## Rate limiting
 

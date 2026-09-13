@@ -27,4 +27,4 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 
 ## Verification gate
 
-Do not enable `BOOKING_MODE=live` until the coordinator race test, business-hours enforcement, Turnstile, DO binding, rate limiting, and deployed-origin header checks pass and are recorded in `QA_REPORT.md`.
+Do not keep `BOOKING_MODE=live` on a public hostname until the coordinator race test, business-hours enforcement, a real hostname-scoped Turnstile widget, rate limiting, and deployed-origin header checks pass and are recorded in `QA_REPORT.md`. The temporary client demo uses documented Turnstile test credentials.

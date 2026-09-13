@@ -1,22 +1,22 @@
 # QA Report
 
-Last updated: 2026-09-10
+Last updated: 2026-09-13
 
 ## Current result
 
-The local mock-mode website builds successfully and the implemented responsive/booking test suite passes. Live Google Calendar, Turnstile, Durable Object, and production deployment acceptance tests remain blocked on external credentials and owner setup.
+The client-demo Worker is live on its temporary `workers.dev` hostname with Google Calendar as the booking record, a serialized coordinator Durable Object, and Cloudflare's documented always-pass Turnstile test pair. Live availability, event creation/rollback, idempotent replay, and the final-resource race all pass. Replace the test Turnstile values and complete the remaining owner/content/security gates before public launch.
 
 ## Automated checks
 
 | Check | Result | Evidence |
 |---|---|---|
 | Astro/TypeScript diagnostics | Pass | `npm run check`: 0 errors, 0 warnings; two Zod deprecation hints |
-| Booking unit tests | Pass | `npm test`: 12 tests across time, overlap, capacity, closure, pricing, and validation |
+| Booking unit tests | Pass | `npm test`: 15 tests across time, overlap, capacity, closure, pricing, validation, and Calendar text sanitization |
 | Responsive/booking E2E | Pass | Final media run: 31 passed, 5 intentional single-writer hero-capture skips; homepage, core routes, assets, favicon/manifest, console, and complete mock booking flow at 375, 390, 430, 768, 1024, and 1440 widths |
 | Visual captures | Pass | Six full-page captures under `.impeccable/review/` with reduced motion and lazy media loaded |
 | Mobile overflow | Pass | Automated document-width assertion at 375, 390, and 430 pixels |
 | Production build | Pass | `npm run build`, Cloudflare server output in `dist/` |
-| Coordinator Worker dry run | Pass | `npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc`; Durable Object bundle compiled |
+| Coordinator Worker dry run | Pass | `npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc`; Durable Object bundle and `exports.BookingCoordinator` compiled |
 | Direction contract retention | Pass | Seed `5323fcd4` present in built server output |
 | Impeccable detector | Pass | `detect.mjs --json src` returned `[]` |
 | Independent Impeccable finish review | Ship | Rebuild and fix rounds closed; final service/price proof verdict resolved with no regression |
@@ -26,6 +26,19 @@ The local mock-mode website builds successfully and the implemented responsive/b
 | Favicon/icon family | Pass | Official X paths reused in SVG; 32, 180, 192, and 512px transparent PNGs rendered and dimension-checked |
 | Focused media review | Ship | Regular Rig focal correction scored resolved; other crops, phone layouts, mapping, cafe visibility, and favicon geometry passed |
 | Filled-control contrast | Pass | Action Racing Red `#d12a25` with white measures 5.16:1; hover `#b92320` measures 6.32:1 |
+
+## Live integration checks (2026-09-13)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Google service-account auth + FreeBusy | Pass | Deployed `/api/availability` returned HTTP 200 with `mode: live` and expected Regular/Pro/PS5 capacities for a future Malaysia-local date |
+| Private Calendar event creation + cleanup | Pass | Temporary Regular booking returned HTTP 201 (`RM20`); event was found by booking ID and deleted; follow-up availability restored full capacity |
+| Idempotency replay | Pass | Same PS5 request returned HTTP 201 then HTTP 200 with `replayed: true`; the single event was deleted afterward |
+| Final-resource concurrency | Pass | Two simultaneous Pro requests returned exactly one HTTP 201 and one HTTP 409; the winning event was deleted afterward |
+| Turnstile server verification | Pass (demo keys) | Cloudflare documented always-pass site/secret pair accepted `XXXX.DUMMY.TOKEN.XXXX`; replace before launch |
+| Coordinator deployment | Pass | `xerom-booking-coordinator` deployed at its `workers.dev` endpoint; logs captured the prior 403 diagnosis and are now enabled |
+| Public Worker binding | Pass | Root deployment log shows `env.BOOKING_COORDINATOR (BookingCoordinator, defined in xerom-booking-coordinator)` |
+| Temporary-event cleanup | Pass | Calendar API audit query found zero remaining smoke/race/idempotency/diagnostic events |
 
 ## Screenshot evidence
 
@@ -51,12 +64,9 @@ The local mock-mode website builds successfully and the implemented responsive/b
 
 ## Not yet verified against external systems
 
-- Real Google service-account authentication and Calendar permissions.
-- Real FreeBusy results and Calendar event insertion.
 - Real partial multi-resource failure and rollback.
-- Real final-resource concurrency race through the deployed Durable Object.
-- Turnstile validation, token expiry, and production hostname rules.
-- Cloudflare Pages/Worker production bindings and custom domain.
+- Turnstile expiry/retry and production hostname rules using a real widget (demo uses test credentials).
+- Cloudflare custom domain, rate limiting rules, and deployed security-header checks.
 - Production analytics provider integration.
 - Lighthouse scores on the deployed origin.
 - Live contact, Maps, and canonical-domain accuracy after owner confirmation.
