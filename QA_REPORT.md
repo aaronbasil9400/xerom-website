@@ -40,6 +40,7 @@ The client-demo Worker is live on its temporary `workers.dev` hostname with Goog
 | Public Worker binding | Pass | Root deployment log shows `env.BOOKING_COORDINATOR (BookingCoordinator, defined in xerom-booking-coordinator)` |
 | Temporary-event cleanup | Pass | Calendar API audit query found zero remaining smoke/race/idempotency/diagnostic events |
 | Browser UI live flow | Pass | Public `/book` page rendered Turnstile “Success!”, loaded 11 live start times, and reached “Booking confirmed” after a real form submit; event was deleted afterward |
+| Deployed security headers | Pass | Public Worker responses after `b305a9a` include HSTS, CSP, COOP/CORP, Permissions-Policy, Referrer-Policy, `X-Content-Type-Options`, and `X-Frame-Options` |
 
 ## Screenshot evidence
 
@@ -67,7 +68,7 @@ The client-demo Worker is live on its temporary `workers.dev` hostname with Goog
 
 - Real partial multi-resource failure and rollback.
 - Turnstile expiry/retry and production hostname rules using a real widget (demo uses test credentials).
-- Cloudflare custom domain, rate limiting rules, and deployed security-header checks.
+- Cloudflare custom domain and rate limiting rules.
 - Production analytics provider integration.
 - Lighthouse scores on the deployed origin.
 - Live contact, Maps, and canonical-domain accuracy after owner confirmation.
