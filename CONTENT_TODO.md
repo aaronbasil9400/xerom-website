@@ -26,7 +26,7 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 - [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in the Xerom Booking Google account on 2026-09-13; coordinator granted Make changes and see all event details so it can create private booking events).
 - [x] Provide server-side calendar IDs through encrypted Worker secrets; never paste them into documentation or client code.
 - [x] Create the dedicated Google service account and agree on its calendar permissions (Xerom Booking Coordinator identity created in the dedicated Xerom Booking Cloud project on 2026-09-13).
-- [ ] Create/configure a hostname-scoped Cloudflare Turnstile widget and replace the demo test credentials with its production secret; the booking-coordinator Worker was created and deployed on 2026-09-13.
+- [ ] **Replace the Turnstile demo widget before public launch.** The temporary `workers.dev` demo intentionally uses Cloudflare's always-pass test site/secret pair, so customers see the widget warning “For testing only. If seen, report to site owner.” Create a hostname-scoped widget for the canonical production hostname, update the `PUBLIC_TURNSTILE_SITE_KEY` build variable and encrypted `TURNSTILE_SECRET_KEY`, then verify the warning is gone and real site verification succeeds. The booking-coordinator Worker was created and deployed on 2026-09-13.
 - [ ] Confirm whether optional customer notes should be collected.
 - [ ] Confirm event reminder behavior and whether staff want a Calendar event color convention.
 - [ ] Confirm the staff-readable booking-title format.
