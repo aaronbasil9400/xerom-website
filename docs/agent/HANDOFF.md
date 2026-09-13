@@ -1,14 +1,14 @@
 # Agent Handoff
 
-Last updated: 2026-09-09
+Last updated: 2026-09-13
 
 ## Current state
 
-The responsive Astro site, mock booking flow, Google Calendar adapters, booking coordinator Worker, official SVG logo, and operational documentation are implemented. The independent Impeccable review closed with `ship`; `DESIGN.md` and `.impeccable/design.json` reflect the reviewed interface.
+The responsive Astro site, mock booking flow, Google Calendar adapters, booking coordinator Worker, official SVG logo, and operational documentation are implemented. The independent Impeccable review closed with `ship`; `DESIGN.md` and `.impeccable/design.json` reflect the reviewed interface. Google Cloud Calendar resources are created and shared, and the coordinator Worker is deployed; encrypted secret entry and live smoke testing remain.
 
 ## Next action
 
-Replace placeholder photography, resolve the owner items in `CONTENT_TODO.md`, configure the Google/Cloudflare resources, and run the live integration and concurrency acceptance tests from `QA_REPORT.md`. Do not enable `BOOKING_MODE=live` until those checks pass.
+Store the Google service-account credentials and calendar IDs as encrypted secrets on both Workers, configure a hostname-appropriate Turnstile widget, run the live integration and concurrency acceptance tests from `QA_REPORT.md`, then enable `BOOKING_MODE=live`. Resolve the remaining owner items in `CONTENT_TODO.md` before public launch.
 
 ## Tooling note
 

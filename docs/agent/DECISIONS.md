@@ -56,3 +56,10 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - `bookingRules.weeklyHours` remains the single source of truth for availability; `src/config/hours.ts` derives grouped display hours from it so published hours and bookable slots cannot drift.
 - Opening hours surface once as a compact strip inside the hero, visible without scrolling at every breakpoint, and again as a row list on the Visit page. An earlier standalone homepage hours panel was removed as redundant.
 - Public-holiday and shortened-hour handling remain open in `CONTENT_TODO.md`.
+
+## 2026-09-13 — Live integration resources
+
+- Created a dedicated Google Cloud project and Calendar API integration for the booking coordinator.
+- Created seven private calendars (three Regular Sim, one Pro Sim, two PS5 Lounge, and Booking Control) in `Asia/Kuala_Lumpur` and shared each with a dedicated service account using the minimum event permission needed for FreeBusy, create, and rollback operations.
+- Created and deployed `xerom-booking-coordinator` as a separate Cloudflare Worker with the `BookingCoordinator` SQLite Durable Object. The website Worker remains the public surface and binds to that external Durable Object.
+- Keep the public Worker in `BOOKING_MODE=disabled` until encrypted Google credentials, calendar IDs, and a hostname-appropriate Turnstile widget are configured and the deployed smoke/race checks pass.

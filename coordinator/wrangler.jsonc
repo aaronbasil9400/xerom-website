@@ -8,7 +8,10 @@
       { "name": "BOOKING_COORDINATOR", "class_name": "BookingCoordinator" }
     ]
   },
-  "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["BookingCoordinator"] }
-  ]
+  "exports": {
+    "BookingCoordinator": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  }
 }
