@@ -96,3 +96,18 @@ Do not substitute similarly named Klang businesses returned by broad search.
 - Reinspect Instagram through project Playwright tests after its browser runtime is configured, and complete the live Google Maps review.
 - Confirm the exact formatted address, map place ID/directions link, public-holiday/shortened-hour handling, promotion rules, equipment wording, controller limits, cafe offer, and current imagery with the owner.
 - Obtain original or explicitly licensed production assets.
+
+## Race Control technical research — 2026-09-15
+
+Reviewed primary documentation to support the proposed dashboard architecture (not live account verification):
+
+- [R2 consistency](https://developers.cloudflare.com/r2/reference/consistency/): direct object access is strongly consistent; caching adds separate freshness considerations.
+- [R2 Workers conditional operations](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/): conditional puts support revision-safe pointer changes; application recovery still handles multi-step publication.
+- [KV consistency](https://developers.cloudflare.com/kv/concepts/how-kv-works/): eventual consistency makes it unsuitable as the sole authoritative immediate-publication pointer in this design.
+- [Calendar ownership](https://developers.google.com/workspace/calendar/api/concepts/events-calendars): creator identity determines initial ownership; avoid inadvertently making the service account the owner of newly provisioned business calendars.
+- [Calendar insert](https://developers.google.com/workspace/calendar/api/v3/reference/calendars/insert) and [delete](https://developers.google.com/workspace/calendar/api/v3/reference/calendars/delete): separate resource lifecycle operations; capabilities/authorization need an isolated-account spike.
+- [Conditional Calendar mutations](https://developers.google.com/workspace/calendar/api/guides/version-resources): ETags/If-Match protect updates from stale writers; they do not supply multi-event transactions or conditional insert semantics.
+- [Events list](https://developers.google.com/workspace/calendar/api/v3/reference/events/list): dashboard scans must handle pagination, recurrence and cancellations.
+- [Owner web-server OAuth](https://developers.google.com/identity/protocols/oauth2/web-server) and [Access JWT validation](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/): proposed setup and origin-authentication basis.
+
+Owner answers dated 2026-09-15 authorize the expanded front-desk/editing feature scope recorded in PRODUCT.md. Storage selection, no-stacking pricing and deletion-retention guard details are proposed engineering defaults in `docs/RACE_CONTROL_PLAN.md`, not additional confirmed business facts.

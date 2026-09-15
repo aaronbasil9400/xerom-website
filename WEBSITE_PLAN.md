@@ -37,7 +37,7 @@ This information architecture is a planning baseline. The approved visual concep
 
 Material states: initial, loading, no availability, invalid input, Turnstile failure, slot taken (409), external service failure, partial-create rollback failure requiring staff attention, success, and network retry.
 
-## Configuration strategy
+## Configuration strategy (original baseline; expanded below)
 
 Business data will be typed and centralized, likely under:
 
@@ -126,3 +126,9 @@ Gate: acceptance checklist passes or every exception is explicitly documented an
 ## Explicit non-goals
 
 No customer accounts, passwords, custom admin portal, traditional database, payment processing, deposit collection, loyalty program, membership management, promo-code engine, automated WhatsApp messaging, CRM, or leaderboard in the MVP.
+
+## 2026-09-15 — Owner dashboard expansion
+
+The owner approved Race Control as the primary front desk plus live business/content editing. The original configuration and delivery sections above describe the baseline; the new runtime configuration, dashboard UI, booking mutations, automatic Calendar provisioning and acceptance sequence are specified in [docs/RACE_CONTROL_PLAN.md](docs/RACE_CONTROL_PLAN.md). Business changes must not trigger builds/deployments. Initial integration/code deployment remains required. Preserve the public site's existing composition and booking invariants.
+
+Use [docs/agent/RACE_CONTROL_HANDOFF.md](docs/agent/RACE_CONTROL_HANDOFF.md) to start building in dependency order. Dashboard scope is planned, not implemented.

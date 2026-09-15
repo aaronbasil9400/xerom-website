@@ -44,3 +44,15 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 ## Temporary asset policy
 
 Mockups and early builds may use clearly labeled placeholders. Placeholder filenames, alt text, and component boundaries must make replacement easy. Do not publish scraped Instagram images or the supplied pricing screenshot as final production assets.
+
+## Race Control owner/setup inputs — 2026-09-15
+
+Scope answers are recorded in PRODUCT.md; do not ask them again. The implementation plan can proceed with draft fields and isolated synthetic fixtures while these remain unresolved.
+
+- [ ] Supply/authorize owner login identity, venue Google account/account type and owner OAuth connection for automated calendar lifecycle. Keep credentials out of documents.
+- [ ] Enter actual percentage offer amounts, selected weekday/weekend days, active dates/windows, package durations/prices and eligible services. Support is approved; real offers are not yet supplied.
+- [ ] Confirm resource-calendar history retention/export policy before allowing permanent deletion of a calendar containing historical events. Empty retired test calendars can exercise the confirmed deletion flow.
+- [ ] Confirm proposed completed operation-journal retention (30 days); unresolved recovery data must remain until reconciled.
+- [ ] Confirm controller add-on billing basis (per session versus per hour) as well as the existing maximum-controller item before enabling online add-ons.
+
+Holiday editing and conflict review are now approved features; actual holiday dates/hours still require owner input. Current 60/120-minute session defaults remain until the owner publishes a rule change.

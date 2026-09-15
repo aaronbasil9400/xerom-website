@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Xerom Race Control — dashboard mockup</title>
+    <meta name="description" content="Visual-only mockup for a private Xerom Google Calendar operations dashboard." />
+    <style>
+      @font-face { font-family: "Racing Sans One"; src: url("../../dist/client/_astro/racing-sans-one-latin-400-normal.BryReCGz.woff2") format("woff2"); font-display: swap; font-weight: 400; }
+      @font-face { font-family: "Barlow Condensed"; src: url("../../dist/client/_astro/barlow-condensed-latin-700-normal.v1xN8_Wq.woff2") format("woff2"); font-display: swap; font-weight: 700; }
+      @font-face { font-family: "Barlow Condensed"; src: url("../../dist/client/_astro/barlow-condensed-latin-900-normal.SFh9ViAc.woff2") format("woff2"); font-display: swap; font-weight: 900; }
+      @font-face { font-family: "Barlow"; src: url("../../dist/client/_astro/barlow-latin-400-normal.qiz4-Cze.woff2") format("woff2"); font-display: swap; font-weight: 400; }
+      @font-face { font-family: "Barlow"; src: url("../../dist/client/_astro/barlow-latin-600-normal.DILqtrty.woff2") format("woff2"); font-display: swap; font-weight: 600; }
+      :root {
+        --black: #080808;
+        --panel: #111111;
+        --raised: #181818;
+        --line: #383838;
+        --line-soft: #292929;
+        --paper: #f5f2ea;
+        --muted: #bcb8b0;
+        --red: #f02f2a;
+        --action: #d12a25;
+        --action-hover: #b92320;
+        --amber: #ffd166;
+        --green: #63d39b;
+        --blue: #9ca8ff;
+        --sidebar: 15.5rem;
+        --inspector: 20rem;
+        --font-display: "Racing Sans One", "Barlow Condensed", sans-serif;
+        --font-condensed: "Barlow Condensed", sans-serif;
+        --font-body: "Barlow", system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      figure { margin: 0; }
+      html { background: var(--black); color: var(--paper); }
+      body {
+        margin: 0;
+        min-width: 20rem;
+        background:
+          radial-gradient(circle at 81% 6%, rgba(240, 47, 42, .11), transparent 23rem),
+          linear-gradient(180deg, #0b0b0b 0%, var(--black) 58%);
+        color: var(--paper);
+        font-family: var(--font-body);
+        line-height: 1.45;
+      }
+
+      button, input { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, a:focus-visible, input:focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 3px;
+      }
+      ::selection { background: var(--amber); color: var(--black); }
+      html { scrollbar-color: var(--line) var(--black); scrollbar-width: thin; }
+      input, textarea, select { caret-color: var(--red); }
+
+      .mockup-banner {
+        min-height: 2rem;
+        padding: .48rem 1.25rem;
+        border-bottom: 1px solid rgba(255, 209, 102, .5);
+        background: #211d0e;
+        color: #fff1b7;
+        font-family: var(--font-condensed);
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .appbar {
+        position: sticky;
+        z-index: 4;
+        top: 0;
+        display: flex;
+        align-items: center;
+        gap: 1.4rem;
+        min-height: 4.6rem;
+        padding: .75rem 1.35rem;
+        border-bottom: 1px solid rgba(245, 242, 234, .18);
+        background: rgba(8, 8, 8, .88);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 12px 34px rgba(0, 0, 0, .3);
+      }
+
+      .brand { display: inline-flex; flex: 0 0 auto; align-items: center; }
+      .brand img { display: block; width: 8.5rem; height: auto; }
+      .appbar-title {
+        display: flex;
+        flex: 1;
+        align-items: baseline;
+        gap: .75rem;
+        min-width: 0;
+      }
+      .appbar-title strong {
+        color: var(--paper);
+        font-family: var(--font-condensed);
+        font-size: 1.1rem;
+        font-style: italic;
+        font-weight: 900;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+      }
+      .appbar-title span {
+        color: var(--muted);
+        font-family: var(--font-condensed);
+        font-size: .76rem;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+      }
+      .sync-state {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .55rem .75rem;
+        border: 1px solid rgba(99, 211, 155, .5);
+        color: var(--green);
+        font-family: var(--font-condensed);
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .signal-dot { width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 .25rem rgba(99, 211, 155, .12); }
+      .app-actions { display: flex; align-items: center; gap: .5rem; }
+      .icon-button, .text-button {
+        display: inline-flex;
+        min-height: 2.6rem;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--paper);
+        font-family: var(--font-condensed);
+        font-size: .74rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+      .icon-button { width: 2.6rem; padding: 0; }
+      .icon-button svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-width: 1.8; }
+      .text-button { padding: .45rem .8rem; }
+      .text-button:hover, .icon-button:hover { border-color: var(--paper); background: var(--paper); color: var(--black); }
+      .text-button.primary { border-color: var(--action); background: var(--action); color: #fff; clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%); padding-inline: 1rem; }
+      .text-button.primary:hover { border-color: var(--action-hover); background: var(--action-hover); color: #fff; }
+
+      .layout { display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr) var(--inspector); min-height: calc(100vh - 6.6rem); }
+      .sidebar, .inspector { background: rgba(17, 17, 17, .86); }
+      .sidebar { border-right: 1px solid var(--line); padding: 1.25rem 1rem 1.5rem; }
+      .inspector { border-left: 1px solid var(--line); padding: 1.25rem 1rem 1.5rem; }
+      .workspace { min-width: 0; padding: 1.35rem clamp(1rem, 2.4vw, 2.5rem) 3rem; }
+
+      .rail-label, .eyebrow {
+        color: var(--muted);
+        font-family: var(--font-condensed);
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+      .rail-label { margin: 0 0 .6rem; }
+      .day-switcher { display: grid; grid-template-columns: 2.5rem 1fr 2.5rem; gap: .25rem; margin-bottom: 1.5rem; }
+      .day-switcher button { min-height: 2.5rem; border: 1px solid var(--line); background: var(--raised); color: var(--paper); font-family: var(--font-condensed); font-size: .78rem; font-weight: 700; }
+      .day-switcher button:hover { border-color: var(--paper); }
+      .day-switcher .current { border-color: var(--red); background: var(--black); text-align: left; padding-inline: .75rem; }
+      .day-switcher .current b { display: block; color: var(--paper); font-size: .9rem; line-height: 1; }
+      .day-switcher .current span { display: block; margin-top: .25rem; color: var(--muted); font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; }
+
+      .filter-list { display: grid; gap: .35rem; margin-bottom: 1.5rem; }
+      .filter-list button { display: flex; align-items: center; justify-content: space-between; min-height: 2.4rem; padding: .35rem .55rem; border: 1px solid transparent; background: transparent; color: var(--muted); font-family: var(--font-condensed); font-size: .78rem; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+      .filter-list button:hover, .filter-list button.active { border-color: var(--line); color: var(--paper); }
+      .filter-list button.active { background: var(--raised); }
+      .filter-list em { color: var(--paper); font-style: normal; font-variant-numeric: tabular-nums; }
+
+      .roster { display: grid; gap: .45rem; }
+      .roster-group { padding-top: .55rem; border-top: 1px solid var(--line-soft); }
+      .roster-group:first-child { padding-top: 0; border-top: 0; }
+      .roster-group h3 { margin: 0 0 .35rem; color: var(--muted); font-family: var(--font-condensed); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
+      .roster-row { display: flex; align-items: center; justify-content: space-between; min-height: 2rem; color: var(--paper); font-family: var(--font-condensed); font-size: .8rem; letter-spacing: .05em; text-transform: uppercase; }
+      .roster-name { display: inline-flex; align-items: center; gap: .45rem; }
+      .status-led { width: .42rem; height: .42rem; border-radius: 50%; background: var(--green); }
+      .status-led.busy { background: var(--red); }
+      .status-led.warning { background: var(--amber); }
+      .roster-row small { color: var(--muted); font-size: .65rem; letter-spacing: .08em; }
+      .sidebar-foot { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
+      .sidebar-foot strong { display: block; margin-bottom: .25rem; color: var(--paper); font-family: var(--font-condensed); font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+
+      .workspace-head { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+      .workspace-head h1 { margin: .2rem 0 0; font-family: var(--font-display); font-size: clamp(3.2rem, 7vw, 6.3rem); font-weight: 400; line-height: .78; letter-spacing: -.035em; text-transform: uppercase; }
+      .workspace-head p { max-width: 32rem; margin: .8rem 0 0; color: var(--muted); font-size: .9rem; }
+      .date-mark { align-self: start; min-width: 10rem; padding: .8rem; border: 1px solid var(--line); border-top-color: var(--red); background: var(--panel); }
+      .date-mark b { display: block; color: var(--red); font-family: var(--font-condensed); font-size: .75rem; letter-spacing: .13em; text-transform: uppercase; }
+      .date-mark strong { display: block; margin-top: .15rem; font-family: var(--font-condensed); font-size: 1.25rem; font-style: italic; line-height: 1; }
+
+      .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-bottom: 1.35rem; border: 1px solid var(--line); background: var(--line); }
+      .metric { min-height: 5.4rem; padding: .8rem .95rem; background: var(--panel); }
+      .metric b { display: block; color: var(--muted); font-family: var(--font-condensed); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; }
+      .metric strong { display: block; margin-top: .3rem; color: var(--paper); font-family: var(--font-condensed); font-size: 1.55rem; font-style: italic; font-variant-numeric: tabular-nums; line-height: 1; }
+      .metric strong.red { color: var(--red); }
+      .metric small { display: block; margin-top: .35rem; color: var(--muted); font-size: .72rem; }
+
+      .panel { border: 1px solid var(--line); background: rgba(17, 17, 17, .92); }
+      .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 3.5rem; padding: .75rem 1rem; border-bottom: 1px solid var(--line); }
+      .panel-head h2 { margin: 0; font-family: var(--font-condensed); font-size: 1.1rem; font-style: italic; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+      .panel-head span { color: var(--muted); font-family: var(--font-condensed); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; }
+      .legend { display: flex; flex-wrap: wrap; gap: .7rem; color: var(--muted); font-family: var(--font-condensed); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; }
+      .legend span { display: inline-flex; align-items: center; gap: .35rem; }
+      .legend i { display: inline-block; width: .48rem; height: .48rem; background: var(--action); }
+      .legend i.open { border: 1px solid var(--line); background: var(--black); }
+      .legend i.maintenance { background: var(--amber); }
+
+      .timeline-wrap { overflow-x: auto; padding: .9rem 1rem 1.1rem; scroll-behavior: smooth; }
+      .timeline-cue { display: none; margin: 0 0 .7rem; padding: .5rem .65rem; border: 1px solid var(--line); color: var(--muted); font-family: var(--font-condensed); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+      .timeline { min-width: 49rem; }
+      .time-axis { display: grid; grid-template-columns: 8.2rem repeat(11, 1fr); min-height: 2rem; border-bottom: 1px solid var(--line); }
+      .time-axis > span { padding: 0 .35rem .45rem; color: var(--muted); font-family: var(--font-condensed); font-size: .66rem; font-variant-numeric: tabular-nums; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+      .time-axis > span:first-child { padding-left: 0; }
+      .resource-row { display: grid; grid-template-columns: 8.2rem 1fr; min-height: 3.55rem; border-bottom: 1px solid var(--line-soft); }
+      .resource-row:last-child { border-bottom: 0; }
+      .resource-label { display: flex; align-items: center; gap: .45rem; padding-right: .5rem; color: var(--paper); font-family: var(--font-condensed); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .resource-label small { display: block; margin-top: .18rem; color: var(--muted); font-size: .6rem; font-weight: 400; letter-spacing: .08em; }
+      .resource-label > div { min-width: 0; }
+      .track { position: relative; display: grid; grid-template-columns: repeat(11, 1fr); align-items: stretch; background-image: linear-gradient(to right, transparent calc(100% - 1px), rgba(245, 242, 234, .08) calc(100% - 1px)); background-size: 9.09% 100%; }
+      .slot { grid-row: 1; margin: .43rem .16rem; border: 1px solid var(--line-soft); background: rgba(8, 8, 8, .7); }
+      .booking { position: relative; z-index: 1; grid-row: 1; display: flex; min-width: 0; flex-direction: column; justify-content: center; margin: .36rem .16rem; padding: .35rem .52rem; border: 1px solid rgba(240, 47, 42, .75); background: linear-gradient(90deg, rgba(209, 42, 37, .95), rgba(169, 22, 22, .92)); color: #fff; cursor: pointer; font: inherit; overflow: hidden; text-align: left; }
+      .booking.selected { outline: 2px solid var(--amber); outline-offset: 2px; }
+      .booking:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+      .booking strong { overflow: hidden; font-family: var(--font-condensed); font-size: .7rem; font-style: italic; letter-spacing: .07em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+      .booking span { overflow: hidden; margin-top: .12rem; font-size: .64rem; text-overflow: ellipsis; white-space: nowrap; }
+      .booking.maintenance { border-color: rgba(255, 209, 102, .65); background: #4a3b12; color: #fff1b7; }
+      .booking.control { border-color: rgba(245, 242, 234, .4); background: #303030; color: var(--paper); }
+      .nav-icon { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-width: 1.8; }
+      .current-line { position: absolute; z-index: 2; top: 0; bottom: 0; left: 36.36%; width: 1px; background: var(--red); box-shadow: 0 0 0 1px rgba(240, 47, 42, .12); }
+      .current-line::before { position: absolute; top: -.1rem; left: -.25rem; width: .45rem; height: .45rem; border-radius: 50%; background: var(--red); content: ""; }
+      .timeline-note { margin: 0; padding: 0 1rem 1rem; color: var(--muted); font-family: var(--font-condensed); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; }
+
+      .media-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 1.35rem; border: 1px solid var(--line); background: var(--line); }
+      .media-card { position: relative; min-height: 8.5rem; overflow: hidden; background: var(--panel); }
+      .media-card img { display: block; width: 100%; height: 100%; min-height: 8.5rem; object-fit: cover; opacity: .58; transition: opacity .2s ease, transform .2s ease; }
+      .media-card:hover img { opacity: .8; transform: scale(1.03); }
+      .media-card::after { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(8, 8, 8, .92) 100%); content: ""; pointer-events: none; }
+      .media-card figcaption { position: absolute; z-index: 1; right: .7rem; bottom: .65rem; left: .7rem; }
+      .media-card figcaption b { display: block; color: var(--paper); font-family: var(--font-condensed); font-size: .88rem; font-style: italic; letter-spacing: .08em; text-transform: uppercase; }
+      .media-card figcaption span { display: block; margin-top: .12rem; color: var(--muted); font-family: var(--font-condensed); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
+
+      .inspector-head { display: flex; align-items: start; justify-content: space-between; gap: .65rem; margin-bottom: 1.15rem; }
+      .inspector h2 { margin: .2rem 0 0; font-family: var(--font-condensed); font-size: 1.55rem; font-style: italic; font-weight: 900; line-height: .95; letter-spacing: .04em; text-transform: uppercase; }
+      .close-button { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--line); background: transparent; color: var(--muted); }
+      .close-button:hover { border-color: var(--paper); color: var(--paper); }
+      .booking-state { display: inline-flex; align-items: center; gap: .4rem; margin-top: .75rem; padding: .42rem .58rem; border: 1px solid rgba(99, 211, 155, .5); color: var(--green); font-family: var(--font-condensed); font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+      .detail-card { margin-bottom: 1rem; border-top: 1px solid var(--red); background: var(--panel); }
+      .detail-card > div { padding: .78rem .8rem; border-bottom: 1px solid var(--line-soft); }
+      .detail-card > div:last-child { border-bottom: 0; }
+      .detail-label { display: block; color: var(--muted); font-family: var(--font-condensed); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; }
+      .detail-value { display: block; margin-top: .25rem; color: var(--paper); font-family: var(--font-condensed); font-size: 1rem; font-style: italic; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+      .detail-value.mono { font-style: normal; font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+      .resource-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .45rem; }
+      .resource-chip { padding: .3rem .42rem; border: 1px solid var(--line); background: var(--raised); color: var(--paper); font-family: var(--font-condensed); font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; }
+      .inspector-actions { display: grid; gap: .55rem; margin-top: 1rem; }
+      .inspector-actions button { min-height: 3rem; }
+      .calendar-note { margin-top: 1.35rem; padding: .8rem; border: 1px solid var(--line); color: var(--muted); font-size: .76rem; }
+      .calendar-note strong { display: block; margin-bottom: .25rem; color: var(--paper); font-family: var(--font-condensed); font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; }
+      .activity { margin-top: 1.35rem; }
+      .activity h3 { margin: 0 0 .6rem; color: var(--muted); font-family: var(--font-condensed); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
+      .activity-list { display: grid; gap: .6rem; }
+      .activity-item { display: grid; grid-template-columns: 2.8rem minmax(0, 1fr); gap: .55rem; align-items: start; }
+      .activity-item time { padding-top: .05rem; color: var(--muted); font-family: var(--font-condensed); font-size: .65rem; font-variant-numeric: tabular-nums; }
+      .activity-item p { margin: 0; color: var(--paper); font-size: .76rem; }
+      .activity-item p span { display: block; margin-top: .1rem; color: var(--muted); font-size: .68rem; }
+      .activity-item b { color: var(--red); font-family: var(--font-condensed); font-size: .7rem; letter-spacing: .07em; text-transform: uppercase; }
+
+      @media (max-width: 1180px) {
+        :root { --sidebar: 13rem; --inspector: 18rem; }
+        .appbar { gap: .8rem; padding-inline: 1rem; }
+        .appbar-title span { display: none; }
+        .sync-state { padding-inline: .55rem; }
+        .workspace { padding-inline: 1rem; }
+      }
+
+      @media (max-width: 920px) {
+        .layout { grid-template-columns: var(--sidebar) minmax(0, 1fr); }
+        .inspector { grid-column: 1 / -1; border-top: 1px solid var(--line); border-left: 0; }
+        .inspector-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, .8fr); gap: 1rem; align-items: start; }
+        .inspector-head { margin-bottom: 0; }
+        .detail-card { margin-bottom: 0; }
+        .inspector-actions { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .calendar-note, .activity { margin-top: 0; }
+        .media-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 680px) {
+        .mockup-banner { padding-inline: .65rem; font-size: .63rem; letter-spacing: .08em; }
+        .appbar { flex-wrap: wrap; min-height: auto; padding: .75rem .65rem; }
+        .brand img { width: 7.2rem; }
+        .appbar-title { order: 3; flex-basis: 100%; }
+        .appbar-title strong { font-size: .94rem; }
+        .app-actions { margin-left: auto; }
+        .app-actions .text-button { display: none; }
+        .sync-state { min-height: 2.4rem; padding-inline: .5rem; font-size: .62rem; }
+        .sync-state span { display: inline; }
+        .layout { display: block; }
+        .sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: .8rem .65rem; }
+        .sidebar .rail-label { display: none; }
+        .day-switcher { margin-bottom: .7rem; }
+        .filter-list { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: .7rem; }
+        .filter-list button { min-height: 2.15rem; justify-content: center; padding-inline: .25rem; font-size: .65rem; letter-spacing: .04em; text-align: center; }
+        .filter-list button em { display: none; }
+        .roster { display: none; }
+        .sidebar-foot { display: none; }
+        .workspace { padding: 1rem .65rem 2rem; }
+        .workspace-head { align-items: start; flex-direction: column; margin-bottom: 1rem; }
+        .workspace-head h1 { font-size: clamp(3rem, 16vw, 4.7rem); }
+        .workspace-head p { margin-top: .55rem; font-size: .82rem; }
+        .date-mark { align-self: stretch; min-width: 0; }
+        .metric-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1rem; }
+        .metric { min-height: 4.6rem; padding: .65rem .7rem; }
+        .metric strong { font-size: 1.35rem; }
+        .panel-head { align-items: start; flex-direction: column; gap: .55rem; padding: .75rem .7rem; }
+        .timeline-wrap { padding-inline: .7rem; scroll-behavior: auto; }
+        .timeline-cue { display: block; }
+        .timeline-note { padding-inline: .7rem; }
+        .media-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 1rem; }
+        .media-card, .media-card img { min-height: 7.2rem; }
+        .inspector { padding: 1rem .65rem 1.6rem; }
+        .inspector-inner { display: block; }
+        .inspector-head { margin-bottom: 1rem; }
+        .detail-card { margin-bottom: 1rem; }
+        .inspector-actions { grid-template-columns: 1fr; }
+        .calendar-note, .activity { margin-top: 1rem; }
+      }
+
+      /* ---- Content Management view ---- */
+      .layout[hidden] { display: none; }
+
+      .view-switch { display: inline-flex; flex: 0 0 auto; border: 1px solid var(--line); background: var(--black); }
+      .view-switch button {
+        min-height: 2.6rem;
+        padding: .45rem .9rem;
+        border: 0;
+        border-right: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-condensed);
+        font-size: .74rem;
+        font-weight: 700;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+      }
+      .view-switch button:last-child { border-right: 0; }
+      .view-switch button:hover { color: var(--paper); }
+      .view-switch button.is-active { background: var(--action); color: #fff; }
+
+      .config-nav { display: grid; gap: .2rem; margin-bottom: 1.5rem; }
+      .config-nav a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        min-height: 2.4rem;
+        padding: .35rem .55rem;
+        border: 1px solid transparent;
+        color: var(--muted);
+        font-family: var(--font-condensed);
+        font-size: .78rem;
+        letter-spacing: .08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+      .config-nav a:hover, .config-nav a:focus-visible { border-color: var(--line); color: var(--paper); }
+      .config-nav a em { color: var(--paper); font-style: normal; font-variant-numeric: tabular-nums; }
+      .config-flag {
+        display: inline-flex;
+        margin-top: .6rem;
+        padding: .3rem .5rem;
+        border: 1px solid rgba(240, 47, 42, .55);
+        color: var(--red);
+        font-family: var(--font-condensed);
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+
+      .cfg-section { margin-bottom: 1.35rem; }
+      .cfg-section .panel-head .text-button { min-height: 2.3rem; }
+      .cfg-section .panel-head span { font-size: .7rem; }
+
+      .fleet-mix { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border-bottom: 1px solid var(--line); background: var(--line); }
+      .mix-control { display: flex; flex-direction: column; gap: .55rem; padding: .85rem 1rem; background: var(--panel); }
+      .mix-control .detail-label { font-size: .7rem; }
+      .mix-control small { color: var(--muted); font-family: var(--font-condensed); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+
+      .stepper { display: inline-flex; align-items: center; align-self: start; border: 1px solid var(--line); background: var(--black); }
+      .stepper button { display: grid; width: 2.3rem; height: 2.3rem; place-items: center; padding: 0; border: 0; background: transparent; color: var(--paper); }
+      .stepper button:hover { background: var(--paper); color: var(--black); }
+      .stepper output { min-width: 2.6rem; padding: 0 .2rem; color: var(--paper); font-family: var(--font-condensed); font-size: 1.15rem; font-style: italic; font-weight: 900; font-variant-numeric: tabular-nums; text-align: center; }
+      .stepper output.pending { color: var(--amber); }
+      .step-icon { width: .95rem; height: .95rem; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-width: 2; }
+
+      .cfg-row { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, .7fr) minmax(0, 1fr) minmax(0, .8fr) auto; gap: .75rem; align-items: center; padding: .72rem 1rem; border-bottom: 1px solid var(--line-soft); }
+      .cfg-row:last-child { border-bottom: 0; }
+      .cfg-row.head { padding-block: .5rem; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--font-condensed); font-size: .7rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+      .cfg-name { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+      .cfg-name b { display: block; font-family: var(--font-condensed); font-size: .9rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+      .cfg-name small { display: block; color: var(--muted); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; }
+      .cfg-cell { color: var(--paper); font-family: var(--font-condensed); font-size: .82rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+      .cfg-cell .unit { color: var(--muted); font-size: .7rem; }
+      .cfg-cell.muted { color: var(--muted); font-size: .78rem; }
+      .row-actions { display: inline-flex; gap: .3rem; justify-content: flex-end; }
+      .row-actions .icon-button { width: 2.1rem; min-height: 2.1rem; }
+      .row-actions .icon-button.danger:hover { border-color: var(--red); background: var(--red); color: #fff; }
+
+      .chip { display: inline-flex; align-items: center; gap: .35rem; padding: .32rem .5rem; border: 1px solid var(--line); color: var(--muted); font-family: var(--font-condensed); font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+      .chip.live { border-color: rgba(99, 211, 155, .5); color: var(--green); }
+      .chip.paused { border-color: rgba(255, 209, 102, .55); color: var(--amber); }
+      .chip.warn { border-color: rgba(255, 209, 102, .55); color: var(--amber); }
+
+      .cfg-note { margin: 0; padding: .8rem 1rem; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: .76rem; }
+      .warning-note { display: flex; gap: .55rem; align-items: flex-start; margin: 0 1rem 1rem; padding: .62rem .7rem; border: 1px solid #8b732b; background: #221d0d; color: #fff1b7; font-size: .76rem; line-height: 1.35; }
+      .warning-note .warn-icon { flex: 0 0 auto; width: 1rem; height: 1rem; margin-top: .1rem; fill: none; stroke: currentColor; stroke-linecap: square; stroke-linejoin: miter; stroke-width: 1.8; }
+
+      .price-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 1rem; align-items: center; padding: .9rem 1rem; border-bottom: 1px solid var(--line-soft); }
+      .price-row:last-child { border-bottom: 0; }
+      .price-name b { display: block; font-family: var(--font-condensed); font-size: 1rem; font-style: italic; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+      .price-name small { display: block; margin-top: .18rem; color: var(--muted); font-size: .78rem; }
+      .price-value { display: flex; align-items: baseline; gap: .25rem; color: var(--paper); font-family: var(--font-display); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+      .price-value em { color: var(--muted); font-family: var(--font-condensed); font-size: .74rem; font-style: normal; letter-spacing: .08em; text-transform: uppercase; }
+      .price-value.addon { color: var(--red); font-size: 1.35rem; }
+
+      .hours-row { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr) auto; gap: 1rem; align-items: center; padding: .85rem 1rem; border-bottom: 1px solid var(--line-soft); }
+      .hours-row:last-child { border-bottom: 0; }
+      .hours-days { font-family: var(--font-condensed); font-size: .95rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+      .hours-time { display: flex; align-items: center; gap: .5rem; font-family: var(--font-condensed); font-size: 1.05rem; font-style: italic; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+      .hours-time i { color: var(--red); font-style: normal; }
+      .hours-time em { color: var(--muted); font-size: .7rem; font-style: normal; letter-spacing: .1em; text-transform: uppercase; }
+
+      .switch { position: relative; width: 3.1rem; height: 1.7rem; padding: 0; border: 1px solid var(--line); background: var(--black); }
+      .switch::after { position: absolute; top: .18rem; left: .18rem; width: 1.18rem; height: 1.18rem; background: var(--muted); content: ""; transition: left .18s ease, background .18s ease; }
+      .switch[aria-checked="true"] { border-color: var(--action); background: var(--action); }
+      .switch[aria-checked="true"]::after { left: 1.6rem; background: #fff; }
+
+      .promo-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 1rem; align-items: center; padding: .9rem 1rem; border-bottom: 1px solid var(--line-soft); }
+      .promo-name { display: block; font-family: var(--font-condensed); font-size: .98rem; font-style: italic; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+      .promo-detail { display: block; margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+      .promo-value { color: var(--red); font-family: var(--font-display); font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1; }
+      .promo-foot { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; justify-content: space-between; padding: .85rem 1rem 0; }
+
+      .rule-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: .85rem 1rem; border-bottom: 1px solid var(--line-soft); }
+      .rule-row:last-child { border-bottom: 0; }
+      .rule-row b { display: block; font-family: var(--font-condensed); font-size: .88rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+      .rule-row small { display: block; max-width: 34rem; margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+
+      .change-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .5rem; align-items: center; }
+      .change-row .change-text b { display: block; font-family: var(--font-condensed); font-size: .82rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .change-row .change-text small { display: block; margin-top: .12rem; color: var(--muted); font-size: .76rem; }
+      .change-delta { color: var(--red); font-family: var(--font-condensed); font-size: .92rem; font-style: italic; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .03em; white-space: nowrap; }
+      .change-delta.pending { color: var(--amber); font-size: .7rem; font-style: normal; letter-spacing: .08em; text-transform: uppercase; }
+      .change-row .icon-button { width: 1.9rem; min-height: 1.9rem; }
+
+      @media (max-width: 1180px) {
+        .view-switch button { padding-inline: .6rem; font-size: .7rem; }
+        .cfg-row { gap: .5rem; }
+      }
+
+      @media (max-width: 920px) {
+        .cfg-row { grid-template-columns: minmax(0, 1.5fr) minmax(0, .7fr) minmax(0, .9fr) auto; }
+        .cfg-row .cfg-cell.muted { display: none; }
+      }
+
+      @media (max-width: 680px) {
+        .view-switch { order: 4; width: 100%; }
+        .view-switch button { flex: 1; min-height: 2.4rem; }
+        .config-nav { display: flex; gap: 1px; margin-bottom: 1rem; padding: 1px; background: var(--line); overflow-x: auto; }
+        .config-nav a { flex: 0 0 auto; min-height: 2.3rem; padding-inline: .7rem; background: var(--panel); border: 0; font-size: .7rem; letter-spacing: .05em; text-align: center; white-space: nowrap; }
+        .config-nav a em { display: none; }
+        .fleet-mix { grid-template-columns: 1fr; }
+        .cfg-row { grid-template-columns: minmax(0, 1fr) auto; gap: .4rem .6rem; padding: .75rem .7rem; }
+        .cfg-row.head { display: none; }
+        .cfg-row > .cfg-cell, .cfg-row > .chip { grid-column: 1; }
+        .cfg-row .cfg-cell.muted { display: block; }
+        .cfg-row > .row-actions { grid-column: 2; grid-row: 1 / -1; align-self: center; }
+        .hours-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: .45rem; }
+        .hours-time { grid-column: 1 / -1; }
+        .price-row { grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+        .price-row .icon-button { grid-column: 2; }
+        .promo-row { grid-template-columns: minmax(0, 1fr) auto; gap: .6rem; }
+        .promo-row .promo-value { grid-row: 1; grid-column: 2; }
+        .promo-row .switch { grid-row: 2; grid-column: 2; justify-self: end; }
+        .rule-row { grid-template-columns: minmax(0, 1fr); row-gap: .7rem; }
+        .rule-row .stepper { justify-self: start; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockup-banner" id="top">Visual mockup · illustrative Calendar &amp; config data only · private staff view</div>
+    <header class="appbar">
+      <a class="brand" href="#top" aria-label="Xerom Race Control dashboard home">
+        <img src="../../src/assets/brand/xerom-logo.svg" alt="Xerom" />
+      </a>
+      <div class="appbar-title">
+        <strong id="view-title">Race Control</strong>
+        <span id="view-subtitle">Google Calendar operations dashboard</span>
+      </div>
+      <nav class="view-switch" aria-label="Dashboard views">
+        <button class="is-active" type="button" data-view="schedule" aria-pressed="true">Schedule</button>
+        <button type="button" data-view="config" aria-pressed="false">Content Management</button>
+      </nav>
+      <div class="sync-state" aria-label="Calendar sync healthy">
+        <i class="signal-dot" aria-hidden="true"></i><span>Calendar synced</span>
+      </div>
+      <div class="app-actions">
+        <button class="icon-button" type="button" aria-label="Refresh Calendar data">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.7-4L4 9"></path><path d="M4 4v5h5"></path><path d="M4 13a8 8 0 0 0 14.7 4L20 15"></path><path d="M20 20v-5h-5"></path></svg>
+        </button>
+        <button class="text-button primary" type="button">Open Calendar</button>
+      </div>
+    </header>
+
+    <main class="layout view" id="view-schedule">
+      <aside class="sidebar" aria-label="Dashboard filters and resource roster">
+        <p class="rail-label">Schedule window</p>
+        <div class="day-switcher" aria-label="Date navigation">
+          <button type="button" aria-label="Previous day"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"></path><path d="m11 6-6 6 6 6"></path></svg></button>
+          <button class="current" type="button" aria-current="date"><b>Sun, 13 Sep</b><span>Today · Malaysia time</span></button>
+          <button type="button" aria-label="Next day"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg></button>
+        </div>
+
+        <p class="rail-label">View</p>
+        <div class="filter-list" role="group" aria-label="Resource filters">
+          <button class="active" type="button" aria-pressed="true">All resources <em>06</em></button>
+          <button type="button" aria-pressed="false">Sim rigs <em>04</em></button>
+          <button type="button" aria-pressed="false">PS5 lounges <em>02</em></button>
+          <button type="button" aria-pressed="false">Blocked <em>01</em></button>
+        </div>
+
+        <p class="rail-label">Live roster</p>
+        <div class="roster">
+          <div class="roster-group">
+            <h3>Sim racing</h3>
+            <div class="roster-row"><span class="roster-name"><i class="status-led busy"></i>Regular 01</span><small>busy</small></div>
+            <div class="roster-row"><span class="roster-name"><i class="status-led"></i>Regular 02</span><small>open</small></div>
+            <div class="roster-row"><span class="roster-name"><i class="status-led busy"></i>Regular 03</span><small>busy</small></div>
+            <div class="roster-row"><span class="roster-name"><i class="status-led"></i>Pro 01</span><small>open</small></div>
+          </div>
+          <div class="roster-group">
+            <h3>Play</h3>
+            <div class="roster-row"><span class="roster-name"><i class="status-led busy"></i>PS5 01</span><small>busy</small></div>
+            <div class="roster-row"><span class="roster-name"><i class="status-led warning"></i>PS5 02</span><small>blocked</small></div>
+          </div>
+        </div>
+        <div class="sidebar-foot"><strong>Last Calendar sync</strong>13 Sep · 5:58 PM MYT<br />Read-only visual concept</div>
+      </aside>
+
+      <section class="workspace" aria-label="Race Control schedule">
+        <div class="workspace-head">
+          <div>
+            <h1>Race Control</h1>
+            <p>One calm view of every rig, lounge, and Calendar event. Empty space means the resource is ready to book.</p>
+          </div>
+          <div class="date-mark"><b>Operating day</b><strong>Sun · 13 Sep 2026</strong></div>
+        </div>
+
+        <div class="metric-strip" aria-label="Schedule summary">
+          <div class="metric"><b>Now active</b><strong class="red">02 / 06</strong><small>confirmed sessions</small></div>
+          <div class="metric"><b>Next open</b><strong>08:00 PM</strong><small>Regular 02 · Pro 01</small></div>
+          <div class="metric"><b>Calendar health</b><strong>100%</strong><small>all resource feeds online</small></div>
+          <div class="metric"><b>Refuel status</b><strong>OPEN</strong><small>venue window · 12 PM–1 AM</small></div>
+        </div>
+
+        <section class="panel" aria-labelledby="track-title">
+          <div class="panel-head">
+            <h2 id="track-title">Live track / MYT</h2>
+            <div class="legend" aria-label="Timeline legend">
+              <span><i></i> confirmed</span><span><i class="open"></i> open</span><span><i class="maintenance"></i> blocked</span>
+            </div>
+          </div>
+          <p class="timeline-cue">Current time: 6 PM · swipe horizontally to inspect the full day →</p>
+          <div class="timeline-wrap">
+            <div class="timeline" role="grid" aria-label="Illustrative Google Calendar resource schedule">
+              <div class="time-axis" role="row">
+                <span role="columnheader">Resource</span><span role="columnheader">2 PM</span><span role="columnheader">3 PM</span><span role="columnheader">4 PM</span><span role="columnheader">5 PM</span><span role="columnheader">6 PM</span><span role="columnheader">7 PM</span><span role="columnheader">8 PM</span><span role="columnheader">9 PM</span><span role="columnheader">10 PM</span><span role="columnheader">11 PM</span><span role="columnheader">12 AM</span>
+              </div>
+              <div class="resource-row" role="row" aria-label="Regular 01 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led busy"></i><div>Regular 01<small>sim racing</small></div></div>
+                <div class="track" role="gridcell" aria-label="Regular 01 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking" type="button" style="grid-column: 2 / 4" aria-label="Mock group, Regular 01, 3 PM to 5 PM"><strong>MOCK GROUP</strong><span>3:00–5:00 PM · 2 hrs</span></button><button class="booking selected" type="button" style="grid-column: 5 / 6" aria-label="Selected mock group, Regular 01, 6 PM to 7 PM"><strong>MOCK GROUP</strong><span>6:00–7:00 PM · selected</span></button><button class="booking" type="button" style="grid-column: 7 / 8" aria-label="Walk-in, Regular 01, 8 PM to 9 PM"><strong>WALK-IN</strong><span>8:00–9:00 PM</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+              <div class="resource-row" role="row" aria-label="Regular 02 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led"></i><div>Regular 02<small>sim racing</small></div></div>
+                <div class="track" role="gridcell" aria-label="Regular 02 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking control" type="button" style="grid-column: 4 / 5" aria-label="Staff hold, Regular 02, 5 PM to 6 PM"><strong>STAFF HOLD</strong><span>5:00–6:00 PM</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+              <div class="resource-row" role="row" aria-label="Regular 03 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led busy"></i><div>Regular 03<small>sim racing</small></div></div>
+                <div class="track" role="gridcell" aria-label="Regular 03 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking" type="button" style="grid-column: 1 / 3" aria-label="Mock customer, Regular 03, 2 PM to 4 PM"><strong>MOCK CUSTOMER</strong><span>2:00–4:00 PM · 2 hrs</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+              <div class="resource-row" role="row" aria-label="Pro 01 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led"></i><div>Pro 01<small>pro sim</small></div></div>
+                <div class="track" role="gridcell" aria-label="Pro 01 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking selected" type="button" style="grid-column: 5 / 6" aria-label="Selected mock group, Pro 01, 6 PM to 7 PM"><strong>MOCK GROUP</strong><span>6:00–7:00 PM · selected</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+              <div class="resource-row" role="row" aria-label="PS5 01 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led busy"></i><div>PS5 01<small>play lounge</small></div></div>
+                <div class="track" role="gridcell" aria-label="PS5 01 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking" type="button" style="grid-column: 3 / 5" aria-label="Mock family, PS5 01, 4 PM to 6 PM"><strong>MOCK FAMILY</strong><span>4:00–6:00 PM · 2 controllers</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+              <div class="resource-row" role="row" aria-label="PS5 02 schedule">
+                <div class="resource-label" role="rowheader"><i class="status-led warning"></i><div>PS5 02<small>play lounge</small></div></div>
+                <div class="track" role="gridcell" aria-label="PS5 02 events"><div class="slot" style="grid-column: 1 / 12"></div><button class="booking maintenance" type="button" style="grid-column: 1 / 2" aria-label="Maintenance block, PS5 02, 2 PM to 3 PM"><strong>MAINTENANCE</strong><span>2:00–3:00 PM</span></button><div class="current-line" aria-hidden="true"></div></div>
+              </div>
+            </div>
+          </div>
+          <p class="timeline-note">Red marker = current time · All blocks represent illustrative Google Calendar events</p>
+        </section>
+
+        <div class="media-strip" aria-label="Equipment reference tiles">
+          <figure class="media-card"><img src="../../src/assets/images/regular-rig.800x600.jpg" alt="Owner-supplied Regular Rig hardware detail" /><figcaption><b>Regular Rig</b><span>3 resources · RM20 / hr</span></figcaption></figure>
+          <figure class="media-card"><img src="../../src/assets/images/pro-rig.800x600.jpg" alt="Owner-supplied Pro Rig hardware detail" /><figcaption><b>Pro Rig</b><span>1 resource · RM30 / hr</span></figcaption></figure>
+          <figure class="media-card"><img src="../../src/assets/images/ps5-lounge.800x600.jpg" alt="Owner-supplied PS5 Lounge detail" /><figcaption><b>PS5 Lounge</b><span>2 lounges · RM18 / hr</span></figcaption></figure>
+          <figure class="media-card"><img src="../../src/assets/images/cafe-atmosphere.800x600.jpg" alt="Owner-supplied cafe atmosphere" /><figcaption><b>Refuel</b><span>cafe atmosphere · owner-supplied photo</span></figcaption></figure>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Selected booking details">
+        <div class="inspector-inner">
+          <div>
+            <div class="inspector-head">
+              <div><h2>Mock group booking</h2><span class="eyebrow">Selected event</span><span class="booking-state"><i class="signal-dot"></i> Confirmed in Calendar</span></div>
+              <button class="close-button" type="button" aria-label="Close booking details"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button>
+            </div>
+            <div class="detail-card">
+              <div><span class="detail-label">Booking ID</span><span class="detail-value mono">XR-MOCK42</span></div>
+              <div><span class="detail-label">When</span><span class="detail-value mono">Sun, 13 Sep · 6:00–7:00 PM MYT</span></div>
+              <div><span class="detail-label">Resources</span><div class="resource-chips"><span class="resource-chip">Regular 01</span><span class="resource-chip">Pro 01</span></div></div>
+              <div><span class="detail-label">Customer</span><span class="detail-value">MOCK CUSTOMER · +60 12 000 0000</span></div>
+              <div><span class="detail-label">Booking note</span><span class="detail-value" style="font-size:.84rem; line-height:1.2; text-transform:none;">Illustrative note: mixed-tier group session.</span></div>
+            </div>
+            <div class="inspector-actions"><button class="text-button primary" type="button">View in Google Calendar</button><button class="text-button" type="button">Copy booking ID</button></div>
+          </div>
+          <div>
+            <div class="calendar-note"><strong>Calendar is authoritative</strong>Manual bookings, maintenance, and the Booking Control calendar appear here as unavailable. This screen is a visual concept only; no data is connected.</div>
+            <div class="activity"><h3>Recent Calendar activity</h3><div class="activity-list"><div class="activity-item"><time>5:58</time><p><b>Synced</b><span>Six resources + Booking Control · no errors</span></p></div><div class="activity-item"><time>5:42</time><p><b>Updated</b><span>Regular 01 · XR-MOCK42 confirmed</span></p></div><div class="activity-item"><time>4:16</time><p><b>Blocked</b><span>PS5 02 · maintenance event detected</span></p></div></div></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <main class="layout view" id="view-config" hidden>
+      <aside class="sidebar config-sidebar" aria-label="Content management sections">
+        <p class="rail-label">Configuration</p>
+        <nav class="config-nav" aria-label="Configuration sections">
+          <a href="#cfg-fleet">Fleet size <em>06</em></a>
+          <a href="#cfg-pricing">Pricing <em>04</em></a>
+          <a href="#cfg-hours">Operating hours</a>
+          <a href="#cfg-promotions">Promotions <em>01</em></a>
+          <a href="#cfg-capacity">Capacity &amp; pool</a>
+        </nav>
+        <div class="sidebar-foot">
+          <strong>Venue profile</strong>
+          Xerom SimRacing &amp; Cafe<br />Bandar Bukit Tinggi, Klang
+          <span class="config-flag">03 draft changes</span>
+        </div>
+      </aside>
+
+      <section class="workspace" aria-label="Content management">
+        <div class="workspace-head">
+          <div>
+            <h1>Content Management</h1>
+            <p>Change the fleet, prices, hours, and rules once. The website and Calendar availability both read from these values.</p>
+          </div>
+          <div class="date-mark"><b>Draft</b><strong>03 unpublished changes</strong></div>
+        </div>
+
+        <section class="panel cfg-section" id="cfg-fleet" aria-labelledby="cfg-fleet-title">
+          <div class="panel-head">
+            <h2 id="cfg-fleet-title">Fleet size</h2>
+            <button class="text-button primary" type="button">Add resource</button>
+          </div>
+          <div class="fleet-mix">
+            <div class="mix-control">
+              <span class="detail-label">Regular rigs</span>
+              <div class="stepper">
+                <button type="button" aria-label="Remove one Regular rig"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <output aria-label="Regular rig count">3</output>
+                <button type="button" aria-label="Add one Regular rig"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+              </div>
+              <small>RM20 / hr each</small>
+            </div>
+            <div class="mix-control">
+              <span class="detail-label">Pro rigs</span>
+              <div class="stepper">
+                <button type="button" aria-label="Remove one Pro rig"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <output aria-label="Pro rig count">1</output>
+                <button type="button" aria-label="Add one Pro rig"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+              </div>
+              <small>RM30 / hr each</small>
+            </div>
+            <div class="mix-control">
+              <span class="detail-label">PS5 lounges</span>
+              <div class="stepper">
+                <button type="button" aria-label="Remove one PS5 lounge"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <output aria-label="PS5 lounge count">2</output>
+                <button type="button" aria-label="Add one PS5 lounge"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+              </div>
+              <small>RM18 / hr · 2 pads</small>
+            </div>
+          </div>
+          <div class="cfg-table" role="table" aria-label="Resource list">
+            <div class="cfg-row head" role="row">
+              <span role="columnheader">Resource</span><span role="columnheader">Rate</span><span role="columnheader">Calendar</span><span role="columnheader">Status</span><span role="columnheader">Manage</span>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led busy" aria-hidden="true"></i><div><b>Regular 01</b><small>Regular sim</small></div></div>
+              <div class="cfg-cell" role="cell">RM20<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip live" role="cell"><i class="signal-dot" aria-hidden="true"></i>Live</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit Regular 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Pause Regular 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove Regular 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led" aria-hidden="true"></i><div><b>Regular 02</b><small>Regular sim</small></div></div>
+              <div class="cfg-cell" role="cell">RM20<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip live" role="cell"><i class="signal-dot" aria-hidden="true"></i>Live</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit Regular 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Pause Regular 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove Regular 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led busy" aria-hidden="true"></i><div><b>Regular 03</b><small>Regular sim</small></div></div>
+              <div class="cfg-cell" role="cell">RM20<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip live" role="cell"><i class="signal-dot" aria-hidden="true"></i>Live</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit Regular 03"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Pause Regular 03"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove Regular 03"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led" aria-hidden="true"></i><div><b>Pro 01</b><small>Pro sim</small></div></div>
+              <div class="cfg-cell" role="cell">RM30<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip live" role="cell"><i class="signal-dot" aria-hidden="true"></i>Live</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit Pro 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Pause Pro 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove Pro 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led busy" aria-hidden="true"></i><div><b>PS5 01</b><small>Play lounge</small></div></div>
+              <div class="cfg-cell" role="cell">RM18<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip live" role="cell"><i class="signal-dot" aria-hidden="true"></i>Live</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit PS5 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Pause PS5 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14"></path><path d="M15 5v14"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove PS5 01"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+            <div class="cfg-row" role="row">
+              <div class="cfg-name" role="cell"><i class="status-led warning" aria-hidden="true"></i><div><b>PS5 02</b><small>Play lounge</small></div></div>
+              <div class="cfg-cell" role="cell">RM18<span class="unit"> / hr</span></div>
+              <div class="cfg-cell muted" role="cell">Private calendar</div>
+              <span class="chip paused" role="cell"><i class="signal-dot" aria-hidden="true"></i>Paused</span>
+              <div class="row-actions" role="cell">
+                <button class="icon-button" type="button" aria-label="Edit PS5 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+                <button class="icon-button" type="button" aria-label="Resume PS5 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z"></path></svg></button>
+                <button class="icon-button danger" type="button" aria-label="Remove PS5 02"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+            </div>
+          </div>
+          <p class="cfg-note">Each resource maps to one private Calendar. Adding or pausing a resource changes what the website can sell.</p>
+        </section>
+
+        <section class="panel cfg-section" id="cfg-pricing" aria-labelledby="cfg-pricing-title">
+          <div class="panel-head">
+            <h2 id="cfg-pricing-title">Pricing</h2>
+            <span>MYR · per hour</span>
+          </div>
+          <div class="price-list">
+            <div class="price-row">
+              <div class="price-name"><b>Regular Sim</b><small>3 rigs · RM20 per hour</small></div>
+              <div class="price-value">RM20<em>/ hr</em></div>
+              <button class="icon-button" type="button" aria-label="Edit Regular Sim rate"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+            </div>
+            <div class="price-row">
+              <div class="price-name"><b>Pro Sim</b><small>1 rig · RM30 per hour</small></div>
+              <div class="price-value">RM30<em>/ hr</em></div>
+              <button class="icon-button" type="button" aria-label="Edit Pro Sim rate"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+            </div>
+            <div class="price-row">
+              <div class="price-name"><b>PS5 Lounge</b><small>2 lounges · includes two controllers</small></div>
+              <div class="price-value">RM18<em>/ hr</em></div>
+              <button class="icon-button" type="button" aria-label="Edit PS5 Lounge rate"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+            </div>
+            <div class="price-row">
+              <div class="price-name"><b>Extra PS5 controller</b><small>Add-on per controller, per hour</small></div>
+              <div class="price-value addon">+RM3<em>/ hr</em></div>
+              <button class="icon-button" type="button" aria-label="Edit extra controller add-on"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l4 4-11 11H5v-4z"></path><path d="m13 7 4 4"></path></svg></button>
+            </div>
+          </div>
+          <p class="cfg-note">Rates are stored once and read by the website, the booking summary, and this dashboard.</p>
+        </section>
+
+        <section class="panel cfg-section" id="cfg-hours" aria-labelledby="cfg-hours-title">
+          <div class="panel-head">
+            <h2 id="cfg-hours-title">Operating hours</h2>
+            <span>Asia / Kuala Lumpur</span>
+          </div>
+          <div class="hours-grid">
+            <div class="hours-row">
+              <span class="hours-days">Monday – Thursday</span>
+              <div class="hours-time"><span>14:00</span><i>→</i><span>01:00</span><em>next day</em></div>
+              <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Monday to Thursday open"></button>
+            </div>
+            <div class="hours-row">
+              <span class="hours-days">Friday – Sunday</span>
+              <div class="hours-time"><span>12:00</span><i>→</i><span>01:00</span><em>next day</em></div>
+              <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Friday to Sunday open"></button>
+            </div>
+          </div>
+          <div class="warning-note"><svg class="warn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg><span>Public-holiday and shortened-hour handling is not confirmed. TODO(owner): set holiday hours before publishing.</span></div>
+        </section>
+
+        <section class="panel cfg-section" id="cfg-promotions" aria-labelledby="cfg-promotions-title">
+          <div class="panel-head">
+            <h2 id="cfg-promotions-title">Promotions</h2>
+            <span>Instruction-based · no code entry</span>
+          </div>
+          <div class="promo-row">
+            <div>
+              <span class="promo-name">Instagram follow &amp; tag</span>
+              <span class="promo-detail">5% off, applied at the counter when the customer follows and tags @xerom.my.</span>
+            </div>
+            <span class="promo-value">−5%</span>
+            <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Instagram promotion active"></button>
+          </div>
+          <div class="warning-note"><svg class="warn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg><span>Active dates and redemption timing are not confirmed. TODO(owner): set the promotion window.</span></div>
+          <div class="promo-foot">
+            <span class="chip warn">Window not set</span>
+            <button class="text-button" type="button">Add promotion</button>
+          </div>
+        </section>
+
+        <section class="panel cfg-section" id="cfg-capacity" aria-labelledby="cfg-capacity-title">
+          <div class="panel-head">
+            <h2 id="cfg-capacity-title">Capacity &amp; pool</h2>
+            <span>Booking rules</span>
+          </div>
+          <div class="rule-list">
+            <div class="rule-row">
+              <div><b>Multiple resources per booking</b><small>A group may reserve more than one rig or lounge at the same time.</small></div>
+              <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Allow multiple resources per booking"></button>
+            </div>
+            <div class="rule-row">
+              <div><b>Mixed Regular + Pro groups</b><small>One booking may combine Regular and Pro rigs.</small></div>
+              <button class="switch" type="button" role="switch" aria-checked="true" aria-label="Allow mixed Regular and Pro groups"></button>
+            </div>
+            <div class="rule-row">
+              <div><b>Maximum resources per booking</b><small>Upper limit for a single session across the venue pool.</small></div>
+              <div class="stepper">
+                <button type="button" aria-label="Decrease maximum resources"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                <output class="pending" aria-label="Maximum resources, awaiting owner confirmation">—</output>
+                <button type="button" aria-label="Increase maximum resources"><svg class="step-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg></button>
+              </div>
+            </div>
+            <div class="rule-row">
+              <div><b>Deposits</b><small>Online bookings are confirmed without a deposit.</small></div>
+              <span class="chip">Not required</span>
+            </div>
+          </div>
+          <div class="warning-note"><svg class="warn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></svg><span>Pool capacity is not confirmed. TODO(owner): set the maximum resources per booking.</span></div>
+        </section>
+      </section>
+
+      <aside class="inspector" aria-label="Unpublished configuration changes">
+        <div class="inspector-inner">
+          <div>
+            <div class="inspector-head">
+              <div><h2>Unpublished changes</h2><span class="eyebrow">Draft</span><span class="booking-state"><i class="signal-dot"></i> Not live yet</span></div>
+              <button class="close-button" type="button" aria-label="Close draft details"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="m18 6-12 12"></path></svg></button>
+            </div>
+            <div class="detail-card">
+              <div class="change-row">
+                <span class="change-text"><b>Regular rigs</b><small>Fleet size</small></span>
+                <span class="change-delta">3 → 4</span>
+                <button class="icon-button" type="button" aria-label="Revert Regular rigs change"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 4 9l4 4"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+              </div>
+              <div class="change-row">
+                <span class="change-text"><b>Holiday hours</b><small>Operating hours</small></span>
+                <span class="change-delta pending">Awaiting owner</span>
+                <button class="icon-button" type="button" aria-label="Revert holiday hours change"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 4 9l4 4"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+              </div>
+              <div class="change-row">
+                <span class="change-text"><b>Pool capacity</b><small>Capacity &amp; pool</small></span>
+                <span class="change-delta pending">Awaiting owner</span>
+                <button class="icon-button" type="button" aria-label="Revert pool capacity change"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 4 9l4 4"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+              </div>
+            </div>
+            <div class="inspector-actions"><button class="text-button primary" type="button">Publish changes</button><button class="text-button" type="button">Discard all</button></div>
+          </div>
+          <div>
+            <div class="calendar-note"><strong>One source of truth</strong>Publishing updates the website and the bookable resources together. Calendar stays the record of truth for availability.</div>
+            <div class="activity"><h3>Config change log</h3><div class="activity-list"><div class="activity-item"><time>5:44</time><p><b>Draft</b><span>Regular rigs set to 4 · not published</span></p></div><div class="activity-item"><time>5:31</time><p><b>Flagged</b><span>Holiday hours need owner confirmation</span></p></div><div class="activity-item"><time>4:58</time><p><b>Published</b><span>Operating hours Mon–Sun confirmed</span></p></div></div></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <script>
+      const timelineWrap = document.querySelector('.timeline-wrap');
+      const centerCurrentTime = () => {
+        if (!timelineWrap || !window.matchMedia('(max-width: 680px)').matches) return;
+        const maxScroll = timelineWrap.scrollWidth - timelineWrap.clientWidth;
+        timelineWrap.scrollLeft = Math.max(0, Math.round(maxScroll * .28));
+      };
+      window.addEventListener('load', centerCurrentTime, { once: true });
+
+      const viewMeta = {
+        schedule: { title: 'Race Control', subtitle: 'Google Calendar operations dashboard' },
+        config: { title: 'Content Management', subtitle: 'Fleet, pricing, hours and rules' }
+      };
+      const viewButtons = Array.from(document.querySelectorAll('.view-switch button'));
+      const viewTitle = document.getElementById('view-title');
+      const viewSubtitle = document.getElementById('view-subtitle');
+      const showView = (name) => {
+        viewButtons.forEach((button) => {
+          const active = button.dataset.view === name;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        document.querySelectorAll('.layout.view').forEach((view) => {
+          view.hidden = view.id !== `view-${name}`;
+        });
+        if (viewMeta[name]) {
+          viewTitle.textContent = viewMeta[name].title;
+          viewSubtitle.textContent = viewMeta[name].subtitle;
+        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      };
+      viewButtons.forEach((button) => {
+        button.addEventListener('click', () => showView(button.dataset.view));
+      });
+    </script>
+  </body>
+</html>

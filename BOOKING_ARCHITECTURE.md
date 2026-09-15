@@ -174,3 +174,11 @@ MVP cancellation/rescheduling happens through WhatsApp. Staff search the private
 - Partial insert failure removes previously created events.
 - Rollback failure is logged and never returned as success.
 - Turnstile, Google auth, rate limit, malformed input, timeout, and network failure states.
+
+## 2026-09-15 — Planned Race Control extension
+
+The owner has expanded scope beyond the original Calendar-only staff workflow. [Race Control plan](docs/RACE_CONTROL_PLAN.md) specifies owner-authenticated booking mutations, runtime versioned configuration, resource provisioning, pricing conflict rules, hours impact review and recovery journals/fences. Its expanded API/storage/operating model supersedes the corresponding original planning boundaries above; serialization, private calendars, authoritative pricing, idempotency and no-partial-success requirements remain mandatory.
+
+Key additions: all app mutations share venue coordinator ordering; configuration is resolved and validated inside final booking operations; grouped edits use conditional Calendar versions and safe compensation; incomplete recovery fences capacity. Google UI edits bypass application serialization and must be detected/reconciled rather than described as protected by the app lock. R2 config/media and DO recovery state are proposed support storage, not a second permanent booking database.
+
+Calendar provisioning uses venue-owner authorization, since the current event-writer service account has not been proven suitable for owned-calendar lifecycle operations. Creation/deletion require explicit reviewed owner confirmation. Retire preserves history; deletion of nonempty calendars waits on retention policy. No new Calendar actions have been performed by this planning change.

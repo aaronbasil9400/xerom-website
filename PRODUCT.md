@@ -14,13 +14,13 @@ Astro + TypeScript, deployed on Cloudflare Pages with Cloudflare server-side run
 
 The primary customers are local casual groups visiting from phones after discovering Xerom through Instagram, Google Maps, Google Search, WhatsApp, or shared links. Secondary audiences are families and serious sim racers. The public website is English-only for the MVP.
 
-Staff operate bookings through normal private Google Calendars rather than a custom admin portal.
+The owner will operate bookings through Race Control, a private owner-only front-desk dashboard. Google Calendar remains the persistent booking system of record. This expanded scope was confirmed on 2026-09-15; dashboard implementation is planned, not shipped.
 
 ## Product Purpose
 
 The website helps visitors quickly understand what Xerom offers, see current prices and hours, find the Klang venue, and reserve available sim-racing rigs or PS5 lounges. It also reduces staff coordination work by making private Google Calendar the shared operational view for website bookings, walk-ins, telephone bookings, maintenance, and closures.
 
-Success means a customer can complete an accurate mobile booking with minimal personal data, and staff can manage daily availability without learning a custom back office.
+Success means a customer can complete an accurate mobile booking with minimal personal data, and the owner can manage daily operations and publish business settings through Race Control without rebuilding the website.
 
 ## Positioning
 
@@ -39,7 +39,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - Sessions may run back-to-back with no reset buffer.
 - Bookings require at least one hour of notice and may be made up to three days ahead.
 - Available slots receive instant confirmation. Deposits are not required for the MVP.
-- Customer-facing changes and cancellations are handled through WhatsApp using the booking ID.
+- Customer-facing change/cancellation requests may arrive through WhatsApp using the booking ID; the owner performs the reservation change in Race Control under the expanded scope.
 
 ## Capabilities and Constraints
 
@@ -52,7 +52,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - A dedicated control calendar blocks full-venue closures and special events.
 - Cloudflare Turnstile, strict validation, rate limiting, duplicate-submit prevention, and server-side idempotency protect public endpoints.
 - Timezone is `Asia/Kuala_Lumpur`.
-- Payment processing, deposits, memberships, customer accounts, promo-code engines, WhatsApp Business API automation, leaderboards, and custom administration are outside MVP scope.
+- Payment processing, deposits, memberships, customer accounts, customer-entered promo codes, WhatsApp Business API automation, and leaderboards remain outside this phase. Owner-only administration, percentage/day-based promotions and duration packages are included in the 2026-09-15 expansion; actual offer values require owner input.
 
 ## Brand Commitments
 
@@ -76,7 +76,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 ## Product Principles
 
 1. Make the next visit obvious: experience, current price, availability, directions, and contact should be reachable within seconds.
-2. Let staff operate from Google Calendar; avoid duplicating operational state in a custom system.
+2. Let the owner operate through Race Control while retaining Google Calendar as the booking system of record; avoid a duplicate booking database.
 3. Confirm only what is actually reserved; serialize, recheck, create all resources, and roll back partial failures.
 4. Make changing prices, promotions, equipment copy, hours, and inventory a small configuration edit.
 5. Prefer fast, legible mobile interactions over decorative complexity.
@@ -84,3 +84,13 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 ## Accessibility & Inclusion
 
 Target WCAG 2.2 AA for the public experience. Booking must support keyboard navigation, screen readers, visible focus, accessible validation, reduced motion, high contrast, and touch targets suitable for phones.
+
+## Race Control scope expansion — owner-confirmed 2026-09-15
+
+- Desktop-first owner front desk, with tablet booking chart and usable mobile agenda. Create/walk-in, check-in, countdown, extension, reschedule, completion, no-show and cancellation are in scope.
+- All scoped business information becomes editable: resources, pricing/add-ons, weekly and exception hours, promotions/packages, advanced booking rules, and structured website content/contact/photos. Current confirmed values remain seed defaults until owner changes them.
+- Business edits publish without rebuilding/redeploying the website. Evaluate avoiding a separate application database; private versioned object storage plus existing coordination storage is the proposed architecture, not a claim of no persistence.
+- Confirmed prices are preserved. Hours changes must review existing bookings outside proposed hours; unresolved conflicts block publishing. No automatic cancellation/customer notification.
+- Adding resources automatically provisions calendars after explicit confirmation. Calendar deletion also requires explicit confirmation; history-preserving retirement and nonempty-calendar deletion policy are specified in the plan.
+- Preserve the existing visual direction and official wordmark.
+- Implementation specification and proposed engineering defaults: [Race Control plan](docs/RACE_CONTROL_PLAN.md). Agent entry point: [Race Control handoff](docs/agent/RACE_CONTROL_HANDOFF.md). These documents describe planned behavior; they do not certify implementation.

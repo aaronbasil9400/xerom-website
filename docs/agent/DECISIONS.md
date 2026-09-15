@@ -102,3 +102,12 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 - Use `DESIGN.md` as the sole authoritative source for current visual design references.
 - Treat `.impeccable/design.json` and other generated Impeccable sidecars as derived artifacts only; they must not override `DESIGN.md` when stale or inconsistent.
+
+## 2026-09-15 — Race Control owner scope and implementation proposal
+
+- Owner approved owner-only Race Control as the main desktop front desk, tablet schedule support, full booking lifecycle actions, business/content editing and runtime publication with no rebuild.
+- Google Calendar remains the booking record. Calendar creation/deletion must be automatically executed only after explicit owner confirmation. Confirmed booking prices survive settings edits; proposed hours must review outside-hours existing bookings.
+- The plan recommends private R2 versioned config/media plus existing DO serialization/recovery metadata instead of a separate database; prove capability/ownership/security in an isolated spike before infrastructure changes.
+- Proposed pricing default: lowest eligible per-resource price among base, percentage and exact-duration packages; no stacking, deterministic ties, additions separate. Actual offers stay draft until entered.
+- Proposed resource lifecycle: retire preserves history; permanent deletion is separate and initially limited to empty retired calendars pending retention policy.
+- Build specification: `docs/RACE_CONTROL_PLAN.md`; entry handoff: `docs/agent/RACE_CONTROL_HANDOFF.md`. This change is documentation only; proposed UI, APIs and storage are not implemented or tested integrations.
