@@ -38,10 +38,10 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 
 - [x] Run baseline check, unit tests, build, asset verification, and E2E.
 - [x] Preserve six pre-change screenshots under a dedicated baseline directory.
-- [ ] Implement the cinematic desktop homepage and independently tuned mobile hierarchy.
-- [ ] Add the always-visible mobile Book action without changing booking routes or behavior.
-- [ ] Add/adjust structural and responsive E2E coverage.
-- [ ] Run final six-width visual QA, accessibility, reduced-motion, 200% reflow, console/network, links/assets, and booking-regression checks.
-- [ ] Measure Lighthouse against an available representative build/origin and document constraints.
-- [ ] Update `DESIGN.md`, `QA_REPORT.md`, `docs/agent/DECISIONS.md`, and this worklog with evidence.
+- [x] Implement the cinematic desktop homepage and independently tuned mobile hierarchy.
+- [x] Add the always-visible mobile Book action without changing booking routes or behavior.
+- [x] Add/adjust structural and responsive E2E coverage.
+- [x] Run final six-width visual QA, accessibility, reduced-motion, 200% reflow, console/network, links/assets, and booking-regression checks.
+- [x] Measure Lighthouse against a local production preview; deployed-origin remeasurement remains pending.
+- [x] Update `DESIGN.md`, `QA_REPORT.md`, `docs/agent/DECISIONS.md`, and this worklog with evidence.
 - [ ] Commit scoped progress periodically; do not merge to `main`.

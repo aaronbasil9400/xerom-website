@@ -185,13 +185,13 @@ The palette is a night venue under broadcast lighting: black layers carry the in
 
 The shared shell is centered within an 88rem maximum width and ordinarily leaves 1rem at each side; below 560px that outer gutter contracts to 0.5rem. Vertical sections use a fluid 4.5rem–9rem rhythm. Layout is panel-based, with one-pixel seams and deliberate 1px grid gaps reinforcing the broadcast assembly.
 
-The approved homepage first viewport is a two-part composition above 900px: a narrow Race / Play / Refuel route column beside a dominant crew image. The headline and primary booking action sit over the photography, while a semantic four-cell price proof rail anchors its lower edge with Regular Rig, Pro Rig, PS5 Lounge, and Cafe proof. At 900px and below, the hero image moves first, the price rail is removed to protect the fold, and the route becomes a three-column strip; at 560px and below, the route becomes a vertical timeline, service cards become compact image/body rows, actions become full width, and booking action rows stack.
+The shipped homepage first viewport is a cinematic full-width crew image with a strong lower-left copy block. Its semantic headline is exactly `Race Together`; Klang is kept in a separate location cue. A desktop experience dock overlaps the hero's lower edge and links Race, Play, and Refuel to the corresponding page sections. At 900px and below, the page uses an independently composed reading order: hero, compact Pick Your Pace session cards, horizontal experience dock, social gallery, practical hours/location, and final booking action. At 560px and below, the session cards become image/body rows and the primary actions become full width.
 
 The implementation has two responsive thresholds: 900px reorganizes major grids and replaces desktop navigation with the menu; 560px performs the phone-specific composition. Every change must still be inspected at 375, 390, 430, 768, 1024, and 1440+ CSS pixels because the approved phone composition is not just a compressed desktop.
 
 Booking layouts inherit the same geometry. The shell is a bordered broadcast panel; progress is a three-cell strip; quantity rows, duration choices, slots, review blocks, and fields form an inset control grid. Two-column field and visit layouts collapse to one column on phones. Touch actions maintain a minimum implemented height of 3.25rem.
 
-**The Story Before Specification Rule.** Preserve the sequence: people and shared-night promise with the Race / Play / Refuel route, practical opening hours in the hero, service and price proof, hardware/value detail, then booking.
+**The Story Before Specification Rule.** Preserve the sequence: people and shared-night promise, clear booking action, service/price proof, Race / Play / Refuel experience route, social proof, practical visit information, then a final booking action.
 
 ## Elevation & Depth
 
@@ -244,19 +244,19 @@ The brand glyph is the deliberate exception to the stroked icon family. `public/
 
 ### Navigation
 
-The sticky header is a translucent Canvas Black broadcast bar with a fine Warm White mixed border and 16px backdrop blur. The owner-supplied deterministic SVG trace at `src/assets/brand/xerom-logo.svg` anchors the left at a fluid 7.8rem–11rem width; the footer uses the same asset at 8.5rem. Compressed uppercase service links occupy the center and the primary booking action closes the right. Below 900px, a two-line menu button replaces both link row and header CTA, and the logo settles at 7.5rem on phones. The opened menu is keyboard-contained, Escape-dismissable, and moves focus into its first link.
+The sticky header is a translucent Canvas Black broadcast bar with a fine Warm White mixed border and 16px backdrop blur. The owner-supplied deterministic SVG trace at `src/assets/brand/xerom-logo.svg` anchors the left at a fluid 7.8rem–11rem width; the footer uses the same asset at 8.5rem. Compressed uppercase service links and a Klang location cue occupy the desktop center, and the primary booking action closes the right. Below 900px, the navigation links move into a two-line menu while a compact always-visible Book pill remains in the header. The opened menu is keyboard-contained, Escape-dismissable, and moves focus into its first link.
 
 ### Race / Play / Refuel Route
 
-Three numbered media stages use italic Barlow Condensed numerals, a dashed Racing Red SVG path, and circular route nodes. It is a visual itinerary, not a leaderboard or ranking. Desktop uses a vertical route at the hero's left, tablet uses a horizontal three-stage strip, and phone returns to a compact vertical timeline.
+The route is a three-cell experience dock. Each cell pairs owner service imagery with an ordinal, Race / Play / Refuel label, short safe copy, and a directional affordance. It is a visual itinerary, not a leaderboard or ranking. Desktop overlaps the dock across the hero's lower edge; tablet and phone render it as a horizontally scrollable strip with fully visible focus states and at least 44px interactive targets.
 
-### Price Proof and Signal Band
+### Session Price Proof
 
-Price proof is a semantic, four-cell rail inside the desktop hero: equal columns pair compact Barlow Condensed labels with Racing Sans One values for Regular Rig, Pro Rig, PS5 Lounge, and Cafe. It sits over a 92% Canvas Black mixture and is hidden at 900px and below. The signal band is the rare full Action Racing Red surface: a continuous italic uppercase Race Together / Play Together / Refuel Together broadcast crawl. It runs for 28 seconds on larger screens and 20 seconds on phones, then collapses to effectively static when reduced motion is requested.
+Price proof lives in the Pick Your Pace section immediately after the hero on phones and after the overlapping dock on desktop. Four semantic cards present Regular Rig, Pro Rig, PS5 Lounge, and Cafe using centralized price/service configuration and owner-supplied imagery. Cards stay compact on phones so users see real choices quickly. Cafe remains a service route rather than an invented menu or price claim.
 
 ### Opening Hours
 
-A compact one-line hours strip sits at the foot of the hero copy, above the desktop price rail, so opening hours are fully visible without scrolling at every breakpoint including phones. A red `Opening hours` label precedes two condensed day/time pairs (Monday–Thursday 2PM–1AM, Friday–Sunday 12PM–1AM) separated from the actions by a hairline rule. Hours derive from the same centralized `bookingRules.weeklyHours` configuration that drives availability, so published hours and bookable slots cannot drift. The Visit page renders the same configuration as a compact row list.
+The homepage presents opening hours beside the verified Klang location cue in a dedicated practical-information section after the social gallery. Hours derive from the same centralized `bookingRules.weeklyHours` configuration that drives availability, so published hours and bookable slots cannot drift. The Visit page renders the same configuration as a compact row list.
 
 ### Booking Controls
 
