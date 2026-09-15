@@ -2,7 +2,6 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ExperienceDock from "@/components/home/ExperienceDock.astro";
 import SessionCard from "@/components/home/SessionCard.astro";
-import VenueGallery from "@/components/home/VenueGallery.astro";
 import { services } from "@/config/services";
 import { formatMoney, pricing } from "@/config/pricing";
 import { media } from "@/config/media";
@@ -61,15 +60,19 @@ import "@/styles/home.css";
       </section>
     </div>
 
-    <section class="home-social-section" id="about" aria-labelledby="social-title">
-      <div class="home-social-inner">
-        <div class="home-copy-block">
-          <p class="home-kicker">The Xerom experience</p>
-          <h2 id="social-title">More than <span class="red">racing</span></h2>
-          <p>Race on your own or bring the crew, then switch to PS5 or pause at the cafe.</p>
-          <p class="owner-media-note">Service photos show Xerom. The group scene is an illustrative placeholder pending an owner-approved photo.</p>
-        </div>
-        <VenueGallery />
+    <section class="section-shell section-space split-section" id="about" aria-labelledby="setup-title">
+      <div class="hardware-frame">
+        <Image src={media.proRig} alt="Close-up of the Porsche-branded wheel centre on Xerom’s Pro Rig" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" />
+      </div>
+      <div>
+        <h2 class="section-title" id="setup-title">Choose your <span class="red">setup</span></h2>
+        <p class="lede">Start with the accessible Regular Rig, step into the dedicated Pro Rig, or settle into a PS5 lounge. Every option is booked by the hour.</p>
+        <ul class="feature-list">
+          <li><span>Three Regular rigs for casual group racing</span></li>
+          <li><span>One Pro rig for a more focused drive</span></li>
+          <li><span>Two PS5 lounges with two controllers included</span></li>
+        </ul>
+        <a class="button button-secondary" href="/experiences">Compare experiences</a>
       </div>
     </section>
 

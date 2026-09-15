@@ -37,6 +37,8 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - Final diagnostics: 0 errors/0 project warnings (two hints in the unrelated untracked Hive package); 15/15 unit tests; 21/21 media derivatives; production build passed after stopping the confirmed local Astro QA processes that held `dist/client`.
 - Final warm Playwright pass completed every functional case. The last 1440px screenshot overwrite hit a transient OneDrive file lock; its isolated rerun passed, yielding 36 passed cases and 12 intentional skips across the combined final result.
 - `wrangler deploy` stopped before upload because `CLOUDFLARE_API_TOKEN` is not available in this non-interactive session. The existing staging Worker was not changed. Deployed screenshots, deployed Lighthouse, and a deployed smoke check require owner-provided Cloudflare deployment credentials or an owner-run deployment.
+- Owner revision: replaced only the redundant More Than Racing gallery block with the previous Choose Your Setup split section and `/experiences` comparison action. The hero, session cards, experience dock, visit information, final CTA, and booking flow were left unchanged.
+- Revision verification: Astro diagnostics 0 errors, 15/15 booking unit tests, production build passed, and the restored section/no-overflow contract passed at 375, 390, 430, 768, 1024, and 1440px. Visual captures at 390px and 1440px passed under `.impeccable/review/homepage-upgrade/setup-restored/`.
 
 ## Continuation checklist
 

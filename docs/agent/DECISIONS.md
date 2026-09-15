@@ -73,3 +73,9 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Keep the existing AI social-group image as an explicit, replaceable placeholder and use owner-supplied photographs for Regular Rig, Pro Rig, PS5 Lounge, and Cafe proof.
 - Serve the hero through deterministic responsive AVIF/WebP derivatives and inline built CSS; preserve one eager image while all supporting images remain lazy.
 - Do not alter booking routes, configuration, coordinator behavior, request contracts, or Calendar semantics as part of the homepage change.
+
+## 2026-09-15 — Restore Choose Your Setup homepage section
+
+- Per owner direction, replace only the redundant More Than Racing gallery with the previous Choose Your Setup split section.
+- Retain the Pro Rig image, confirmed Regular/Pro/PS5 resource facts, and Compare Experiences link to `/experiences`.
+- Leave the cinematic hero, Pick Your Pace cards, Race / Play / Refuel dock, visit information, final CTA, and booking behavior unchanged.

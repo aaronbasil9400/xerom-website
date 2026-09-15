@@ -97,3 +97,7 @@ The cinematic homepage upgrade is implemented on `exp/homepage-cinematic-v1`. It
 The only non-owner homepage media remains `social-group-hero.placeholder-ai.*`. It is explicitly identified in its filename, manifest provenance, source comments, and alternative text, and must be replaced with an owner-approved social venue photograph before production sign-off.
 
 The branch was pushed to `origin/exp/homepage-cinematic-v1`. A 2026-09-15 `wrangler deploy` attempt stopped before deployment because this non-interactive session has no `CLOUDFLARE_API_TOKEN`; therefore deployed-origin screenshots, Lighthouse, and live-stage smoke checks remain unrun and are not marked passing. The existing staging Worker was not changed. One warm full E2E run completed every functional assertion and encountered a transient OneDrive lock only while overwriting the final 1440px PNG; the isolated screenshot case passed immediately afterward, giving 36 passed checks and 12 intentional skips across the combined final run.
+
+### Owner revision: Choose Your Setup restoration
+
+The redundant More Than Racing gallery was replaced with the previous Choose Your Setup split section only. The restored block uses the Pro Rig image, the three confirmed resource facts, and a Compare Experiences link to `/experiences`. Astro diagnostics, all 15 booking unit tests, and the production build pass. The section contract and no-overflow checks pass at all six required widths; refreshed 390px and 1440px captures are stored under `.impeccable/review/homepage-upgrade/setup-restored/`.
