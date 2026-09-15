@@ -97,3 +97,8 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Validate Malaysian mobile numbers as local `01X` numbers, including the 11-digit `011` and `015` exceptions, plus common `+60`/`0060` international input.
 - Normalize accepted phone values to E.164 `+60...` before placing them in Calendar event descriptions so staff have one searchable format.
 - Treat format validation as syntax validation only; it cannot prove that a number is active or registered for WhatsApp.
+
+## 2026-09-15 — Design reference authority
+
+- Use `DESIGN.md` as the sole authoritative source for current visual design references.
+- Treat `.impeccable/design.json` and other generated Impeccable sidecars as derived artifacts only; they must not override `DESIGN.md` when stale or inconsistent.
