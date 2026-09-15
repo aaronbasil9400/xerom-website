@@ -43,6 +43,7 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - Mobile-dock verification: Astro diagnostics 0 errors, 15/15 unit tests, production build passed, and 12/12 combined breakpoint/overflow/core-route checks passed across all six widths. The full functional suite passed every case across the combined run after the familiar first-request local booking timeout passed on an immediate focused rerun.
 - Hardened the screenshot helper with a bounded image-decode wait after one lazy image stalled the first phone capture. Representative 390px, 768px, and 1440px captures passed under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`; visual inspection confirmed no phone gap or overflow and confirmed the dock remains visible on tablet/desktop.
 - Pre-PR cleanup removed the now-unreachable `VenueGallery.astro` component and its gallery/social CSS after the owner-directed Choose Your Setup restoration. No rendered section, booking code, or evidence history was removed.
+- Cleanup verification passed with 0 Astro errors, 15/15 unit tests, and a successful production build. Cleanup commit `d93f1bc` was pushed, and PR #1 was opened from `exp/homepage-cinematic-v1` into `main`: https://github.com/aaronbasil9400/xerom-website/pull/1
 
 ## Continuation checklist
 
