@@ -84,3 +84,10 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 - Per owner direction, hide the Race / Play / Refuel dock at 560px and below because Pick Your Pace already presents the service choices.
 - Retain the dock from tablet widths upward and preserve all underlying service destinations and booking behavior.
+
+## 2026-09-15 — Explicit booking modes and current Worker demo
+
+- Treat only `live`, `mock`, and `disabled` as valid runtime booking modes; unknown values fail closed to `disabled` so a configuration typo cannot return a fake confirmation.
+- Set the production Worker configuration to `BOOKING_MODE=live` so successful public bookings must pass Turnstile and the serialized Google Calendar coordinator.
+- Use the existing `xerom-website` Worker for the requested controlled client demo, with the previously configured Google Calendar and coordinator bindings. Any demo booking is a real operational Calendar event and must be cleaned up after validation.
+- Keep branch previews disabled or on separately provisioned test calendars; do not point unattended previews at the live resource calendars.

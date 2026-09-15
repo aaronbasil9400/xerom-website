@@ -3,6 +3,7 @@ import { availabilityQuerySchema } from "@/lib/booking/schema";
 import { buildAvailability, generateCandidateSlots } from "@/lib/booking/time";
 import { allCalendarIds, calendarGroups } from "@/lib/booking/resources";
 import { queryFreeBusy } from "@/lib/google/calendar";
+import { resolveBookingMode } from "@/lib/booking/mode";
 import type { ServiceId } from "@/config/service-core";
 import { env as cloudflareEnv } from "cloudflare:workers";
 
@@ -34,7 +35,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   const candidates = generateCandidateSlots(parsed.data.date, parsed.data.durationMinutes);
   const env = cloudflareEnv as unknown as CloudflareEnv;
-  const mode = import.meta.env.DEV ? "mock" : (env.BOOKING_MODE ?? "disabled");
+  const mode = resolveBookingMode(import.meta.env.DEV, env.BOOKING_MODE);
   if (mode === "disabled") return json({ error: "Online booking is being configured. Please WhatsApp Xerom." }, 503);
 
   try {
