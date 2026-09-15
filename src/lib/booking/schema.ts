@@ -1,6 +1,14 @@
 import { z } from "zod";
+import { normalizeMalaysianMobile } from "./phone";
 
 export const serviceIdSchema = z.enum(["regular-sim", "pro-sim", "ps5"]);
+
+export const malaysianMobileSchema = z.string()
+  .trim()
+  .min(8)
+  .max(20)
+  .refine((value) => normalizeMalaysianMobile(value) !== null, "Enter a valid Malaysian mobile number, e.g. 012-345 6789.")
+  .transform((value) => normalizeMalaysianMobile(value)!);
 
 export const lineItemSchema = z.object({
   serviceId: serviceIdSchema,
@@ -22,7 +30,7 @@ export const bookingRequestSchema = z.object({
   items: z.array(lineItemSchema).min(1).max(3),
   customer: z.object({
     name: z.string().trim().min(2).max(80),
-    phone: z.string().trim().regex(/^\+?\d[\d\s-]{7,18}$/, "Enter a valid mobile number."),
+    phone: malaysianMobileSchema,
     notes: z.string().trim().max(300).optional(),
   }),
   idempotencyKey: z.uuid(),

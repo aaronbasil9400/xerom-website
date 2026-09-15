@@ -91,3 +91,9 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Set the production Worker configuration to `BOOKING_MODE=live` so successful public bookings must pass Turnstile and the serialized Google Calendar coordinator.
 - Use the existing `xerom-website` Worker for the requested controlled client demo, with the previously configured Google Calendar and coordinator bindings. Any demo booking is a real operational Calendar event and must be cleaned up after validation.
 - Keep branch previews disabled or on separately provisioned test calendars; do not point unattended previews at the live resource calendars.
+
+## 2026-09-15 — Malaysian mobile validation
+
+- Validate Malaysian mobile numbers as local `01X` numbers, including the 11-digit `011` and `015` exceptions, plus common `+60`/`0060` international input.
+- Normalize accepted phone values to E.164 `+60...` before placing them in Calendar event descriptions so staff have one searchable format.
+- Treat format validation as syntax validation only; it cannot prove that a number is active or registered for WhatsApp.

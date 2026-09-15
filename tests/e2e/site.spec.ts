@@ -87,6 +87,31 @@ test("mock booking flow reaches confirmation", async ({ page }) => {
   await expect(page.locator("[data-booking-id]")).toContainText("XR-");
 });
 
+test("booking form rejects a non-Malaysian mobile number before submit", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) !== 375, "Single phone-validation browser check");
+  let bookingPostCount = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("/api/bookings") && request.method() === "POST") bookingPostCount += 1;
+  });
+  await page.goto("/book");
+  await page.getByRole("button", { name: /choose a time/i }).click();
+  await page.getByLabel("Date").evaluate((input: HTMLInputElement) => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    input.value = date.toISOString().slice(0, 10);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await page.getByRole("button", { name: /check availability/i }).click();
+  await page.locator("[data-slots] button").first().click();
+  await page.getByRole("button", { name: /enter details/i }).click();
+  await page.getByLabel("Name").fill("Test Customer");
+  await page.getByLabel("Mobile / WhatsApp").fill("03-8765 4321");
+  await page.getByRole("button", { name: /confirm booking/i }).click();
+  const validationMessage = await page.getByLabel("Mobile / WhatsApp").evaluate((input: HTMLInputElement) => input.validationMessage);
+  expect(validationMessage).toMatch(/valid Malaysian mobile number/i);
+  expect(bookingPostCount).toBe(0);
+});
+
 test("core routes render without console errors or broken images", async ({ page }) => {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];

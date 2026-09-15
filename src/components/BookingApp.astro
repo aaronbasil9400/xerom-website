@@ -53,7 +53,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <p>We only collect what Xerom needs to manage this booking.</p>
       <div class="field-grid">
         <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" minlength="2" maxlength="80" required /></label>
-        <label class="field"><span>Mobile / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" required /></label>
+        <label class="field"><span>Mobile / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="012-345 6789" aria-describedby="phone-hint" required /><small id="phone-hint">Use 012-345 6789 or +60 12 345 6789.</small></label>
       </div>
       <label class="field"><span>Notes <small>Optional</small></span><textarea name="notes" rows="3" maxlength="300"></textarea></label>
       <div class="booking-review" data-review></div>
@@ -76,6 +76,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 {turnstileSiteKey && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 <script>
   import { trackConversion } from "@/lib/client/analytics";
+  import { normalizeMalaysianMobile } from "@/lib/booking/phone";
   type ServiceId = "regular-sim" | "pro-sim" | "ps5";
   const app = document.querySelector<HTMLElement>("[data-booking-app]");
   const form = app?.querySelector<HTMLFormElement>("[data-booking-form]");
@@ -85,6 +86,8 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   const toMalaysiaDate = (date: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
   const dateInput = form?.elements.namedItem("date") as HTMLInputElement | null;
+  const phoneInput = form?.elements.namedItem("phone") as HTMLInputElement | null;
+  const phoneErrorMessage = "Enter a valid Malaysian mobile number, e.g. 012-345 6789.";
   if (dateInput) {
     dateInput.min = toMalaysiaDate(new Date());
     dateInput.max = toMalaysiaDate(new Date(Date.now() + 72 * 60 * 60 * 1000));
@@ -112,6 +115,10 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   }
   function showError(key: string, message = "") { const target = app?.querySelector<HTMLElement>(`[data-error="${key}"]`); if (target) target.textContent = message; }
   function validSetup() { return Object.values(quantities()).some((quantity) => quantity > 0); }
+  function validatePhone() {
+    if (!phoneInput) return;
+    phoneInput.setCustomValidity(phoneInput.value.trim() && !normalizeMalaysianMobile(phoneInput.value) ? phoneErrorMessage : "");
+  }
   function localTime(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(iso)); }
   function localDate(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(new Date(iso)); }
 
@@ -164,6 +171,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   form?.addEventListener("submit", async (event) => {
     event.preventDefault(); showError("details");
+    validatePhone();
     if (!form.reportValidity()) return;
     const submit = form.querySelector<HTMLButtonElement>("[data-submit]")!; submit.disabled = true; submit.textContent = "Confirming…";
     const q = quantities();
@@ -196,6 +204,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       trackConversion("booking_completed");
     } catch (error) { trackConversion("booking_failed"); showError("details", error instanceof Error ? error.message : "The booking could not be completed."); submit.disabled = false; submit.innerHTML = submitMarkup; }
   });
+  phoneInput?.addEventListener("input", validatePhone);
   form?.addEventListener("input", () => {
     const submit = form.querySelector<HTMLButtonElement>("[data-submit]");
     if (submit && !submit.disabled) attemptKey = crypto.randomUUID();

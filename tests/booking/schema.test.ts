@@ -12,6 +12,7 @@ const valid = {
 
 describe("booking validation", () => {
   it("accepts a minimal booking", () => expect(bookingRequestSchema.safeParse(valid).success).toBe(true));
+  it("normalizes a valid phone number to E.164", () => expect(bookingRequestSchema.parse(valid).customer.phone).toBe("+60129401440"));
   it("rejects no selected resources", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [{ serviceId: "regular-sim", quantity: 0 }] }).success).toBe(false));
   it("rejects duplicate service lines", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [valid.items[0], valid.items[0]] }).success).toBe(false));
   it("rejects controller add-ons on sim rigs", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [{ serviceId: "regular-sim", quantity: 1, additionalControllers: 1 }] }).success).toBe(false));
