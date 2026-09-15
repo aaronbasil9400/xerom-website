@@ -8,7 +8,7 @@ import { formatMoney, pricing } from "@/config/pricing";
 import { media } from "@/config/media";
 import { openingHours } from "@/config/hours";
 import { business, contactLinks } from "@/config/business";
-import { Image, Picture } from "astro:assets";
+import { Image } from "astro:assets";
 import ArrowIcon from "@/components/ArrowIcon.astro";
 import "@/styles/home.css";
 ---
@@ -18,7 +18,11 @@ import "@/styles/home.css";
     <div class="home-flow">
       <section class="home-hero" aria-labelledby="hero-title" data-home-hero>
         <div class="home-hero-media">
-          <Picture class="home-hero-image hero-image" src={media.hero} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" widths={[640, 960, 1600]} sizes="(max-width: 900px) 100vw, 88rem" formats={["avif", "webp"]} fallbackFormat="jpg" loading="eager" fetchpriority="high" />
+          <picture>
+            <source type="image/avif" srcset={`${media.heroSources.heroAvif640.src} 640w, ${media.heroSources.heroAvif960.src} 960w, ${media.heroSources.heroAvif1600.src} 1600w`} sizes="(max-width: 900px) 100vw, 88rem" />
+            <source type="image/webp" srcset={`${media.heroSources.heroWebp640.src} 640w, ${media.heroSources.heroWebp960.src} 960w, ${media.heroSources.heroWebp1600.src} 1600w`} sizes="(max-width: 900px) 100vw, 88rem" />
+            <img class="home-hero-image hero-image" src={media.hero.src} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" />
+          </picture>
         </div>
         <div class="home-hero-copy">
           <p class="home-eyebrow">Sim Racing · PS5 · Cafe</p>
@@ -49,10 +53,10 @@ import "@/styles/home.css";
           </div>
         </div>
         <div class="home-session-grid">
-          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={services["regular-sim"].image} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
-          <SessionCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={services["pro-sim"].image} alt={services["pro-sim"].imageAlt} price={formatMoney(pricing.services["pro-sim"].hourlyRate)} href="/book?service=pro-sim" featured />
-          <SessionCard title={services.ps5.name} copy={services.ps5.description} image={services.ps5.image} alt={services.ps5.imageAlt} price={formatMoney(pricing.services.ps5.hourlyRate)} href="/book?service=ps5" />
-          <SessionCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
+          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={media.regularRigSmall} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
+          <SessionCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={media.proRigSmall} alt={services["pro-sim"].imageAlt} price={formatMoney(pricing.services["pro-sim"].hourlyRate)} href="/book?service=pro-sim" featured />
+          <SessionCard title={services.ps5.name} copy={services.ps5.description} image={media.ps5LoungeSmall} alt={services.ps5.imageAlt} price={formatMoney(pricing.services.ps5.hourlyRate)} href="/book?service=ps5" />
+          <SessionCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafeSmall} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
         </div>
       </section>
     </div>

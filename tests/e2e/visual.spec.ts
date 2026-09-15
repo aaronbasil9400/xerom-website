@@ -8,7 +8,13 @@ test("capture validated homepage evidence", async ({ page }, testInfo) => {
   await page.evaluate(async () => {
     for (let y = 0; y < document.documentElement.scrollHeight; y += Math.max(480, innerHeight * .75)) {
       window.scrollTo(0, y);
-      await new Promise((resolve) => setTimeout(resolve, 80));
+      await new Promise((resolve) => setTimeout(resolve, 120));
+    }
+    const images = Array.from(document.querySelectorAll<HTMLImageElement>("img"));
+    for (const image of images) {
+      image.scrollIntoView({ block: "center" });
+      if (!image.complete) await new Promise<void>((resolve) => image.addEventListener("load", () => resolve(), { once: true }));
+      await image.decode().catch(() => undefined);
     }
     window.scrollTo(0, 0);
   });

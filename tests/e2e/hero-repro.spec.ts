@@ -8,9 +8,9 @@ test("capture approved-size hero reproduction", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.locator(".hero-image").waitFor({ state: "visible" });
   await page.waitForFunction(() => {
-    const images = Array.from(document.querySelectorAll<HTMLImageElement>(".hero img"));
-    return images.length >= 4 && images.every((image) => image.complete && image.naturalWidth > 0);
+    const images = Array.from(document.querySelectorAll<HTMLImageElement>(".home-hero img"));
+    return images.length >= 1 && images.every((image) => image.complete && image.naturalWidth > 0);
   });
-  await mkdir(".impeccable/review", { recursive: true });
-  await page.screenshot({ path: ".impeccable/review/hero-repro.png", fullPage: false, animations: "disabled" });
+  await mkdir(".impeccable/review/homepage-upgrade/after", { recursive: true });
+  await page.screenshot({ path: ".impeccable/review/homepage-upgrade/after/hero-repro-1536.png", fullPage: false, animations: "disabled" });
 });

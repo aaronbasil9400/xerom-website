@@ -28,6 +28,11 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - Baseline responsive captures are preserved under `.impeccable/review/homepage-upgrade/before/` at 375, 390, 430, 768, 1024, 1440 and the 1536 hero reproduction.
 - Baseline single-worker E2E: 25 passed, 5 intentional hero-repro skips, and 6 booking-confirmation failures. The failures reproduce before homepage code changes and are caused by current Astro/Cloudflare local development throwing on `Astro.clientAddress` in `src/pages/api/bookings.ts`; protected booking code was not changed. The browser booking regression now intercepts only the final mock POST so it can continue exercising the unchanged UI without mutating that endpoint.
 - First implementation pass added the cinematic hero, mobile Book pill, service dock/cards, social gallery, hours/location cards, final CTA, and homepage-only CSS/components. Visual QA found and fixed a clipped phone headline.
+- Checkpoint `dc2cb8f` saved the initial cinematic implementation and test scaffolding.
+- Added deterministic 640/960/1600 AVIF and WebP hero derivatives, recorded their hashes in the media manifest, and used explicit responsive sources. The mobile LCP payload fell from the local preview's 320 KB JPEG response to a 37 KB AVIF.
+- Reused manifested 480px owner-photo derivatives for near-fold dock/session thumbnails, avoiding local adapter fallback responses of roughly 190–250 KB per image.
+- Set Astro to inline built CSS, reducing local mobile render-blocking work. Production-preview Lighthouse: Performance 93, Accessibility 100, Best Practices 100, SEO 100, FCP 2.0s, LCP 2.9–3.0s, CLS 0.018, TBT 0ms. All score targets pass; local mobile LCP remains 0.4–0.5s over the stretch target and needs deployed-origin remeasurement.
+- Final configured `npm run test:e2e`: 36 passed and 12 intentional project-specific skips across all six viewports. Coverage includes exact H1 copy, section/card structure, CTA destinations, single eager LCP image, image-height regression, no overflow, visible mobile Book target, menu focus trap/Escape/focus return, full mocked booking UI confirmation, core routes, console/request failures, broken images, 200%-equivalent reflow, reduced motion, visible focus, favicon/manifest, and screenshot capture.
 
 ## Continuation checklist
 

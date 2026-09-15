@@ -12,7 +12,7 @@ export default defineConfig({
     inspectorPort: false,
   }),
   build: {
-    inlineStylesheets: "auto",
+    inlineStylesheets: "always",
   },
   vite: {
     build: {
