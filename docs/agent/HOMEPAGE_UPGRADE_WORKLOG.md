@@ -33,6 +33,10 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - Reused manifested 480px owner-photo derivatives for near-fold dock/session thumbnails, avoiding local adapter fallback responses of roughly 190–250 KB per image.
 - Set Astro to inline built CSS, reducing local mobile render-blocking work. Production-preview Lighthouse: Performance 93, Accessibility 100, Best Practices 100, SEO 100, FCP 2.0s, LCP 2.9–3.0s, CLS 0.018, TBT 0ms. All score targets pass; local mobile LCP remains 0.4–0.5s over the stretch target and needs deployed-origin remeasurement.
 - Final configured `npm run test:e2e`: 36 passed and 12 intentional project-specific skips across all six viewports. Coverage includes exact H1 copy, section/card structure, CTA destinations, single eager LCP image, image-height regression, no overflow, visible mobile Book target, menu focus trap/Escape/focus return, full mocked booking UI confirmation, core routes, console/request failures, broken images, 200%-equivalent reflow, reduced motion, visible focus, favicon/manifest, and screenshot capture.
+- Saved optimization checkpoint `2e90fa2` and documentation/verification checkpoint `7b313df`, then pushed `exp/homepage-cinematic-v1` to origin. No merge was performed.
+- Final diagnostics: 0 errors/0 project warnings (two hints in the unrelated untracked Hive package); 15/15 unit tests; 21/21 media derivatives; production build passed after stopping the confirmed local Astro QA processes that held `dist/client`.
+- Final warm Playwright pass completed every functional case. The last 1440px screenshot overwrite hit a transient OneDrive file lock; its isolated rerun passed, yielding 36 passed cases and 12 intentional skips across the combined final result.
+- `wrangler deploy` stopped before upload because `CLOUDFLARE_API_TOKEN` is not available in this non-interactive session. The existing staging Worker was not changed. Deployed screenshots, deployed Lighthouse, and a deployed smoke check require owner-provided Cloudflare deployment credentials or an owner-run deployment.
 
 ## Continuation checklist
 
@@ -44,4 +48,5 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - [x] Run final six-width visual QA, accessibility, reduced-motion, 200% reflow, console/network, links/assets, and booking-regression checks.
 - [x] Measure Lighthouse against a local production preview; deployed-origin remeasurement remains pending.
 - [x] Update `DESIGN.md`, `QA_REPORT.md`, `docs/agent/DECISIONS.md`, and this worklog with evidence.
-- [ ] Commit scoped progress periodically; do not merge to `main`.
+- [x] Commit scoped progress periodically; do not merge to `main`.
+- [ ] Deploy the pushed feature branch and run deployed-origin screenshot/Lighthouse/smoke checks once Cloudflare credentials are available.
