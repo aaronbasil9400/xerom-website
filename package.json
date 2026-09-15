@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log BOOKING_MODE=mock PUBLIC_BOOKING_MODE=mock astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro build",
+    "build:staging": "node scripts/build-staging.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro preview",
     "check": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro check",
     "test": "vitest run",

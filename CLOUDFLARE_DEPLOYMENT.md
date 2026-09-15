@@ -32,9 +32,11 @@ The client demo uses the existing `xerom-website` Worker and its previously conf
 Deploy the current Worker with:
 
 ```bash
-npm run build
+npm run build:staging
 npx wrangler deploy --message "Client demo"
 ```
+
+`build:staging` injects Cloudflare's documented always-pass public demo site key so the widget is present. It does not contain or change the private `TURNSTILE_SECRET_KEY`. To use a real widget later, override `PUBLIC_TURNSTILE_SITE_KEY` for the build and update the Worker secret through Wrangler's secret workflow.
 
 Do not use this Worker for unattended previews or synthetic browser tests. Branch previews that need isolation must use `BOOKING_MODE=disabled` or a separately provisioned set of seven test calendars and Turnstile domains.
 
