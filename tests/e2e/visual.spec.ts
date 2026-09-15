@@ -14,8 +14,10 @@ test("capture validated homepage evidence", async ({ page }, testInfo) => {
     const images = Array.from(document.querySelectorAll<HTMLImageElement>("img"));
     for (const image of images) {
       image.scrollIntoView({ block: "center" });
-      if (!image.complete) await new Promise<void>((resolve) => image.addEventListener("load", () => resolve(), { once: true }));
-      await image.decode().catch(() => undefined);
+      await Promise.race([
+        image.decode().catch(() => undefined),
+        new Promise((resolve) => setTimeout(resolve, 1_500)),
+      ]);
     }
     window.scrollTo(0, 0);
   });

@@ -79,3 +79,8 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Per owner direction, replace only the redundant More Than Racing gallery with the previous Choose Your Setup split section.
 - Retain the Pro Rig image, confirmed Regular/Pro/PS5 resource facts, and Compare Experiences link to `/experiences`.
 - Leave the cinematic hero, Pick Your Pace cards, Race / Play / Refuel dock, visit information, final CTA, and booking behavior unchanged.
+
+## 2026-09-15 — Hide duplicate experience dock on phones
+
+- Per owner direction, hide the Race / Play / Refuel dock at 560px and below because Pick Your Pace already presents the service choices.
+- Retain the dock from tablet widths upward and preserve all underlying service destinations and booking behavior.

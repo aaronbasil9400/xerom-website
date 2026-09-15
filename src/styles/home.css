@@ -130,7 +130,7 @@
   .home-location-cue { margin-top: .8rem; font-size: .82rem; }
   .hero-placeholder-label { top: 1rem; right: .75rem; bottom: auto; font-size: .58rem; }
   .home-session-section { order: 2; padding-block: 2.5rem 1rem; }
-  .experience-dock { order: 3; grid-template-columns: 1fr; gap: .45rem; margin-top: 0; padding-bottom: 3.5rem; }
+  .experience-dock { display: none; }
   .dock-card, .dock-card + .dock-card { min-height: 5.75rem; grid-template-columns: 42% 3.4rem 1fr 2.75rem; gap: .55rem; padding: .45rem; border: 1px solid var(--line); }
   .dock-media { position: relative; inset: auto; align-self: stretch; margin: -.45rem 0 -.45rem -.45rem; }
   .dock-media::after { background: linear-gradient(90deg,transparent,rgba(5,5,5,.3)); }

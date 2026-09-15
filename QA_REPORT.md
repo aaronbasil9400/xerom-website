@@ -101,3 +101,9 @@ The branch was pushed to `origin/exp/homepage-cinematic-v1`. A 2026-09-15 `wrang
 ### Owner revision: Choose Your Setup restoration
 
 The redundant More Than Racing gallery was replaced with the previous Choose Your Setup split section only. The restored block uses the Pro Rig image, the three confirmed resource facts, and a Compare Experiences link to `/experiences`. Astro diagnostics, all 15 booking unit tests, and the production build pass. The section contract and no-overflow checks pass at all six required widths; refreshed 390px and 1440px captures are stored under `.impeccable/review/homepage-upgrade/setup-restored/`.
+
+### Owner revision: phone experience-dock removal
+
+The Race / Play / Refuel dock is hidden at the 560px phone breakpoint to remove duplication with Pick Your Pace, while remaining visible at 768px and all desktop widths. Automated assertions verify the breakpoint behavior and document-width overflow at all six required viewports. No markup, service route, or booking behavior was removed; phone users retain the four Pick Your Pace cards and their direct service links.
+
+Verification passed with 0 Astro errors, 15/15 unit tests, a successful production build, and 12/12 breakpoint/overflow/core-route checks. The full functional browser suite passed every case across the combined final run: one first-request local booking timeout at 375px passed on immediate focused rerun. Representative phone, tablet, and desktop captures are stored under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`.

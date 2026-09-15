@@ -185,7 +185,7 @@ The palette is a night venue under broadcast lighting: black layers carry the in
 
 The shared shell is centered within an 88rem maximum width and ordinarily leaves 1rem at each side; below 560px that outer gutter contracts to 0.5rem. Vertical sections use a fluid 4.5rem–9rem rhythm. Layout is panel-based, with one-pixel seams and deliberate 1px grid gaps reinforcing the broadcast assembly.
 
-The shipped homepage first viewport is a cinematic full-width crew image with a strong lower-left copy block. Its semantic headline is exactly `Race Together`; Klang is kept in a separate location cue. A desktop experience dock overlaps the hero's lower edge and links Race, Play, and Refuel to the corresponding page sections. At 900px and below, the page uses an independently composed reading order: hero, compact Pick Your Pace session cards, horizontal experience dock, Choose Your Setup comparison, practical hours/location, and final booking action. At 560px and below, the session cards become image/body rows and the setup comparison stacks its Pro Rig image above the copy.
+The shipped homepage first viewport is a cinematic full-width crew image with a strong lower-left copy block. Its semantic headline is exactly `Race Together`; Klang is kept in a separate location cue. A desktop experience dock overlaps the hero's lower edge and links Race, Play, and Refuel to the corresponding page sections. Tablet retains the dock as a three-column strip. At 560px and below, the dock is hidden because the compact Pick Your Pace cards already provide sufficient service navigation; the phone reading order is hero, session cards, Choose Your Setup comparison, practical hours/location, and final booking action.
 
 The implementation has two responsive thresholds: 900px reorganizes major grids and replaces desktop navigation with the menu; 560px performs the phone-specific composition. Every change must still be inspected at 375, 390, 430, 768, 1024, and 1440+ CSS pixels because the approved phone composition is not just a compressed desktop.
 
@@ -248,7 +248,7 @@ The sticky header is a translucent Canvas Black broadcast bar with a fine Warm W
 
 ### Race / Play / Refuel Route
 
-The route is a three-cell experience dock. Each cell pairs owner service imagery with an ordinal, Race / Play / Refuel label, short safe copy, and a directional affordance. It is a visual itinerary, not a leaderboard or ranking. Desktop overlaps the dock across the hero's lower edge; tablet and phone render it as a horizontally scrollable strip with fully visible focus states and at least 44px interactive targets.
+The route is a three-cell experience dock. Each cell pairs owner service imagery with an ordinal, Race / Play / Refuel label, short safe copy, and a directional affordance. It is a visual itinerary, not a leaderboard or ranking. Desktop overlaps the dock across the hero's lower edge and tablet retains a compact three-column presentation. The dock is intentionally absent at the 560px phone breakpoint because Pick Your Pace immediately provides the same service routes.
 
 ### Session Price Proof
 

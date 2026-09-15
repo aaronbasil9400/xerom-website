@@ -5,11 +5,18 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   const heroHeading = page.getByRole("heading", { level: 1, name: "Race Together", exact: true });
   await expect(heroHeading).toBeVisible();
   expect((await heroHeading.textContent())?.replace(/\s+/g, " ").trim()).toBe("Race Together");
-  await expect(page.getByText("01").first()).toBeVisible();
-  await expect(page.getByText("Refuel", { exact: true }).first()).toBeVisible();
+  const viewportWidth = page.viewportSize()?.width ?? 0;
+  const experienceDock = page.locator("[data-experience-dock]");
   await expect(page.getByRole("link", { name: /book a session/i }).first()).toBeVisible();
   await expect(page.locator("[data-session-card]")).toHaveCount(4);
-  await expect(page.locator("[data-experience-dock] > a")).toHaveCount(3);
+  await expect(experienceDock.locator(":scope > a")).toHaveCount(3);
+  if (viewportWidth <= 560) {
+    await expect(experienceDock).toBeHidden();
+  } else {
+    await expect(experienceDock).toBeVisible();
+    await expect(experienceDock.getByText("01")).toBeVisible();
+    await expect(experienceDock.getByText("Refuel", { exact: true })).toBeVisible();
+  }
   await expect(page.locator('[data-session-card] a[href="/book?service=regular-sim"]')).toHaveCount(1);
   await expect(page.locator('[data-session-card] a[href="/book?service=pro-sim"]')).toHaveCount(1);
   await expect(page.locator('[data-session-card] a[href="/book?service=ps5"]')).toHaveCount(1);
@@ -20,8 +27,8 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   expect(await page.locator("main img[loading='eager']").count()).toBe(1);
   const sessionHeights = await page.locator("[data-session-card]").evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().height));
   expect(Math.max(...sessionHeights)).toBeLessThan(400);
-  if ((page.viewportSize()?.width ?? 0) >= 1024) {
-    const dock = await page.locator("[data-experience-dock]").boundingBox();
+  if (viewportWidth >= 1024) {
+    const dock = await experienceDock.boundingBox();
     expect(dock?.y).toBeLessThan(page.viewportSize()!.height);
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
