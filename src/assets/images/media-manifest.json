@@ -21,15 +21,21 @@
       "focalPoint": { "x": 0.58, "y": 0.48 },
       "cropGuidance": "Keep all five faces and the driver's hands visible. Trim peripheral venue detail first on narrow crops.",
       "sources": [
+        { "path": "social-group-hero.placeholder-ai.640x360.avif", "width": 640, "height": 360, "format": "avif", "sha256": "a4c3ff7a9abfd3905fa05ce0474580ac8c0e38c0e9f3894a8ef50f12678c9c68" },
+        { "path": "social-group-hero.placeholder-ai.640x360.webp", "width": 640, "height": 360, "format": "webp", "sha256": "93f814fa57cc6114523d6d7bc5dbe8703df557abfa08ee459aed47aa12fa0daf" },
         { "path": "social-group-hero.placeholder-ai.640x360.jpg", "width": 640, "height": 360, "format": "jpeg", "sha256": "6074e5df5d7c28b2ab75f085a4d03c225180ed51f7e3d804a7f1df9f1b849dbd" },
+        { "path": "social-group-hero.placeholder-ai.960x540.avif", "width": 960, "height": 540, "format": "avif", "sha256": "690c2685758fdac0c3ba8f3ec0eefe6c7e80f0f49956a4a677941b5665174802" },
+        { "path": "social-group-hero.placeholder-ai.960x540.webp", "width": 960, "height": 540, "format": "webp", "sha256": "ddbf9c822e6cc48574dd7f1a759fe6e54c9b1df0cf1bd48aadcd63185f76d72d" },
         { "path": "social-group-hero.placeholder-ai.960x540.jpg", "width": 960, "height": 540, "format": "jpeg", "sha256": "03dbc468f5b2a1f45c0ae84bb61432ff0901c225dc6abb81d664b3757fe6fb69" },
+        { "path": "social-group-hero.placeholder-ai.1600x900.avif", "width": 1600, "height": 900, "format": "avif", "sha256": "7dab2a82045f766d2dda2bc189adbd6c7e1d84c1140e9e1ce609c89c93910f59" },
+        { "path": "social-group-hero.placeholder-ai.1600x900.webp", "width": 1600, "height": 900, "format": "webp", "sha256": "9c5be952600a66e7899d63d5768ae3f4dc841a4d94bad00c539f5bb23e781e2f" },
         { "path": "social-group-hero.placeholder-ai.1600x900.jpg", "width": 1600, "height": 900, "format": "jpeg", "sha256": "a2c973f72b2f03b9bbbdbec83359088fb6ceb7796da43b5bc53a39e370490b5d" }
       ],
       "provenance": {
         "generator": "OpenAI built-in image generation tool",
         "useCase": "photorealistic-natural",
         "referenceImage": ".impeccable/mocks/home/race-play-refuel.png",
-        "derivation": "JPEG derivatives generated with macOS sips.",
+        "derivation": "JPEG derivatives generated with macOS sips. AVIF and WebP delivery derivatives generated from the manifested 1600x900 JPEG using Sharp 0.35.4 at fixed dimensions and quality settings.",
         "prompt": "Create a candid, energetic photo of a diverse Malaysian friend group enjoying a social sim-racing session together in an anonymous contemporary gaming venue, matching the approved comp's cinematic black-and-red visual world without copying its layout or branding. Dark indoor venue with abstract red linear ceiling lights and indistinct racing stations. Five young adult friends gathered naturally around one seated driver with genuine shared excitement. Photorealistic candid editorial event photography, wide 16:9, controlled low-key exposure, no text, logos, trademarks, readable game UI, equipment claims, watermark, or documentary implication."
       }
     },

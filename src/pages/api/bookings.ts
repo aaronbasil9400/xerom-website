@@ -3,6 +3,7 @@ import { bookingRequestSchema } from "@/lib/booking/schema";
 import { calculateTotal } from "@/lib/booking/pricing";
 import { createBookingId } from "@/lib/booking/id";
 import { verifyTurnstile } from "@/lib/security/turnstile";
+import { resolveBookingMode } from "@/lib/booking/mode";
 import { env as cloudflareEnv } from "cloudflare:workers";
 
 export const prerender = false;
@@ -26,7 +27,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (!parsed.success) return json({ error: "Check your booking details.", issues: parsed.error.issues.map(({ path, message }) => ({ path, message })) }, 400);
 
   const env = cloudflareEnv as unknown as CloudflareEnv;
-  const mode = import.meta.env.DEV ? "mock" : (env.BOOKING_MODE ?? "disabled");
+  const mode = resolveBookingMode(import.meta.env.DEV, env.BOOKING_MODE);
   if (mode === "disabled") return json({ error: "Online booking is being configured. Please WhatsApp Xerom." }, 503);
 
   if (mode === "live") {

@@ -64,3 +64,30 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Created and deployed `xerom-booking-coordinator` as a separate Cloudflare Worker with the `BookingCoordinator` SQLite Durable Object. The website Worker remains the public surface and binds to that external Durable Object.
 - Keep the public Worker in `BOOKING_MODE=disabled` until encrypted Google credentials, calendar IDs, and a hostname-appropriate Turnstile widget are configured and the deployed smoke/race checks pass.
 - For the client demo, the public Worker is temporarily in `BOOKING_MODE=live` with Cloudflare's documented always-pass Turnstile test pair; a real hostname-scoped widget must replace it before public launch.
+
+## 2026-09-15 — Cinematic homepage composition
+
+- Implement the approved social-first reference as a cinematic full-width hero followed by session proof, a Race / Play / Refuel experience dock, social gallery, practical visit information, and a final booking action.
+- Lock the semantic and visible hero headline to exactly `Race Together`; keep Klang as separate location information.
+- Preserve independent mobile ordering instead of compressing the desktop overlap composition.
+- Keep the existing AI social-group image as an explicit, replaceable placeholder and use owner-supplied photographs for Regular Rig, Pro Rig, PS5 Lounge, and Cafe proof.
+- Serve the hero through deterministic responsive AVIF/WebP derivatives and inline built CSS; preserve one eager image while all supporting images remain lazy.
+- Do not alter booking routes, configuration, coordinator behavior, request contracts, or Calendar semantics as part of the homepage change.
+
+## 2026-09-15 — Restore Choose Your Setup homepage section
+
+- Per owner direction, replace only the redundant More Than Racing gallery with the previous Choose Your Setup split section.
+- Retain the Pro Rig image, confirmed Regular/Pro/PS5 resource facts, and Compare Experiences link to `/experiences`.
+- Leave the cinematic hero, Pick Your Pace cards, Race / Play / Refuel dock, visit information, final CTA, and booking behavior unchanged.
+
+## 2026-09-15 — Hide duplicate experience dock on phones
+
+- Per owner direction, hide the Race / Play / Refuel dock at 560px and below because Pick Your Pace already presents the service choices.
+- Retain the dock from tablet widths upward and preserve all underlying service destinations and booking behavior.
+
+## 2026-09-15 — Explicit booking modes and current Worker demo
+
+- Treat only `live`, `mock`, and `disabled` as valid runtime booking modes; unknown values fail closed to `disabled` so a configuration typo cannot return a fake confirmation.
+- Set the production Worker configuration to `BOOKING_MODE=live` so successful public bookings must pass Turnstile and the serialized Google Calendar coordinator.
+- Use the existing `xerom-website` Worker for the requested controlled client demo, with the previously configured Google Calendar and coordinator bindings. Any demo booking is a real operational Calendar event and must be cleaned up after validation.
+- Keep branch previews disabled or on separately provisioned test calendars; do not point unattended previews at the live resource calendars.

@@ -1,6 +1,6 @@
 # QA Report
 
-Last updated: 2026-09-13
+Last updated: 2026-09-15
 
 ## Current result
 
@@ -74,3 +74,36 @@ The client-demo Worker is live on its temporary `workers.dev` hostname with Goog
 - Live contact, Maps, and canonical-domain accuracy after owner confirmation.
 
 These items must not be marked passed until the required accounts, calendars, secrets, and confirmed business content are available.
+
+## Homepage UI/UX upgrade verification (2026-09-15)
+
+The cinematic homepage upgrade is implemented on `exp/homepage-cinematic-v1`. Its hero headline is exactly `Race Together`; Klang appears only as separate location information. The booking API, coordinator, form components, and booking configuration are unchanged from baseline `4e9787c`.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro/TypeScript diagnostics | Pass | `npm run check`: 0 errors and 0 warnings in project sources; two hints originate in the pre-existing untracked `hive-v3-installation` directory |
+| Booking unit tests | Pass | `npm test`: 15/15 passed |
+| Production build | Pass | `npm run build`: Cloudflare server output generated successfully |
+| Media manifest | Pass | `npm run assets:verify`: 21/21 derivatives verified, including six responsive hero AVIF/WebP assets |
+| Responsive and booking E2E | Pass | `npm run test:e2e`: 36 passed, 12 intentional project-specific skips at 375, 390, 430, 768, 1024, and 1440 CSS pixels |
+| Headline contract | Pass | Accessible name and visible text both assert exactly `Race Together`; `In Klang` is absent from the heading |
+| Accessibility regression | Pass | Keyboard-contained menu, Escape dismissal/focus return, visible 3px focus, 44px mobile Book target, no mobile overflow, 200%-equivalent reflow, reduced-motion behavior, and semantic booking confirmation assertions pass |
+| Browser/runtime regression | Pass | Core routes have no browser console errors, failed requests, broken images, or missing favicon/manifest assets in the automated pass |
+| Booking UI regression | Pass | Complete setup, slot, customer details, confirmation, booking ID, total, and WhatsApp journey passes with only the final local POST mocked; no booking production code was edited |
+| Booking invariants | Pass (unchanged evidence) | Protected booking diff from baseline is empty; the 2026-09-13 live idempotency, rollback cleanup, and exactly-one-winner concurrency evidence above remains applicable |
+| Local production-preview Lighthouse | Pass with LCP note | Performance 93, Accessibility 100, Best Practices 100, SEO 100; FCP 2.0s, LCP 2.9–3.0s, CLS 0.018, TBT 0ms. The local LCP is 0.4–0.5s above the 2.5s stretch target and requires deployed-origin remeasurement |
+| Responsive screenshots | Pass | Before and after captures are stored under `.impeccable/review/homepage-upgrade/` for all six required widths |
+
+The only non-owner homepage media remains `social-group-hero.placeholder-ai.*`. It is explicitly identified in its filename, manifest provenance, source comments, and alternative text, and must be replaced with an owner-approved social venue photograph before production sign-off.
+
+The branch was pushed to `origin/exp/homepage-cinematic-v1`. A 2026-09-15 `wrangler deploy` attempt stopped before deployment because this non-interactive session has no `CLOUDFLARE_API_TOKEN`; therefore deployed-origin screenshots, Lighthouse, and live-stage smoke checks remain unrun and are not marked passing. The existing staging Worker was not changed. One warm full E2E run completed every functional assertion and encountered a transient OneDrive lock only while overwriting the final 1440px PNG; the isolated screenshot case passed immediately afterward, giving 36 passed checks and 12 intentional skips across the combined final run.
+
+### Owner revision: Choose Your Setup restoration
+
+The redundant More Than Racing gallery was replaced with the previous Choose Your Setup split section only. The restored block uses the Pro Rig image, the three confirmed resource facts, and a Compare Experiences link to `/experiences`. Astro diagnostics, all 15 booking unit tests, and the production build pass. The section contract and no-overflow checks pass at all six required widths; refreshed 390px and 1440px captures are stored under `.impeccable/review/homepage-upgrade/setup-restored/`.
+
+### Owner revision: phone experience-dock removal
+
+The Race / Play / Refuel dock is hidden at the 560px phone breakpoint to remove duplication with Pick Your Pace, while remaining visible at 768px and all desktop widths. Automated assertions verify the breakpoint behavior and document-width overflow at all six required viewports. No markup, service route, or booking behavior was removed; phone users retain the four Pick Your Pace cards and their direct service links.
+
+Verification passed with 0 Astro errors, 15/15 unit tests, a successful production build, and 12/12 breakpoint/overflow/core-route checks. The full functional browser suite passed every case across the combined final run: one first-request local booking timeout at 375px passed on immediate focused rerun. Representative phone, tablet, and desktop captures are stored under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`.

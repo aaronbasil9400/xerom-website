@@ -25,6 +25,19 @@ Node version: current Cloudflare-supported LTS compatible with Astro 7
 
 The site uses `@astrojs/cloudflare` with compile-time image optimization and no Astro session store.
 
+## Current Worker client demo
+
+The client demo uses the existing `xerom-website` Worker and its previously configured Google Calendar and `xerom-booking-coordinator` bindings. The root configuration uses `BOOKING_MODE=live`, so a successful demo booking is a real Calendar reservation and must be deleted from every assigned resource calendar afterward.
+
+Deploy the current Worker with:
+
+```bash
+npm run build
+npx wrangler deploy --message "Client demo"
+```
+
+Do not use this Worker for unattended previews or synthetic browser tests. Branch previews that need isolation must use `BOOKING_MODE=disabled` or a separately provisioned set of seven test calendars and Turnstile domains.
+
 ## Deploy the coordinator first
 
 Authenticate Wrangler locally, then set Worker secrets:

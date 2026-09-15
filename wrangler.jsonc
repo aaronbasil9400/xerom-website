@@ -3,7 +3,7 @@
   "name": "xerom-website",
   "compatibility_date": "2026-09-09",
   "vars": {
-    "BOOKING_MODE": "enabled"
+    "BOOKING_MODE": "live"
   },
   "durable_objects": {
     "bindings": [

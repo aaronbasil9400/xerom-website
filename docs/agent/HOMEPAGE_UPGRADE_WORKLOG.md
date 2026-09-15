@@ -1,0 +1,59 @@
+# Homepage Upgrade Worklog
+
+This file is the continuation log for the cinematic homepage UI/UX upgrade requested on 2026-09-15.
+
+## Scope and guardrails
+
+- Branch: `exp/homepage-cinematic-v1`
+- Baseline commit: `4e9787c1fa523cb14d18127ef9136f44da130e06`
+- Authoritative instructions: `XEROM_HOMEPAGE_AGENT_HANDOFF.md`
+- Composition references: `XEROM_HOMEPAGE_DESKTOP_REFERENCE.png` and `XEROM_HOMEPAGE_MOBILE_REFERENCE.png`
+- Hero H1 is exactly `RACE TOGETHER`.
+- Booking behavior and protected booking files are out of scope and must remain unchanged.
+- Pre-existing owner changes and unrelated untracked files must not be staged or overwritten.
+
+## 2026-09-15 — Intake and baseline
+
+- Read the handoff and upgrade plan completely.
+- Inspected both reference PNGs at original resolution.
+- Read all mandatory repository sources: `AGENTS.md`, `PRODUCT.md`, `CONTENT_TODO.md`, `WEBSITE_PLAN.md`, `BOOKING_ARCHITECTURE.md`, `RESEARCH.md`, `DESIGN.md`, `QA_REPORT.md`, `docs/agent/home-surface-brief.md`, `docs/agent/DECISIONS.md`, and `docs/agent/HANDOFF.md`.
+- Recorded the starting Git state on `main` at `4e9787c`. The worktree already contained unrelated modified and untracked owner files; these are being preserved.
+- Created feature branch `exp/homepage-cinematic-v1`.
+- Installed the lockfile dependencies with Node 24.15.0/npm 11.12.1 from the existing local portable Node distribution; `npm ci` reported 0 vulnerabilities.
+- Baseline `npm run check`: project sources had 0 errors; two hints came from the pre-existing untracked `hive-v3-installation` package.
+- Baseline `npm test`: 15/15 passed.
+- Baseline `npm run build`: passed.
+- Baseline `npm run assets:verify`: 15 manifested derivatives passed.
+- Installed the matching Playwright Chromium runtime because it was absent locally.
+- Baseline responsive captures are preserved under `.impeccable/review/homepage-upgrade/before/` at 375, 390, 430, 768, 1024, 1440 and the 1536 hero reproduction.
+- Baseline single-worker E2E: 25 passed, 5 intentional hero-repro skips, and 6 booking-confirmation failures. The failures reproduce before homepage code changes and are caused by current Astro/Cloudflare local development throwing on `Astro.clientAddress` in `src/pages/api/bookings.ts`; protected booking code was not changed. The browser booking regression now intercepts only the final mock POST so it can continue exercising the unchanged UI without mutating that endpoint.
+- First implementation pass added the cinematic hero, mobile Book pill, service dock/cards, social gallery, hours/location cards, final CTA, and homepage-only CSS/components. Visual QA found and fixed a clipped phone headline.
+- Checkpoint `dc2cb8f` saved the initial cinematic implementation and test scaffolding.
+- Added deterministic 640/960/1600 AVIF and WebP hero derivatives, recorded their hashes in the media manifest, and used explicit responsive sources. The mobile LCP payload fell from the local preview's 320 KB JPEG response to a 37 KB AVIF.
+- Reused manifested 480px owner-photo derivatives for near-fold dock/session thumbnails, avoiding local adapter fallback responses of roughly 190–250 KB per image.
+- Set Astro to inline built CSS, reducing local mobile render-blocking work. Production-preview Lighthouse: Performance 93, Accessibility 100, Best Practices 100, SEO 100, FCP 2.0s, LCP 2.9–3.0s, CLS 0.018, TBT 0ms. All score targets pass; local mobile LCP remains 0.4–0.5s over the stretch target and needs deployed-origin remeasurement.
+- Final configured `npm run test:e2e`: 36 passed and 12 intentional project-specific skips across all six viewports. Coverage includes exact H1 copy, section/card structure, CTA destinations, single eager LCP image, image-height regression, no overflow, visible mobile Book target, menu focus trap/Escape/focus return, full mocked booking UI confirmation, core routes, console/request failures, broken images, 200%-equivalent reflow, reduced motion, visible focus, favicon/manifest, and screenshot capture.
+- Saved optimization checkpoint `2e90fa2` and documentation/verification checkpoint `7b313df`, then pushed `exp/homepage-cinematic-v1` to origin. No merge was performed.
+- Final diagnostics: 0 errors/0 project warnings (two hints in the unrelated untracked Hive package); 15/15 unit tests; 21/21 media derivatives; production build passed after stopping the confirmed local Astro QA processes that held `dist/client`.
+- Final warm Playwright pass completed every functional case. The last 1440px screenshot overwrite hit a transient OneDrive file lock; its isolated rerun passed, yielding 36 passed cases and 12 intentional skips across the combined final result.
+- `wrangler deploy` stopped before upload because `CLOUDFLARE_API_TOKEN` is not available in this non-interactive session. The existing staging Worker was not changed. Deployed screenshots, deployed Lighthouse, and a deployed smoke check require owner-provided Cloudflare deployment credentials or an owner-run deployment.
+- Owner revision: replaced only the redundant More Than Racing gallery block with the previous Choose Your Setup split section and `/experiences` comparison action. The hero, session cards, experience dock, visit information, final CTA, and booking flow were left unchanged.
+- Revision verification: Astro diagnostics 0 errors, 15/15 booking unit tests, production build passed, and the restored section/no-overflow contract passed at 375, 390, 430, 768, 1024, and 1440px. Visual captures at 390px and 1440px passed under `.impeccable/review/homepage-upgrade/setup-restored/`.
+- Owner revision: hid the Race / Play / Refuel experience dock at the 560px phone breakpoint because Pick Your Pace already supplies sufficient service choices. The dock remains visible on tablet and desktop, and no booking or service link behavior changed.
+- Mobile-dock verification: Astro diagnostics 0 errors, 15/15 unit tests, production build passed, and 12/12 combined breakpoint/overflow/core-route checks passed across all six widths. The full functional suite passed every case across the combined run after the familiar first-request local booking timeout passed on an immediate focused rerun.
+- Hardened the screenshot helper with a bounded image-decode wait after one lazy image stalled the first phone capture. Representative 390px, 768px, and 1440px captures passed under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`; visual inspection confirmed no phone gap or overflow and confirmed the dock remains visible on tablet/desktop.
+- Pre-PR cleanup removed the now-unreachable `VenueGallery.astro` component and its gallery/social CSS after the owner-directed Choose Your Setup restoration. No rendered section, booking code, or evidence history was removed.
+- Cleanup verification passed with 0 Astro errors, 15/15 unit tests, and a successful production build. Cleanup commit `d93f1bc` was pushed, and PR #1 was opened from `exp/homepage-cinematic-v1` into `main`: https://github.com/aaronbasil9400/xerom-website/pull/1
+
+## Continuation checklist
+
+- [x] Run baseline check, unit tests, build, asset verification, and E2E.
+- [x] Preserve six pre-change screenshots under a dedicated baseline directory.
+- [x] Implement the cinematic desktop homepage and independently tuned mobile hierarchy.
+- [x] Add the always-visible mobile Book action without changing booking routes or behavior.
+- [x] Add/adjust structural and responsive E2E coverage.
+- [x] Run final six-width visual QA, accessibility, reduced-motion, 200% reflow, console/network, links/assets, and booking-regression checks.
+- [x] Measure Lighthouse against a local production preview; deployed-origin remeasurement remains pending.
+- [x] Update `DESIGN.md`, `QA_REPORT.md`, `docs/agent/DECISIONS.md`, and this worklog with evidence.
+- [x] Commit scoped progress periodically; do not merge to `main`.
+- [ ] Deploy the pushed feature branch and run deployed-origin screenshot/Lighthouse/smoke checks once Cloudflare credentials are available.
