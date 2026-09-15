@@ -42,6 +42,7 @@ This file is the continuation log for the cinematic homepage UI/UX upgrade reque
 - Owner revision: hid the Race / Play / Refuel experience dock at the 560px phone breakpoint because Pick Your Pace already supplies sufficient service choices. The dock remains visible on tablet and desktop, and no booking or service link behavior changed.
 - Mobile-dock verification: Astro diagnostics 0 errors, 15/15 unit tests, production build passed, and 12/12 combined breakpoint/overflow/core-route checks passed across all six widths. The full functional suite passed every case across the combined run after the familiar first-request local booking timeout passed on an immediate focused rerun.
 - Hardened the screenshot helper with a bounded image-decode wait after one lazy image stalled the first phone capture. Representative 390px, 768px, and 1440px captures passed under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`; visual inspection confirmed no phone gap or overflow and confirmed the dock remains visible on tablet/desktop.
+- Pre-PR cleanup removed the now-unreachable `VenueGallery.astro` component and its gallery/social CSS after the owner-directed Choose Your Setup restoration. No rendered section, booking code, or evidence history was removed.
 
 ## Continuation checklist
 

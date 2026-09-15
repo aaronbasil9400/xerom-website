@@ -34,7 +34,7 @@
 
 .home-session-section { order: 3; padding-block: clamp(3.25rem,6vw,5.5rem) clamp(4rem,7vw,6rem); }
 .home-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 1.25rem; }
-.home-section-heading h2, .home-copy-block h2, .home-final-copy h2 { margin: 0; font-family: "Racing Sans One","Barlow Condensed",sans-serif; font-size: clamp(2.7rem,5.2vw,5rem); font-weight: 400; line-height: .86; letter-spacing: -.03em; text-transform: uppercase; }
+.home-section-heading h2, .home-final-copy h2 { margin: 0; font-family: "Racing Sans One","Barlow Condensed",sans-serif; font-size: clamp(2.7rem,5.2vw,5rem); font-weight: 400; line-height: .86; letter-spacing: -.03em; text-transform: uppercase; }
 .home-section-heading p:not(.home-kicker) { margin: .35rem 0 0; color: var(--muted); }
 .hours-chip { display: grid; grid-template-columns: auto auto; gap: .2rem 1.5rem; min-width: 22rem; padding: .7rem 1rem; border: 1px solid var(--line); background: var(--panel); font-family: "Barlow Condensed",sans-serif; }
 .hours-chip strong { grid-row: 1/span 2; align-self: center; text-transform: uppercase; }
@@ -57,19 +57,7 @@
 .home-session-link:hover .home-session-copy, .home-session-link:focus-visible .home-session-copy { max-height: 4rem; margin-top: .35rem; opacity: 1; }
 .home-session-arrow { position: absolute; right: .8rem; bottom: .8rem; }
 
-.home-social-section { padding-block: clamp(3.5rem,5vw,5.5rem); border-block: 1px solid #242424; background: linear-gradient(110deg,#0d0d0d,#080808 60%); }
-.home-social-inner, .home-visit-inner { display: grid; width: min(calc(100% - 2rem),var(--content)); grid-template-columns: minmax(17rem,.7fr) 1.3fr; align-items: center; gap: clamp(2rem,5vw,5rem); margin-inline: auto; }
-.home-copy-block p:not(.home-kicker) { max-width: 31rem; margin: 1rem 0 0; color: var(--muted); font-size: 1.05rem; }
-.owner-media-note { padding-left: .8rem; border-left: 2px solid var(--red); font-size: .86rem !important; }
-.venue-gallery { display: grid; grid-template-columns: 1.1fr 1fr; grid-template-rows: repeat(2,minmax(10rem,1fr)); gap: .65rem; min-height: 24rem; }
-.venue-tile { position: relative; min-width: 0; margin: 0; border: 1px solid var(--line); overflow: hidden; }
-.venue-tile picture, .venue-tile img { width: 100%; height: 100%; }
-.venue-tile img { object-fit: cover; }
-.gallery-race { grid-row: 1/span 2; }
-.gallery-race img { object-position: 43% 58%; }
-.venue-tile::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent,rgba(5,5,5,.94)); }
-.venue-tile figcaption { position: absolute; z-index: 2; right: .7rem; bottom: .6rem; left: .7rem; display: flex; align-items: end; justify-content: space-between; gap: .5rem; font-family: "Barlow Condensed",sans-serif; font-size: 1rem; font-style: italic; font-weight: 900; text-transform: uppercase; }
-.venue-tile figcaption small { color: var(--muted); font-size: .62rem; letter-spacing: .05em; text-align: right; }
+.home-visit-inner { display: grid; width: min(calc(100% - 2rem),var(--content)); grid-template-columns: minmax(17rem,.7fr) 1.3fr; align-items: center; gap: clamp(2rem,5vw,5rem); margin-inline: auto; }
 
 .home-visit-section { padding-block: clamp(4rem,8vw,7rem); }
 .home-visit-inner { grid-template-columns: 1fr 1fr; align-items: stretch; }
@@ -110,11 +98,10 @@
   .dock-copy small { color: #d4d0c8; }
   .home-section-heading { align-items: start; flex-direction: column; gap: 1rem; }
   .hours-chip { width: 100%; min-width: 0; }
-  .home-social-inner { grid-template-columns: 1fr; }
 }
 
 @media (max-width:560px) {
-  .home-hero, .home-section, .experience-dock, .home-final-cta, .home-social-inner, .home-visit-inner { width: min(calc(100% - 1rem),var(--content)); }
+  .home-hero, .home-section, .experience-dock, .home-final-cta, .home-visit-inner { width: min(calc(100% - 1rem),var(--content)); }
   .home-hero { min-height: 45rem; }
   .home-hero-media { bottom: auto; height: 25rem; }
   .home-hero-media img { object-position: 61% 50%; }
@@ -139,7 +126,7 @@
   .dock-copy small { font-size: .68rem; }
   .dock-arrow { position: relative; z-index: 1; display: grid; }
   .home-section-heading { margin-bottom: .8rem; }
-  .home-section-heading h2, .home-copy-block h2, .home-final-copy h2 { font-size: clamp(2.5rem,12vw,3.5rem); }
+  .home-section-heading h2, .home-final-copy h2 { font-size: clamp(2.5rem,12vw,3.5rem); }
   .home-kicker { margin-bottom: .35rem; font-size: .72rem; }
   .hours-chip { grid-template-columns: 1fr; gap: .3rem; padding: .65rem .75rem; }
   .hours-chip strong { grid-row: auto; }
@@ -152,13 +139,6 @@
   .home-session-title { font-size: 1.2rem; }
   .home-session-price strong { font-size: 1.65rem; }
   .home-session-copy { display: none; }
-  .home-social-section { padding-block: 3.5rem; }
-  .home-copy-block p:not(.home-kicker) { margin-top: .7rem; font-size: .95rem; }
-  .venue-gallery { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(2,8.5rem); min-height: 0; gap: .4rem; }
-  .gallery-race { grid-row: auto; }
-  .venue-tile figcaption { right: .45rem; bottom: .4rem; left: .45rem; font-size: .76rem; }
-  .venue-tile figcaption small { display: none; }
-  .gallery-group::before { content: "Placeholder"; position: absolute; z-index: 3; top: .35rem; right: .35rem; padding: .18rem .3rem; background: rgba(8,8,8,.82); color: var(--muted); font-family: "Barlow Condensed",sans-serif; font-size: .55rem; text-transform: uppercase; }
   .home-visit-section { padding-block: 3.5rem; }
   .home-visit-inner { grid-template-columns: 1fr; gap: .65rem; }
   .home-info-card { padding: 1.1rem; }
