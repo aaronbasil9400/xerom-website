@@ -1,0 +1,22 @@
+---
+import { Image } from "astro:assets";
+import ArrowIcon from "@/components/ArrowIcon.astro";
+import { media } from "@/config/media";
+
+const experiences = [
+  { number: "01", label: "Race", copy: "Get behind the wheel.", href: "/experiences#sim-racing", image: media.regularRig, alt: "Close-up of Xerom’s Regular Rig controls", className: "dock-race" },
+  { number: "02", label: "Play", copy: "More ways to game.", href: "/experiences#ps5", image: media.ps5Lounge, alt: "PS5 controllers at the Xerom lounge", className: "dock-play" },
+  { number: "03", label: "Refuel", copy: "Pause at the cafe.", href: "/experiences#cafe", image: media.cafe, alt: "Three colourful drinks from the Xerom cafe", className: "dock-refuel" },
+] as const;
+---
+
+<nav class="experience-dock" aria-label="Race, play and refuel at Xerom" data-experience-dock>
+  {experiences.map((experience) => (
+    <a class:list={["dock-card", experience.className]} href={experience.href}>
+      <div class="dock-media"><Image src={experience.image} alt={experience.alt} widths={[480, 800]} sizes="(max-width: 560px) 42vw, (max-width: 900px) 30vw, 15vw" format="webp" loading="lazy" /></div>
+      <span class="dock-number">{experience.number}</span>
+      <span class="dock-copy"><strong>{experience.label}</strong><small>{experience.copy}</small></span>
+      <span class="dock-arrow" aria-hidden="true"><ArrowIcon /></span>
+    </a>
+  ))}
+</nav>

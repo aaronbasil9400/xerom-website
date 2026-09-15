@@ -84,9 +84,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <a href="/experiences#sim-racing">Sim Racing</a>
         <a href="/experiences#ps5">PS5</a>
         <a href="/experiences#cafe">Cafe</a>
-        <a href="/#about">About</a>
+        <a href="/visit">Visit</a>
       </nav>
+      <a class="header-location" href={contactLinks.directions} aria-label="Get directions to Xerom in Klang">Klang, Selangor</a>
       <a class="button button-primary header-cta" href="/book">Book a session <ArrowIcon /></a>
+      <a class="mobile-book-cta" href="/book" aria-label="Book a session">Book</a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
         <span class="sr-only">Open menu</span><span></span><span></span>
       </button>
@@ -94,7 +96,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <a href="/experiences#sim-racing">Sim Racing</a>
         <a href="/experiences#ps5">PS5</a>
         <a href="/experiences#cafe">Cafe</a>
-        <a href="/#about">About</a>
+        <a href="/visit">Visit</a>
         <a class="button button-primary" href="/book">Book a session</a>
       </nav>
     </header>

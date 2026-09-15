@@ -2,15 +2,57 @@ import { expect, test } from "@playwright/test";
 
 test("homepage presents the approved story without overflow", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /race together/i })).toBeVisible();
+  const heroHeading = page.getByRole("heading", { level: 1, name: "Race Together", exact: true });
+  await expect(heroHeading).toBeVisible();
+  expect((await heroHeading.textContent())?.replace(/\s+/g, " ").trim()).toBe("Race Together");
   await expect(page.getByText("01").first()).toBeVisible();
   await expect(page.getByText("Refuel", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: /book a session/i }).first()).toBeVisible();
+  await expect(page.locator("[data-session-card]")).toHaveCount(4);
+  await expect(page.locator("[data-experience-dock] > a")).toHaveCount(3);
+  await expect(page.locator('[data-session-card] a[href="/book?service=regular-sim"]')).toHaveCount(1);
+  await expect(page.locator('[data-session-card] a[href="/book?service=pro-sim"]')).toHaveCount(1);
+  await expect(page.locator('[data-session-card] a[href="/book?service=ps5"]')).toHaveCount(1);
+  await expect(page.locator("[data-home-hero] img")).toHaveAttribute("loading", "eager");
+  expect(await page.locator("main img[loading='eager']").count()).toBe(1);
+  const sessionHeights = await page.locator("[data-session-card]").evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().height));
+  expect(Math.max(...sessionHeights)).toBeLessThan(400);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
 
+test("mobile header keeps booking visible and menu keyboard-safe", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) > 900, "Mobile and tablet header only");
+  await page.goto("/");
+  const book = page.locator(".mobile-book-cta");
+  await expect(book).toBeVisible();
+  await expect(book).toHaveAttribute("href", "/book");
+  const box = await book.boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(44);
+  expect(box?.width).toBeGreaterThanOrEqual(44);
+
+  const toggle = page.locator("[data-menu-toggle]");
+  await expect(toggle).toHaveAccessibleName("Open menu");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(toggle).toHaveAccessibleName("Close menu");
+  await expect(page.locator("#mobile-nav")).toBeVisible();
+  await expect(page.locator("#mobile-nav a").first()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#mobile-nav")).toBeHidden();
+  await expect(toggle).toHaveAccessibleName("Open menu");
+  await expect(toggle).toBeFocused();
+});
+
 test("mock booking flow reaches confirmation", async ({ page }) => {
+  await page.route("**/api/bookings", async (route) => {
+    const payload = route.request().postDataJSON() as { start?: string };
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ bookingId: "XR-E2E01", total: 20, start: payload.start }),
+    });
+  });
   await page.goto("/book");
   await page.getByRole("button", { name: /choose a time/i }).click();
   await page.getByLabel("Date").evaluate((input: HTMLInputElement) => {

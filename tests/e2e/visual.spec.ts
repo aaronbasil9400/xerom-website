@@ -13,7 +13,7 @@ test("capture validated homepage evidence", async ({ page }, testInfo) => {
     window.scrollTo(0, 0);
   });
   await page.waitForTimeout(300);
-  await mkdir(".impeccable/review", { recursive: true });
+  await mkdir(".impeccable/review/homepage-upgrade/after", { recursive: true });
   const filenames: Record<string, string> = {
     "mobile-375": "mobile-375.png",
     "mobile-390": "mobile.png",
@@ -22,5 +22,5 @@ test("capture validated homepage evidence", async ({ page }, testInfo) => {
     "desktop-1024": "desktop-1024.png",
     "desktop-1440": "desktop.png",
   };
-  await page.screenshot({ path: `.impeccable/review/${filenames[testInfo.project.name]}`, fullPage: true, animations: "disabled" });
+  await page.screenshot({ path: `.impeccable/review/homepage-upgrade/after/${filenames[testInfo.project.name]}`, fullPage: true, animations: "disabled" });
 });

@@ -47,20 +47,23 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .section-title { max-width: 12ch; margin: 0 0 2rem; font-family: "Racing Sans One", "Barlow Condensed", sans-serif; font-size: clamp(2.8rem, 6vw, 5.5rem); font-weight: 400; line-height: .9; letter-spacing: -.03em; text-transform: uppercase; text-wrap: balance; }
 .lede { max-width: 65ch; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.3rem); }
 
-.site-header { position: sticky; z-index: 50; top: 0; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2rem; width: min(calc(100% - 2rem), var(--content)); margin: 1rem auto 0; padding: .85rem 1.25rem; border: 1px solid color-mix(in srgb, var(--paper) 18%, transparent); background: color-mix(in srgb, var(--ink) 92%, transparent); box-shadow: 0 12px 34px rgba(0,0,0,.3); backdrop-filter: blur(16px); }
+.site-header { position: sticky; z-index: 50; top: 0; display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: clamp(1rem, 2vw, 2rem); width: min(calc(100% - 2rem), var(--content)); min-height: 4.25rem; margin: .5rem auto 0; padding: .55rem 1rem; border: 1px solid color-mix(in srgb, var(--paper) 18%, transparent); background: color-mix(in srgb, var(--ink) 94%, transparent); box-shadow: 0 12px 34px rgba(0,0,0,.3); backdrop-filter: blur(16px); }
 .brand { display: inline-flex; align-items: center; text-decoration: none; }
 .brand-logo { display: block; width: clamp(7.8rem, 12vw, 11rem); height: auto; }
 .footer-logo { display: block; width: 8.5rem; height: auto; margin-bottom: .6rem; }
 .desktop-nav { display: flex; justify-content: center; gap: clamp(1rem, 3vw, 2.5rem); }
 .desktop-nav a, .footer-links a { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .desktop-nav a:hover, .footer-links a:hover { color: var(--paper); }
+.header-location { display: inline-flex; align-items: center; gap: .45rem; color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
+.header-location::before { content: ""; width: .55rem; height: .55rem; border-radius: 50% 50% 50% 0; background: var(--red); transform: rotate(-45deg); }
+.header-location:hover { color: var(--paper); }
 .button { display: inline-flex; min-height: 3.25rem; align-items: center; justify-content: center; gap: .9rem; padding: .75rem 1.25rem; border: 1px solid var(--paper); color: var(--paper); font-family: "Barlow Condensed", sans-serif; font-size: 1.05rem; font-style: italic; font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .3s var(--ease-out); cursor: pointer; }
 .button:hover { transform: translateY(-2px); }
 .button-primary { border-color: var(--red-action); background: var(--red-action); color: white; clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%); padding-inline: 1.7rem; }
 .button-primary:hover { background: #b92320; }
 .icon-arrow { width: 1.25em; height: 1.25em; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: square; stroke-linejoin: miter; }
 .button-secondary:hover { background: var(--paper); color: var(--ink); }
-.menu-toggle, .mobile-nav { display: none; }
+.menu-toggle, .mobile-nav, .mobile-book-cta { display: none; }
 
 .hero { min-height: min(30rem, calc(100svh - 20rem)); display: grid; grid-template-columns: minmax(16rem, .34fr) 1fr; align-items: stretch; gap: 0; width: min(calc(100% - 2rem), var(--content)); margin: 1rem auto 0; border: 1px solid var(--line); background: var(--panel); overflow: hidden; }
 .race-path { position: relative; z-index: 2; display: grid; align-content: center; gap: .7rem; padding: clamp(1rem, 2vw, 2rem); background: linear-gradient(140deg, #151515, #080808); }
@@ -199,8 +202,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hours-list dd { margin: 0; font-family: "Racing Sans One", "Barlow Condensed", sans-serif; font-size: 1.3rem; font-weight: 400; line-height: 1; text-transform: uppercase; }
 
 @media (max-width: 900px) {
-  .site-header { grid-template-columns: 1fr auto; }
-  .desktop-nav, .header-cta { display: none; }
+  .site-header { grid-template-columns: 1fr auto auto; gap: .65rem; }
+  .desktop-nav, .header-cta, .header-location { display: none; }
+  .mobile-book-cta { display: inline-flex; min-width: 5.5rem; min-height: 2.75rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--red-action); color: white; font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; }
   .menu-toggle { display: grid; width: 3rem; height: 3rem; place-content: center; gap: .45rem; border: 0; background: transparent; color: var(--paper); }
   .menu-toggle span:not(.sr-only) { display: block; width: 1.7rem; height: 2px; background: currentColor; }
   .mobile-nav { position: absolute; top: calc(100% + .5rem); right: 0; left: 0; display: grid; gap: 1rem; padding: 1.25rem; border: 1px solid var(--line); background: var(--ink); box-shadow: 0 16px 32px rgba(0,0,0,.45); }
@@ -227,8 +231,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 560px) {
   .section-shell, .hero, .site-header { width: min(calc(100% - 1rem), var(--content)); }
-  .site-header { margin-top: .5rem; }
+  .site-header { min-height: 3.75rem; margin-top: .25rem; padding: .4rem .65rem; }
   .brand-logo { width: 7.5rem; }
+  .mobile-book-cta { min-width: 4.7rem; min-height: 2.75rem; }
   .display { font-size: clamp(3.4rem, 20vw, 5.8rem); }
   .hero-scene { min-height: 37rem; }
   .hero-image { object-position: 58% center; }

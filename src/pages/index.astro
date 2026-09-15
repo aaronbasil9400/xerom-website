@@ -1,85 +1,99 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import ExperienceCard from "@/components/ExperienceCard.astro";
+import ExperienceDock from "@/components/home/ExperienceDock.astro";
+import SessionCard from "@/components/home/SessionCard.astro";
+import VenueGallery from "@/components/home/VenueGallery.astro";
 import { services } from "@/config/services";
 import { formatMoney, pricing } from "@/config/pricing";
 import { media } from "@/config/media";
 import { openingHours } from "@/config/hours";
+import { business, contactLinks } from "@/config/business";
 import { Image, Picture } from "astro:assets";
 import ArrowIcon from "@/components/ArrowIcon.astro";
+import "@/styles/home.css";
 ---
+
 <BaseLayout>
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="race-path" aria-label="A night at Xerom">
-      <svg class="route-line" viewBox="0 0 80 520" preserveAspectRatio="none" aria-hidden="true"><path d="M42 8 C 6 88, 72 122, 38 194 S 72 314, 38 386 S 60 470, 42 512" /></svg>
-      <article class="path-step">
-        <div class="path-media"><Image src={media.regularRig} alt="Close-up of Xerom’s Regular Rig controls" width={280} height={280} format="webp" loading="eager" /></div>
-        <div class="path-content"><span class="path-number">01</span><span class="path-label">Race</span><p class="path-copy">Get behind the wheel.</p></div>
-      </article>
-      <article class="path-step">
-        <div class="path-media"><Image src={media.ps5Lounge} alt="PS5 controllers at the Xerom lounge" width={280} height={280} format="webp" loading="eager" /></div>
-        <div class="path-content"><span class="path-number">02</span><span class="path-label">Play</span><p class="path-copy">More ways to game together.</p></div>
-      </article>
-      <article class="path-step">
-        <div class="path-media"><Image src={media.cafe} alt="Three colourful drinks from the Xerom cafe" width={280} height={280} format="webp" loading="eager" /></div>
-        <div class="path-content"><span class="path-number">03</span><span class="path-label">Refuel</span><p class="path-copy">Take a break with your crew.</p></div>
-      </article>
-    </div>
-    <div class="hero-scene">
-      <Picture class="hero-image" src={media.hero} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" widths={[640, 960, 1600]} sizes="(max-width: 900px) 100vw, 72vw" formats={["avif", "webp"]} fallbackFormat="jpg" loading="eager" />
-      <div class="hero-copy">
-        <h1 class="display hero-display" id="hero-title"><span>Race</span><span class="red">Together</span></h1>
-        <p class="hero-tag">Sim racing · PS5 · Cafe<br />Bandar Bukit Tinggi, Klang</p>
-        <div class="hero-actions">
-          <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
-          <a class="button button-secondary" href="/pricing">See pricing</a>
+  <div class="homepage">
+    <div class="home-flow">
+      <section class="home-hero" aria-labelledby="hero-title" data-home-hero>
+        <div class="home-hero-media">
+          <Picture class="home-hero-image hero-image" src={media.hero} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" widths={[640, 960, 1600]} sizes="(max-width: 900px) 100vw, 88rem" formats={["avif", "webp"]} fallbackFormat="jpg" loading="eager" fetchpriority="high" />
         </div>
-        <div class="hero-hours" aria-label="Opening hours">
-          <span class="hero-hours-label">Opening hours</span>
-          {openingHours.map((group) => (
-            <span class="hero-hours-slot"><b>{group.days}</b> {group.hours}</span>
-          ))}
+        <div class="home-hero-copy">
+          <p class="home-eyebrow">Sim Racing · PS5 · Cafe</p>
+          <h1 id="hero-title" aria-label="Race Together"><span>Race</span>{" "}<span class="red">Together</span></h1>
+          <p class="home-hero-tagline">Drive. Compete. Chill. Repeat.</p>
+          <p class="home-hero-description">Sim racing, PS5 lounge gaming and cafe time for groups in Bandar Bukit Tinggi, Klang.</p>
+          <div class="home-hero-actions">
+            <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
+            <a class="button button-secondary" href="#sessions">See pricing</a>
+          </div>
+          <a class="home-location-cue" href={contactLinks.directions}>Bandar Bukit Tinggi, Klang</a>
         </div>
+        <p class="hero-placeholder-label">Illustrative hero · final owner photo pending</p>
+      </section>
+
+      <ExperienceDock />
+
+      <section class="home-section home-session-section" id="sessions" aria-labelledby="sessions-title">
+        <div class="home-section-heading">
+          <div>
+            <p class="home-kicker">Our sessions</p>
+            <h2 id="sessions-title">Pick your <span class="red">pace</span></h2>
+            <p>From casual laps to focused race simulation.</p>
+          </div>
+          <div class="hours-chip" aria-label="Opening hours">
+            <strong>Opening hours</strong>
+            {openingHours.map((group) => <span><b>{group.days}</b> {group.hours}</span>)}
+          </div>
+        </div>
+        <div class="home-session-grid">
+          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={services["regular-sim"].image} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
+          <SessionCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={services["pro-sim"].image} alt={services["pro-sim"].imageAlt} price={formatMoney(pricing.services["pro-sim"].hourlyRate)} href="/book?service=pro-sim" featured />
+          <SessionCard title={services.ps5.name} copy={services.ps5.description} image={services.ps5.image} alt={services.ps5.imageAlt} price={formatMoney(pricing.services.ps5.hourlyRate)} href="/book?service=ps5" />
+          <SessionCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
+        </div>
+      </section>
+    </div>
+
+    <section class="home-social-section" id="about" aria-labelledby="social-title">
+      <div class="home-social-inner">
+        <div class="home-copy-block">
+          <p class="home-kicker">The Xerom experience</p>
+          <h2 id="social-title">More than <span class="red">racing</span></h2>
+          <p>Race on your own or bring the crew, then switch to PS5 or pause at the cafe.</p>
+          <p class="owner-media-note">Service photos show Xerom. The group scene is an illustrative placeholder pending an owner-approved photo.</p>
+        </div>
+        <VenueGallery />
       </div>
-      <div class="hero-price-proof" aria-label="Current experience prices">
-        <span><b>Regular Rig</b><strong>{formatMoney(pricing.services["regular-sim"].hourlyRate)}/hour</strong></span>
-        <span><b>Pro Rig</b><strong>{formatMoney(pricing.services["pro-sim"].hourlyRate)}/hour</strong></span>
-        <span><b>PS5 Lounge</b><strong>{formatMoney(pricing.services.ps5.hourlyRate)}/hour</strong></span>
-        <span><b>Cafe</b><strong>Stay & refuel</strong></span>
+    </section>
+
+    <section class="home-visit-section" aria-label="Opening hours and location">
+      <div class="home-visit-inner">
+        <article class="home-info-card">
+          <h2>Opening hours</h2>
+          <dl class="home-hours-list">
+            {openingHours.map((group) => <div><dt>{group.days}</dt><dd>{group.hours}</dd></div>)}
+          </dl>
+        </article>
+        <article class="home-info-card home-location-card">
+          <p class="home-kicker">Find us in Klang</p>
+          <h2>Bandar Bukit Tinggi</h2>
+          <address>{business.address.locality}, {business.address.city}, {business.address.region}</address>
+          <a class="button button-secondary" href={contactLinks.directions}>Get directions <ArrowIcon /></a>
+        </article>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section-shell section-space experience-section" aria-labelledby="choose-title">
-    <h2 class="section-title" id="choose-title">Pick your <span class="red">pace</span></h2>
-    <div class="experience-grid">
-      <ExperienceCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={services["regular-sim"].image} alt={services["regular-sim"].imageAlt} price={`${formatMoney(pricing.services["regular-sim"].hourlyRate)}/hour`} href="/book?service=regular-sim" />
-      <ExperienceCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={services["pro-sim"].image} alt={services["pro-sim"].imageAlt} price={`${formatMoney(pricing.services["pro-sim"].hourlyRate)}/hour`} href="/book?service=pro-sim" />
-      <ExperienceCard title={services.ps5.name} copy={services.ps5.description} image={services.ps5.image} alt={services.ps5.imageAlt} price={`${formatMoney(pricing.services.ps5.hourlyRate)}/hour`} href="/book?service=ps5" />
-      <ExperienceCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafe} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
-    </div>
-  </section>
-
-  <div class="signal-band" aria-hidden="true"><div class="signal-track"><span>Race together</span><span>Play together</span><span>Refuel together</span><span>Race together</span><span>Play together</span><span>Refuel together</span></div></div>
-
-  <section class="section-shell section-space split-section" id="about" aria-labelledby="hardware-title">
-    <div class="hardware-frame"><Image src={media.proRig} alt="Close-up of the Porsche-branded wheel centre on Xerom’s Pro Rig" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" /></div>
-    <div>
-      <h2 class="section-title" id="hardware-title">Choose your <span class="red">setup</span></h2>
-      <p class="lede">Start with the accessible Regular Rig, step into the dedicated Pro Rig, or settle into a PS5 lounge. Every option is booked by the hour.</p>
-      <ul class="feature-list">
-        <li><span>Three Regular rigs for casual group racing</span></li>
-        <li><span>One Pro rig for a more focused drive</span></li>
-        <li><span>Two PS5 lounges with two controllers included</span></li>
-      </ul>
-      <a class="button button-secondary" href="/experiences">Compare experiences</a>
-    </div>
-  </section>
-
-  <section class="section-shell section-space cta-section">
-    <div class="cta-panel">
-      <div><h2 class="section-title">Your seat is <span class="red">waiting</span></h2><p class="lede">Choose the setup, check the next available slots, and reserve for your crew.</p></div>
-      <a class="button button-primary" href="/book">Check availability <ArrowIcon /></a>
-    </div>
-  </section>
+    <section class="home-final-cta" aria-labelledby="final-cta-title">
+      <Image src={media.proRig} alt="" widths={[800, 1200]} sizes="(max-width: 560px) 100vw, 88rem" format="webp" loading="lazy" />
+      <div class="home-final-copy">
+        <p class="home-kicker">Gather your crew</p>
+        <h2 id="final-cta-title">Your next <span class="red">lap awaits</span></h2>
+        <p>Choose a session and check the next available time.</p>
+      </div>
+      <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
+    </section>
+  </div>
 </BaseLayout>
