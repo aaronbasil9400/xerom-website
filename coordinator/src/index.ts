@@ -1,17 +1,18 @@
 import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
 import { validateBookingWindow, overlaps } from "../../src/lib/booking/time";
-import { calendarGroups, allCalendarIds, resourceIdForCalendar } from "../../src/lib/booking/resources";
+import { calendarGroups, allCalendarIds, resourceIdForCalendar, calendarIdForResource } from "../../src/lib/booking/resources";
 import { queryFreeBusy, insertEvent, deleteEvent, listCalendarEvents, patchCalendarEvent } from "../../src/lib/google/calendar";
 import { calculateTotal } from "../../src/lib/booking/pricing";
 import { createBookingId, hashPayload } from "../../src/lib/booking/id";
 import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
-import { bookingActionSchema } from "../../src/lib/race-control/contracts";
+import { blockTimeRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
 type ActionAttempt = { hash: string; status: "complete" | "failed"; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
+type BlockAttempt = { hash: string; status: "complete" | "failed"; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
@@ -19,6 +20,7 @@ export class BookingCoordinator extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     if (request.method !== "POST") return reply({ error: "Method not allowed." }, 405);
     if (request.headers.get("x-xerom-command") === "booking-action") return this.handleBookingAction(request);
+    if (request.headers.get("x-xerom-command") === "block-time") return this.handleBlockTime(request);
     const parsed = bookingRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
     const booking = parsed.data;
@@ -197,6 +199,57 @@ export class BookingCoordinator extends DurableObject<Env> {
       } catch (error) {
         console.error(JSON.stringify({ message: "booking_action_failed", bookingId: action.expected.bookingId, action: action.action, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: "Booking action could not be completed and needs staff review." }, 503);
+      }
+    });
+  }
+
+  private async handleBlockTime(request: Request): Promise<Response> {
+    const parsed = blockTimeRequestSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) return reply({ error: "Invalid block command." }, 400);
+    const block = parsed.data;
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const hash = await hashPayload(block);
+      const key = `block:${block.idempotencyKey}`;
+      const prior = await this.ctx.storage.get<BlockAttempt>(key);
+      if (prior) {
+        if (prior.hash !== hash) return reply({ error: "This block attempt was already used with different details." }, 409);
+        if (prior.status === "complete") return reply({ ...(prior.response as object), replayed: true }, 200);
+        return reply({ error: "This block needs staff review before retrying." }, 503);
+      }
+      await this.ctx.storage.put(key, { hash, status: "failed" } satisfies BlockAttempt);
+      const env = this.env;
+      const calendarIds = block.resourceIds.map((resourceId) => calendarIdForResource(env, resourceId));
+      if (calendarIds.some((calendarId): calendarId is null => calendarId === null)) return reply({ error: "A requested resource is not configured." }, 409);
+      const overlapsExisting = (await Promise.all(calendarIds.map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId!, block.start, block.end) })))).flatMap(({ calendarId, events }) => events.filter((event) => event.status !== "cancelled" && event.transparency !== "transparent" && overlaps(block.start, block.end, event.start, event.end)).map((event) => ({ calendarId, eventId: event.id })));
+      if (overlapsExisting.length > 0) {
+        await this.ctx.storage.delete(key);
+        return reply({ error: "The block overlaps an existing Calendar reservation." }, 409);
+      }
+      const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
+      try {
+        for (const calendarId of calendarIds) {
+          const resourceId = resourceIdForCalendar(env, calendarId! ) ?? "booking-control";
+          const eventId = (await hashPayload({ block: block.idempotencyKey, calendarId })).slice(0, 28);
+          await insertEvent(env, {
+            calendarId: calendarId!,
+            eventId,
+            summary: `${block.blockType === "venue-closure" ? "VENUE CLOSURE" : "MAINTENANCE"} | ${sanitizeCalendarText(block.reason)}`,
+            description: `Race Control ${block.blockType}\nReason: ${sanitizeCalendarText(block.reason)}`,
+            start: block.start,
+            end: block.end,
+            privateProperties: { source: "race-control-owner", blockType: block.blockType, resourceId, status: "blocked", createdAt: new Date().toISOString() },
+          });
+          createdEvents.push({ calendarId: calendarId!, eventId });
+        }
+        const response = { blockType: block.blockType, start: block.start, end: block.end, resourceIds: block.resourceIds, eventCount: createdEvents.length };
+        await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: createdEvents } satisfies BlockAttempt);
+        return reply(response, 201);
+      } catch (error) {
+        const rollback = await Promise.allSettled(createdEvents.map((event) => deleteEvent(env, event.calendarId, event.eventId)));
+        const rollbackFailed = rollback.some((result) => result.status === "rejected");
+        await this.ctx.storage.put(key, { hash, status: "failed", eventIds: createdEvents } satisfies BlockAttempt);
+        console.error(JSON.stringify({ message: "block_time_failed", blockType: block.blockType, createdCount: createdEvents.length, rollbackFailed, error: error instanceof Error ? error.message : "unknown" }));
+        return reply({ error: rollbackFailed ? "The block failed and needs staff review." : "The block could not be created." }, 503);
       }
     });
   }

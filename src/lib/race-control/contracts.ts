@@ -51,11 +51,12 @@ export const operationCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("activate-config"), opId: opaqueId, idempotencyKey: opaqueId, expectedRevision: z.string().min(1), reviewToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("provision-resource"), opId: opaqueId, idempotencyKey: opaqueId, resourceId: z.string().min(1), confirmationToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("delete-resource-calendar"), opId: opaqueId, idempotencyKey: opaqueId, resourceId: z.string().min(1), confirmationToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
+  z.object({ type: z.literal("block-time"), opId: opaqueId, idempotencyKey: opaqueId, blockType: z.enum(["maintenance", "venue-closure"]), resourceIds: z.array(z.string().min(1)).min(1).max(64), start: isoInstant, end: isoInstant, reason: z.string().trim().min(1).max(500), payloadHash: z.string().length(64) }).strict(),
 ]);
 
 export const operationSchema = z.object({
   opId: opaqueId,
-  type: z.enum(["create-booking", "booking-action", "activate-config", "provision-resource", "delete-resource-calendar"]),
+  type: z.enum(["create-booking", "booking-action", "activate-config", "provision-resource", "delete-resource-calendar", "block-time"]),
   actorId: z.string().min(1).max(256),
   payloadHash: z.string().length(64),
   state: z.enum(["pending", "running", "succeeded", "failed", "needs_review"]),
@@ -83,3 +84,17 @@ export type Quote = z.infer<typeof quoteSchema>;
 export type BookingAction = z.infer<typeof bookingActionSchema>;
 export type OperationCommand = z.infer<typeof operationCommandSchema>;
 export type Operation = z.infer<typeof operationSchema>;
+
+export const blockTimeRequestSchema = z.object({
+  blockType: z.enum(["maintenance", "venue-closure"]),
+  resourceIds: z.array(z.string().min(1).max(96)).min(1).max(64),
+  start: isoInstant,
+  end: isoInstant,
+  reason: z.string().trim().min(1).max(500),
+  idempotencyKey: opaqueId,
+}).strict().superRefine((value, context) => {
+  if (Date.parse(value.end) <= Date.parse(value.start)) context.addIssue({ code: "custom", path: ["end"], message: "End must be after start." });
+  if (value.blockType === "venue-closure" && !value.resourceIds.includes("booking-control")) context.addIssue({ code: "custom", path: ["resourceIds"], message: "Venue closures must target the Booking Control calendar." });
+});
+
+export type BlockTimeRequest = z.infer<typeof blockTimeRequestSchema>;

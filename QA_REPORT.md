@@ -173,3 +173,14 @@ Not yet run: live owner OTP login, live schedule listing, live owner booking/act
 | Local verification | Pass | Astro check clean, Race Control tests 24/24, production build passed |
 
 Not yet run against Google: any extension/reschedule or lifecycle action, partial-update compensation/reconciliation, maintenance/closure, settings publication, R2, or production traffic. Current implementation deliberately does not silently move resources or repackage historical prices.
+
+## Maintenance/closure implementation checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Maintenance block contract | Implemented locally | Strict block schema requires interval, reason, resource IDs and idempotency key |
+| Venue closure contract | Implemented locally | Venue closures must target Booking Control; created blocks remain opaque and server-authoritative |
+| Block creation safety | Implemented locally | Coordinator preflights every target Calendar, creates deterministic events, records the attempt, and best-effort rolls back partial creation |
+| UI regression | Pass | Local Race Control Playwright suite 12/12 across all required widths; new block form is keyboard-labelled and no-overflow |
+
+No live maintenance/closure block was created. Real conflict review, compensation fencing, and Calendar mutation verification remain open.

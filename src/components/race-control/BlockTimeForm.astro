@@ -1,0 +1,41 @@
+<section id="block-time" class="rc-panel rc-booking-form">
+  <div class="rc-panel-head"><h2>Block time</h2><span>Maintenance or venue closure · shared Calendar</span></div>
+  <form data-rc-block-form>
+    <div class="rc-form-grid">
+      <label>Block type<select name="blockType"><option value="maintenance">Maintenance</option><option value="venue-closure">Venue closure</option></select></label>
+      <label>Resources<select name="resourceIds" multiple size="3"><option value="regular-01">Regular 01</option><option value="regular-02">Regular 02</option><option value="regular-03">Regular 03</option><option value="pro-01">Pro 01</option><option value="ps5-01">PS5 01</option><option value="ps5-02">PS5 02</option><option value="booking-control">Booking Control</option></select></label>
+      <label>Start<input name="start" type="datetime-local" required /></label>
+      <label>End<input name="end" type="datetime-local" required /></label>
+      <label class="rc-wide">Reason<input name="reason" maxlength="500" required /></label>
+    </div>
+    <div class="rc-form-actions"><button class="rc-button rc-button-primary" type="submit">Review and create block</button><output data-rc-block-result aria-live="polite"></output></div>
+  </form>
+</section>
+
+<script>
+  const blockForm = document.querySelector<HTMLFormElement>("[data-rc-block-form]");
+  const blockOutput = document.querySelector<HTMLOutputElement>("[data-rc-block-result]");
+  blockForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!blockOutput) return;
+    const submit = blockForm.querySelector<HTMLButtonElement>('button[type="submit"]');
+    submit?.setAttribute("disabled", "");
+    blockOutput.textContent = "Checking every affected Calendar…";
+    const values = new FormData(blockForm);
+    const start = String(values.get("start") ?? "");
+    const end = String(values.get("end") ?? "");
+    const resourceIds = [...blockForm.querySelectorAll('select[name="resourceIds"] option:checked')].map((option) => option.getAttribute("value") ?? "");
+    try {
+      const response = await fetch("/api/admin/blocks", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ blockType: values.get("blockType"), resourceIds, start: `${start}:00+08:00`, end: `${end}:00+08:00`, reason: values.get("reason"), idempotencyKey: crypto.randomUUID() }) });
+      const result = await response.json() as { error?: { message?: string }; eventCount?: number };
+      if (!response.ok) throw new Error(result.error?.message ?? "The block could not be created.");
+      blockOutput.textContent = `Block created across ${result.eventCount ?? 0} Calendar event(s). Refreshing…`;
+      window.dispatchEvent(new CustomEvent("race-control:refresh"));
+      blockForm.reset();
+    } catch (error) {
+      blockOutput.textContent = error instanceof Error ? error.message : "The block could not be created.";
+    } finally {
+      submit?.removeAttribute("disabled");
+    }
+  });
+</script>

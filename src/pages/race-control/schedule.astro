@@ -4,6 +4,7 @@ import Agenda from '../../components/race-control/Agenda.astro';
 import BookingInspector from '../../components/race-control/BookingInspector.astro';
 import DemoNotice from '../../components/race-control/DemoNotice.astro';
 import BookingCreateForm from '../../components/race-control/BookingCreateForm.astro';
+import BlockTimeForm from '../../components/race-control/BlockTimeForm.astro';
 import { env as cloudflareEnv } from 'cloudflare:workers';
 
 const malaysiaToday = new Intl.DateTimeFormat('en-CA', {
@@ -24,7 +25,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
       <label><span>Service</span><select disabled><option>All services</option></select></label>
       <label class="rc-toolbar-search"><span>Search</span><input type="search" placeholder="Search coming next" disabled /></label>
     </div>
-    <div class="rc-toolbar-actions"><button class="rc-button" type="button" disabled>Block time</button><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
+    <div class="rc-toolbar-actions"><a class="rc-button" href="#block-time">Block time</a><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
   </div>
   <div class="rc-summary">
     <div><b>Shared record</b><strong>Google</strong><small>same calendars as main site</small></div>
@@ -34,4 +35,5 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
   </div>
   <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} /><BookingInspector /></div>
   <BookingCreateForm />
+  <BlockTimeForm />
 </RaceControlLayout>
