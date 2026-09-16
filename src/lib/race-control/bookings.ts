@@ -3,6 +3,7 @@ import { calendarIdForResource } from "@/lib/booking/resources";
 
 export interface BookingSearchResult {
   bookingId: string | null;
+  version: number;
   status: string;
   start: string;
   end: string;
@@ -42,8 +43,11 @@ export async function searchRaceControlBookings(env: CloudflareEnv, from: string
   }
   return [...groups.values()].map((group) => {
     const events = group.events.map(({ event }) => event);
+    const versions = events.map((event) => Number(event.privateProperties.groupVersion ?? "0"));
+    const version = versions.length > 0 && versions.every((candidate) => candidate === versions[0]) ? versions[0] : -1;
     return {
       bookingId: group.bookingId,
+      version,
       status: group.bookingId ? events[0]?.privateProperties.status ?? "confirmed" : "blocked",
       start: events.map((event) => event.start).sort()[0],
       end: events.map((event) => event.end).sort().at(-1)!,

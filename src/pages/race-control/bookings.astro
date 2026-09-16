@@ -13,7 +13,7 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
       <button class="rc-button rc-button-primary" type="submit">Search Calendar</button>
       <output data-rc-search-result aria-live="polite"></output>
     </form>
-    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Events</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>1</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>1</td></tr></tbody></table></div>
+    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Events</th><th scope="col">Action</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>1</td><td>—</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>1</td><td>—</td></tr></tbody></table></div>
   </section>
 </RaceControlLayout>
 
@@ -34,7 +34,7 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
     for (const [key, value] of values.entries()) params.set(key, String(value));
     try {
       const response = await fetch(`/api/admin/bookings?${params}`, { cache: "no-store" });
-      const payload = await response.json() as { data?: Array<{ bookingId: string | null; status: string; start: string; end: string; resources: string[]; eventCount: number }>; error?: { message?: string } };
+      const payload = await response.json() as { data?: Array<{ bookingId: string | null; version: number; status: string; start: string; end: string; resources: string[]; eventCount: number }>; error?: { message?: string } };
       if (!response.ok) throw new Error(payload.error?.message ?? "Bookings unavailable.");
       rows.replaceChildren();
       for (const booking of payload.data ?? []) {
@@ -44,7 +44,43 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
         const resources = document.createElement("td"); resources.textContent = booking.resources.join(" + ");
         const status = document.createElement("td"); status.textContent = booking.status;
         const count = document.createElement("td"); count.textContent = String(booking.eventCount);
-        row.appendChild(id); row.appendChild(when); row.appendChild(resources); row.appendChild(status); row.appendChild(count); rows.appendChild(row);
+        const action = document.createElement("td");
+        if (booking.bookingId && booking.status !== "cancelled" && booking.version >= 0) {
+          const cancel = document.createElement("button");
+          cancel.className = "rc-button rc-button-small";
+          cancel.type = "button";
+          cancel.textContent = "Cancel";
+          cancel.dataset.bookingId = booking.bookingId;
+          cancel.dataset.version = String(booking.version);
+          cancel.addEventListener("click", async () => {
+            if (!window.confirm(`Cancel booking ${booking.bookingId}? This releases its shared Calendar availability.`)) return;
+            cancel.disabled = true;
+            result.textContent = "Cancelling and verifying Calendar events…";
+            try {
+              const actionResponse = await fetch(`/api/admin/bookings/${encodeURIComponent(booking.bookingId!)}/actions`, {
+                method: "POST",
+                headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" },
+                body: JSON.stringify({
+                  action: { action: "cancel", expected: { bookingId: booking.bookingId, version: booking.version }, reason: "Owner front-desk cancellation" },
+                  idempotencyKey: crypto.randomUUID(),
+                }),
+              });
+              const actionPayload = await actionResponse.json() as { status?: string; error?: { message?: string } | string };
+              if (!actionResponse.ok) throw new Error(typeof actionPayload.error === "string" ? actionPayload.error : actionPayload.error?.message ?? "Cancellation could not be completed.");
+              status.textContent = actionPayload.status ?? "cancelled";
+              status.className = "rc-status rc-status-muted";
+              cancel.textContent = "Cancelled";
+              result.textContent = `Booking ${booking.bookingId} cancelled; refresh the schedule to verify availability.`;
+            } catch (error) {
+              cancel.disabled = false;
+              result.textContent = error instanceof Error ? error.message : "Cancellation could not be completed.";
+            }
+          });
+          action.appendChild(cancel);
+        } else {
+          action.textContent = "—";
+        }
+        row.appendChild(id); row.appendChild(when); row.appendChild(resources); row.appendChild(status); row.appendChild(count); row.appendChild(action); rows.appendChild(row);
       }
       result.textContent = `${payload.data?.length ?? 0} grouped Calendar record(s).`;
     } catch (error) {
