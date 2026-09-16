@@ -184,3 +184,13 @@ Not yet run against Google: any extension/reschedule or lifecycle action, partia
 | UI regression | Pass | Local Race Control Playwright suite 12/12 across all required widths; new block form is keyboard-labelled and no-overflow |
 
 No live maintenance/closure block was created. Real conflict review, compensation fencing, and Calendar mutation verification remain open.
+
+## Configuration review boundary checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Draft review endpoint | Implemented locally | `POST /api/admin/config/review` reads the conditional draft, verifies the server-calculated hash, issues a five-minute HMAC token and returns explicit impact-scan blocking state |
+| Review token binding | Pass | Local tests 2/2 cover draft hash/base revision binding and missing-secret failure |
+| Safe publication boundary | Pass | No publish action is exposed until complete future-booking impact review and R2 activation prerequisites exist |
+
+The review endpoint has not been run with live R2 or Google data and intentionally cannot authorize publication while those gates are absent.
