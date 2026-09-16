@@ -262,6 +262,18 @@ No live mutation was submitted. Creating a synthetic booking would create real s
 
 The synthetic customer name/phone/notes and booking identifier were not copied into documentation or analytics. No delete operation was performed; cancellation released availability while preserving the Calendar record. Further lifecycle actions, blocks, settings publication, R2, OAuth provisioning, recovery testing and production cutover remain open.
 
+## Manual booking policy change checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Manual duration options | Pass | Branch browser form visibly exposes 30, 60 and 120 minutes |
+| Manual start guidance | Pass | Branch browser form visibly states any minute within opening hours and no one-hour notice floor |
+| Public policy separation | Pass | Public schema/API still accepts only 60/120; public availability remains hourly and one-hour notice |
+| Server-side policy | Pass | Separate coordinator uses the owner/manual policy while retaining future-start, horizon, hours and Calendar conflict checks |
+| Local validation | Pass | `npm run check` clean; `npm test` 64/64; `npm run build` passed |
+
+This change was verified in the browser without creating a second live reservation. The earlier approved synthetic booking create/cancel test remains the live proof of the shared Calendar write path.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |

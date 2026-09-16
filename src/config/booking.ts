@@ -2,6 +2,7 @@ export const bookingRules = {
   timezone: "Asia/Kuala_Lumpur",
   slotIntervalMinutes: 60,
   allowedDurationsMinutes: [60, 120] as const,
+  durationErrorMessage: "Choose a one- or two-hour session.",
   minimumNoticeMinutes: 60,
   maximumAdvanceMinutes: 72 * 60,
   bufferMinutes: 0,
@@ -26,5 +27,6 @@ export const manualBookingRules = {
   minimumNoticeMinutes: 0,
   maximumAdvanceMinutes: bookingRules.maximumAdvanceMinutes,
   allowedDurationsMinutes: [30, 60, 120] as const,
+  durationErrorMessage: "Choose a 30-, 60-, or 120-minute session.",
   enforceSlotAlignment: false,
 } as const;

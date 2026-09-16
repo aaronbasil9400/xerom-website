@@ -6,7 +6,7 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 
 - [x] **Serialize the booking-coordinator critical section.** `coordinator/src/index.ts` now wraps idempotency, FreeBusy revalidation, allocation, and multi-event creation in `this.ctx.blockConcurrencyWhile(...)`. The deployed final-resource race test remains a launch gate.
 - [x] **Restore the `BOOKING_COORDINATOR` Durable Object binding in the active config.** `wrangler.jsonc` now declares the external `xerom-booking-coordinator` binding, and the root dry-run shows the binding. The stray `wrangler.jsonc copy` was removed.
-- [x] **Enforce business hours and slot alignment server-side.** `validateBookingWindow` now checks Malaysia-local opening windows (including overnight carry-over), whole-session containment, and hourly alignment; unit coverage includes off-grid, closed, and midnight cases.
+- [x] **Enforce business hours and slot alignment server-side.** `validateBookingWindow` checks Malaysia-local opening windows (including overnight carry-over), whole-session containment, and the public hourly grid; the owner-confirmed manual-booking policy intentionally bypasses hourly alignment while retaining future/opening-hours/Calendar checks.
 - [x] **Prevent production from running mock mode.** Production mode still defaults to `disabled`, and only development builds force mock mode. Live remains explicitly opt-in after external prerequisites pass.
 
 ## Medium priority

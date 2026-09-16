@@ -100,3 +100,19 @@ No real booking, block, cancellation, reschedule or extension was created. A liv
 The owner approved one synthetic reservation and cleanup. The protected branch created a one-hour Regular 01 booking in a Calendar date with no busy events; the live agenda immediately displayed the new grouped booking and returned a coordinator confirmation. The new Bookings screen then found that record through the bounded Calendar search, presented the owner-only Cancel action, and cancelled it after the confirmation prompt. A second live schedule read reported no busy events for the tested date, proving availability was released; the booking search retained the record with status `cancelled` for auditability. No customer data was used and no production calendar was deleted.
 
 The cancellation UI and live-state banner/sync labels are committed in `57bf428` and pushed to `origin/codex/race-control-working`. Local `npm run check`, `npm test` (60/60), `npm run build`, and the six-width Playwright suite (12/12) pass after this slice. The browser action required one confirmation-prompt handling retry because the first click waited on the modal while the request was already in flight; the final result was verified visually and by the follow-up live reads.
+
+## Manual booking policy update — 2026-09-16
+
+The owner-confirmed Race Control/manual booking change is committed in `7180fb3` and deployed to the separate coordinator. Manual bookings now allow any future minute inside opening hours, no minimum-notice floor, and 30/60/120-minute durations. The existing three-day horizon, future-start guard, opening-hours check, Calendar busy/control checks and serialized allocation remain enforced. The public customer flow remains on 60/120 minutes, one-hour notice and hourly availability until an explicit customer-facing policy decision.
+
+Browser verification after the branch build shows the manual form with all three duration options and the minute-level/no-notice guidance; no second live reservation was created. Unit coverage now passes 64/64. The live manual path was previously proven end-to-end with an approved synthetic create/cancel test; this policy change itself has not created another live Calendar event.
+
+## Remaining work plan — dependency order
+
+1. Finish the owner front desk: expose check-in, completion/early-release, no-show, reschedule, extension/price-review and maintenance/closure review actions in the UI, plus activity/audit views. The coordinator contracts for most of these are already present; the missing work is UI, recovery and live verification.
+2. Unblock runtime configuration: enable private R2 only after the owner approves the Cloudflare billing/terms gate; wire draft save, conflict review, impact scan, conditional activation and rollback to resources, hours, pricing, offers, advanced rules and website content/media. Missing owner facts remain explicit draft gates.
+3. Complete calendar lifecycle and identity: venue-owner OAuth, resource provisioning/retirement safeguards, Access allow/deny checks, rate limits and production hostname-scoped Turnstile.
+4. Harden operations: integrate the operation journal/recovery fences with coordinator compensation, restart/alarm/failure-injection tests, observability and privacy review; then run the final concurrency/security matrix.
+5. Stage cutover: client UAT on the branch, a planned maintenance window, public runtime-config cutover and only then a separately approved production deployment. The existing production site/coordinator stays unchanged until that gate.
+
+External owner gates are R2 activation/billing terms, confirmed content/assets and Turnstile values, OAuth consent, and any additional Access viewers. Code/UI work can proceed in parallel, but publication and production cutover cannot be marked complete without those inputs.

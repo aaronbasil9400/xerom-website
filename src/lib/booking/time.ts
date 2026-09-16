@@ -66,6 +66,7 @@ export interface BookingWindowPolicy {
   minimumNoticeMinutes: number;
   maximumAdvanceMinutes: number;
   allowedDurationsMinutes: readonly number[];
+  durationErrorMessage?: string;
   enforceSlotAlignment?: boolean;
 }
 
@@ -79,7 +80,7 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
   if (startMs <= now.getTime()) return "Bookings must start in the future.";
   if (startMs < now.getTime() + policy.minimumNoticeMinutes * 60_000) return "Bookings need at least one hour of notice.";
   if (startMs > now.getTime() + policy.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
-  if (!policy.allowedDurationsMinutes.includes(durationMinutes)) return "Choose a 30-, 60-, or 120-minute session.";
+  if (!policy.allowedDurationsMinutes.includes(durationMinutes)) return policy.durationErrorMessage ?? "Choose a valid session duration.";
 
   const startParts = malaysiaLocalParts(new Date(startMs));
   if (startParts.second !== 0) return "Choose a time on the minute.";
