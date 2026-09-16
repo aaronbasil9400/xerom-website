@@ -23,6 +23,7 @@
     if (!output) return;
     const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
     submit?.setAttribute("disabled", "");
+    output.className = "";
     output.textContent = "Creating and verifying Calendar events…";
     const values = new FormData(form);
     const localStart = String(values.get("start") ?? "");
@@ -50,11 +51,13 @@
         const fields = typeof result.error === "object" && result.error?.fieldErrors?.length ? ` ${result.error.fieldErrors.map(({ path, message }) => `${path}: ${message}`).join(" ")}` : "";
         throw new Error(`${error}${fields}`);
       }
+      output.className = "rc-output-success";
       output.textContent = `Confirmed ${result.bookingId}. Refreshing the shared Calendar schedule…`;
       window.dispatchEvent(new CustomEvent("race-control:refresh"));
       form.reset();
       document.querySelector<HTMLElement>(".rc-agenda-panel")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     } catch (error) {
+      output.className = "rc-output-error";
       output.textContent = error instanceof Error ? error.message : "Booking could not be created.";
     } finally {
       submit?.removeAttribute("disabled");
