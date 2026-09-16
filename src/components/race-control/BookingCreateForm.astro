@@ -26,6 +26,7 @@
     output.textContent = "Creating and verifying Calendar events…";
     const values = new FormData(form);
     const localStart = String(values.get("start") ?? "");
+    const start = localStart.match(/[zZ]|[+-]\d{2}:\d{2}$/) ? localStart : `${localStart}${localStart.length === 16 ? ":00" : ""}+08:00`;
     const items = [
       { serviceId: "regular-sim", quantity: Number(values.get("regular")) },
       { serviceId: "pro-sim", quantity: Number(values.get("pro")) },
@@ -36,18 +37,23 @@
         method: "POST",
         headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" },
         body: JSON.stringify({
-          start: `${localStart}:00+08:00`,
+          start,
           durationMinutes: Number(values.get("duration")),
           items,
           customer: { name: values.get("name"), phone: values.get("phone"), notes: values.get("notes") || undefined },
           idempotencyKey: crypto.randomUUID(),
         }),
       });
-      const result = await response.json() as { bookingId?: string; error?: { message?: string } | string };
-      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : result.error?.message ?? "Booking could not be created.");
+      const result = await response.json() as { bookingId?: string; error?: { message?: string; fieldErrors?: Array<{ path: string; message: string }> } | string };
+      if (!response.ok) {
+        const error = typeof result.error === "string" ? result.error : result.error?.message ?? "Booking could not be created.";
+        const fields = typeof result.error === "object" && result.error?.fieldErrors?.length ? ` ${result.error.fieldErrors.map(({ path, message }) => `${path}: ${message}`).join(" ")}` : "";
+        throw new Error(`${error}${fields}`);
+      }
       output.textContent = `Confirmed ${result.bookingId}. Refreshing the shared Calendar schedule…`;
       window.dispatchEvent(new CustomEvent("race-control:refresh"));
       form.reset();
+      document.querySelector<HTMLElement>(".rc-agenda-panel")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     } catch (error) {
       output.textContent = error instanceof Error ? error.message : "Booking could not be created.";
     } finally {
