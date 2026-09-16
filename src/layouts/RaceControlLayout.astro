@@ -8,15 +8,18 @@ import "@fontsource/racing-sans-one/400.css";
 import '../styles/race-control.css';
 import RaceControlNav from '../components/race-control/RaceControlNav.astro';
 import xeromLogo from "@/assets/brand/xerom-logo.svg";
+import { env as cloudflareEnv } from "cloudflare:workers";
 
 interface Props { title?: string; section?: string }
 const { title = 'Schedule', section = 'schedule' } = Astro.props;
+const runtimeEnv = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
+const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEnv.GOOGLE_PRIVATE_KEY && runtimeEnv.BOOKING_COORDINATOR);
 ---
 <html lang="en">
   <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex, nofollow" /><meta name="theme-color" content="#080808" /><title>{title} · Race Control · Xerom</title></head>
   <body class="rc-body">
     <a class="rc-skip" href="#main-content">Skip to main content</a>
-    <div class="rc-demo-banner" role="status">Demo fixture · private owner workspace · no live Calendar connection</div>
+    <div class="rc-demo-banner" role="status">{liveEnabled ? 'Owner workspace · shared Google Calendar connection active' : 'Demo fixture · private owner workspace · no live Calendar connection'}</div>
     <header class="rc-topbar">
       <a class="rc-brand" href="/race-control/" aria-label="Xerom Race Control home"><img src={xeromLogo.src} alt="Xerom" /></a>
       <div class="rc-top-title"><strong>Race Control</strong><span>Owner front desk</span></div>

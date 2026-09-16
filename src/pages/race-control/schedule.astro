@@ -33,7 +33,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     <div><b>Calendar health</b><strong>Live read</strong><small>fails closed on missing data</small></div>
     <div><b>Timezone</b><strong>MYT</strong><small>Asia/Kuala_Lumpur</small></div>
   </div>
-  <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} /><BookingInspector /></div>
+  <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} /><BookingInspector live={liveEnabled} /></div>
   <BookingCreateForm />
   <BlockTimeForm />
 </RaceControlLayout>
