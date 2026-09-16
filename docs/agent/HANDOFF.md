@@ -4,11 +4,11 @@ Last updated: 2026-09-16
 
 ## Current state
 
-The responsive Astro site, mock booking flow, Google Calendar adapters, booking coordinator Worker, official SVG logo, and operational documentation are implemented. The independent Impeccable review closed with `ship`; `DESIGN.md` and `.impeccable/design.json` reflect the reviewed interface. Google Cloud Calendar resources are created and shared, and the coordinator Worker is deployed; encrypted secret entry and live smoke testing remain.
+The responsive Astro site, mock booking flow, Google Calendar adapters, separate Race Control coordinator Worker, official SVG logo, and operational documentation are implemented on `codex/race-control-working`. The independent Impeccable review closed with `ship`; `DESIGN.md` and `.impeccable/design.json` reflect the reviewed interface. The branch preview is Access-protected and has completed a read-only live shared-calendar browser check; mutation verification remains intentionally gated behind an explicit synthetic-booking/cleanup approval.
 
 ## Next action
 
-Google service-account credentials and calendar IDs are stored as encrypted secrets on both Workers, the coordinator is deployed, and live availability/booking, idempotency, and concurrency smoke tests have passed. The client demo Worker is live with Cloudflare's always-pass Turnstile test pair; replace those test values with a hostname-scoped widget before public launch. Resolve the remaining owner items in `CONTENT_TODO.md` before public launch.
+Google service-account credentials and calendar IDs are stored as encrypted secrets on both Workers, the separate coordinator is deployed, and local availability/booking, idempotency and concurrency tests pass. The feature branch now renders live shared-calendar reads when its server-side bindings are present; the public site remains unchanged. The client demo Worker is live with Cloudflare's always-pass Turnstile test pair; replace those test values with a hostname-scoped widget before public launch. Resolve the remaining owner items in `CONTENT_TODO.md` before public launch.
 
 ## Tooling note
 
@@ -86,3 +86,11 @@ Deployment boundary: the website branch is built and Access-protected. It now po
 Separate coordinator work has started: `coordinator/wrangler.race-control.jsonc` defines `xerom-race-control-coordinator` with independent SQLite DO state and observability. It is deployed at `https://xerom-race-control-coordinator.aaronbasil9400.workers.dev`, and all nine Google secrets are present as encrypted Worker secrets. The feature-branch website binding now points to it; existing production coordinator remains untouched.
 
 Update: pure hours-impact and resource-lifecycle guards now cover outside-proposed-hours bookings, open-ended recurring series, retirement with future reservations, control/primary protections, and nonempty-calendar deletion retention gates. They are not yet wired to the settings UI or a live review job.
+
+## Latest Race Control branch checkpoint — 2026-09-16
+
+The live-state UI correction is committed as `7249049` and pushed to `origin/codex/race-control-working`. It replaces the stale demo banner and synthetic inspector whenever the server-side Google/coordinator binding gate is present, while keeping local development fixture-safe. The latest branch alias version observed through Wrangler is 67.
+
+Verification: `npm run check` (0 errors, 0 warnings, 0 hints), `npm test` (60/60), `npm run build` (pass), and the local six-width Race Control Playwright suite (12/12) all pass. The first local rerun was discarded as an invalid environment attempt because it used an external localhost URL without a running server; after clearing only the generated Vite SSR cache and confirming the clean dev server, the configured suite passed. The in-app browser then verified the protected branch’s live shared-calendar agenda, live inspector state and zero console errors; a temporary public-home test tab also loaded with zero console errors.
+
+No real booking, block, cancellation, reschedule or extension was created. A live write test still needs action-time approval for one clearly labelled synthetic reservation and immediate cleanup. R2 remains disabled pending a separate billing/terms decision; settings/content publication, OAuth provisioning, impact review, recovery fencing and public runtime cutover remain open.

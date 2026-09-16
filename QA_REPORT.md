@@ -237,6 +237,19 @@ The owner OTP/session and live authenticated schedule/booking checks remain unru
 
 The fresh feature-branch build and authenticated browser test are still pending. The one-time downloaded Google key file was removed after upload.
 
+## Latest branch/browser verification checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Live-state UI correction | Pass | Commit `7249049` replaces the stale demo banner and synthetic inspector when the server-side Google/coordinator binding gate is present; local fixture mode remains unchanged |
+| Feature branch sync | Pass | `codex/race-control-working` pushed to `origin`; latest observed Cloudflare branch alias version 67 |
+| Local validation | Pass | `npm run check` clean; `npm test` 60/60; `npm run build` completed successfully |
+| Responsive browser suite | Pass | Configured local Playwright run after clearing only generated Vite cache: 12/12 at 375, 390, 430, 768, 1024 and 1440 CSS px |
+| Protected live browser read | Pass | In-app browser showed the Access-protected branch schedule, live shared-calendar agenda, live inspector-ready state and refresh timestamp; no customer details were recorded |
+| Browser console health | Pass | Live branch and temporary public-home checks returned zero console errors; no failed request was observed in the live read |
+
+No live mutation was submitted. Creating a synthetic booking would create real shared Calendar events and requires explicit action-time approval followed by cleanup. R2 remains disabled; settings/content publication and other production cutover gates are still open.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |
