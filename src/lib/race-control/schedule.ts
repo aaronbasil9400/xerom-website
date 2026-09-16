@@ -1,11 +1,18 @@
 import { listCalendarEvents, type CalendarEventRecord } from "@/lib/google/calendar";
 import type { ServiceId } from "@/config/service-core";
+import { bookingRules } from "@/config/booking";
+import { localIso, localWeekday } from "@/lib/booking/time";
 
 export interface ScheduleResource {
   resourceId: string;
   serviceId: ServiceId | "control";
   displayName: string;
   events: Array<CalendarEventRecord & { resourceId: string; serviceId: ServiceId | "control" }>;
+}
+
+export interface ScheduleWindow {
+  start: string;
+  end: string;
 }
 
 function registry(env: CloudflareEnv): ScheduleResource[] {
@@ -28,14 +35,26 @@ function nextDate(date: string): string {
   return new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
 }
 
-export async function loadRaceControlSchedule(env: CloudflareEnv, businessDate: string): Promise<{ businessDate: string; serverNow: string; resources: ScheduleResource[] }> {
+function minutesFromClock(value: string): number {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+export function scheduleWindowForDate(businessDate: string): ScheduleWindow {
+  const interval = bookingRules.weeklyHours[localWeekday(businessDate)]?.[0];
+  if (!interval) throw new Error("Opening hours are unavailable for this business date.");
+  return { start: localIso(businessDate, minutesFromClock(interval.open)), end: localIso(businessDate, minutesFromClock(interval.close)) };
+}
+
+export async function loadRaceControlSchedule(env: CloudflareEnv, businessDate: string): Promise<{ businessDate: string; serverNow: string; businessWindow: ScheduleWindow; resources: ScheduleResource[] }> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(businessDate)) throw new Error("Business date is invalid.");
   const timeMin = `${businessDate}T00:00:00+08:00`;
   const timeMax = `${nextDate(businessDate)}T06:00:00+08:00`;
+  const businessWindow = scheduleWindowForDate(businessDate);
   const resources = registry(env) as Array<ScheduleResource & { calendarId: string }>;
   await Promise.all(resources.map(async (resource) => {
     const events = await listCalendarEvents(env, resource.calendarId, timeMin, timeMax);
     resource.events = events.filter((event) => event.status !== "cancelled" && event.transparency !== "transparent").map((event) => ({ ...event, resourceId: resource.resourceId, serviceId: resource.serviceId }));
   }));
-  return { businessDate, serverNow: new Date().toISOString(), resources: resources.map(({ calendarId: _calendarId, ...resource }) => resource) };
+  return { businessDate, serverNow: new Date().toISOString(), businessWindow, resources: resources.map(({ calendarId: _calendarId, ...resource }) => resource) };
 }
