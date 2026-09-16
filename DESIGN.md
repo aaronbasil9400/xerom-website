@@ -262,6 +262,20 @@ The homepage presents opening hours beside the verified Klang location cue in a 
 
 The three-step booking flow uses an Action Racing Red current-progress cell, bordered quantity rows with compact steppers, full-width selectable duration and time controls, and a dark-red review block. Selected choices and the success mark use Action Racing Red plus white rather than relying on border alone; the oversized booking ID remains Bright Racing Red display information. Status copy uses a polite live region and failures use alert semantics.
 
+### Race Control / Owner Operate Shell
+
+Race Control is the private owner front-desk surface and keeps the Broadcast language in a denser, utility-first composition. This guidance describes the verified shell only: the current implementation is a demo fixture with draft controls and no live Calendar or publishing mutation. Future connected screens must preserve the visual distinction while deriving operational truth from the approved contracts and architecture.
+
+- **Topbar:** Keep the compact sticky topbar at roughly 4rem / 64px, with the unchanged official XEROM SVG, concise `Race Control` / `Owner front desk` lockup, sync-status indicator, refresh affordance, and clipped `New booking` action. Do not introduce a marketing hero or public-site navigation treatment.
+- **Desktop frame:** Use a two-column shell with a 13.5rem navigation rail and flexible work area. At the 1440px reference width, schedule reserves a 21rem inspector column beside the agenda. Active navigation uses a restrained inset racing-red rule.
+- **Schedule toolbar:** Keep date navigation, Day / Agenda mode, service filter, search, block-time, and New booking in one bordered control band above summary metrics. Disabled demo controls remain visibly disabled.
+- **Agenda and inspector:** Desktop uses a horizontally inspectable resource timeline with one-pixel grid rules, compact time labels, status dots, red booking blocks, and amber maintenance / blocked blocks. Between 701px and 1279px, the inspector becomes a fixed right-side overlay with functional shadow; at 1440px and above it returns to the reserved grid column.
+- **Phone agenda:** Below 560px, replace the wide timeline with a chronological list preserving time-first scanning, resource/service context, status, and an explicit action affordance.
+- **Page titles and states:** Use compact approximately 2rem italic condensed titles. `Demo fixture`, `Draft surface`, `Owner review required`, `Not published`, and `Setup required` use the warm warning treatment so provisional state is unmistakable and never confused with an error or live success.
+- **Forms and records:** Editors, tables, activity streams, connection status, and inspector details stay rectangular, border-led, and tightly padded. Use condensed uppercase data labels, warm-white values, muted metadata, and red only for active/brand signals.
+
+**The Operate, Don’t Market Rule.** Race Control should read like a calm owner instrument panel: schedule, state, impact, and next action first. Never import the public homepage’s cinematic hero, promotional route, invented operational claims, or decorative density into this shell.
+
 ## Do's and Don'ts
 
 ### Do:

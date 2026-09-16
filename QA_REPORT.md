@@ -107,3 +107,23 @@ The redundant More Than Racing gallery was replaced with the previous Choose You
 The Race / Play / Refuel dock is hidden at the 560px phone breakpoint to remove duplication with Pick Your Pace, while remaining visible at 768px and all desktop widths. Automated assertions verify the breakpoint behavior and document-width overflow at all six required viewports. No markup, service route, or booking behavior was removed; phone users retain the four Pick Your Pace cards and their direct service links.
 
 Verification passed with 0 Astro errors, 15/15 unit tests, a successful production build, and 12/12 breakpoint/overflow/core-route checks. The full functional browser suite passed every case across the combined final run: one first-request local booking timeout at 375px passed on immediate focused rerun. Representative phone, tablet, and desktop captures are stored under `.impeccable/review/homepage-upgrade/mobile-dock-hidden/`.
+
+## Race Control RC-00 through contract/security shell checkpoint (2026-09-16)
+
+Environment: local repository on macOS, Astro development fixture mode, no R2 binding, no owner OAuth, no Google mutation, no deployment.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro/TypeScript diagnostics | Pass | `npm run check`: 0 errors, 0 warnings, 0 hints across 87 files before the final browser-only test addition |
+| Full unit/contract suite | Pass | `npm test`: 51/51 tests across 13 files |
+| Production build | Pass | `npm run build`: Cloudflare server output completed successfully |
+| Impeccable detector | Pass | `detect.mjs --json` returned `[]` after the first UI implementation; subsequent cleanup removed the external font import, glyph icons, invalid logo path and incomplete ARIA grid claim |
+| Race Control contract tests | Pass | Config schema/seed/public allowlist, stale draft, conditional activation, owner Access allowlist/CSRF, lost-create reconciliation, operation replay/fences, Google fail-closed behavior and runtime pricing all pass locally |
+| Responsive Race Control browser suite | Pass after one fix round | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4321 npx playwright test tests/e2e/race-control.spec.ts --workers=1`: 12/12 passed across 375, 390, 430, 768, 1024 and 1440 CSS-pixel widths. Initial run found fixture-placeholder assertion misuse and real overflow at 768/1024; both were fixed before rerun |
+| Browser errors and failed requests | Pass | Race Control schedule test asserts no console errors or failed requests at all six widths |
+| Private/draft labelling | Pass | Browser assertions verify the owner surface is `noindex`, visibly marked demo-only, settings remain `Not published`, and no fixture calendar reference reaches rendered output |
+| Screenshot evidence | Pass | `.impeccable/review/race-control/{mobile-375,mobile-390,mobile-430,tablet-768,desktop-1024,desktop-1440}.png` |
+| Independent shell finish review | Ship | First review returned five material fixes; toolbar, tablet overlay, chronological agenda, contextual Details labels and mobile-nav cue were implemented. Second-pass verdict scored all five resolved |
+| Coordinator bundle dry run | Pass | `WRANGLER_LOG_PATH=/tmp/xerom-coordinator-dry-run.log npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` completed; no deployment occurred |
+
+Not run and not passed: live R2 conditional writes, Access JWT verification against the actual team domain, Google owner OAuth, Calendar create/share/probe/delete, real coordinator restart/alarm recovery, config publication, front-desk booking mutations, resource provisioning, media upload, public-runtime cutover, deployed security/rate-limit checks, or production deployment. The dashboard remains a clearly labelled synthetic shell; it does not satisfy the complete Race Control definition of done.

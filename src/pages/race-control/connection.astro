@@ -1,0 +1,4 @@
+---
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+---
+<RaceControlLayout title="Connection" section="connection"><DemoNotice /><section class="rc-panel rc-connection"><div class="rc-panel-head"><div><p class="rc-eyebrow">Integration status</p><h2>Google Calendar</h2></div><span class="rc-warning-pill">Setup required</span></div><dl><div><dt>Owner authorization</dt><dd>Not configured · TODO(owner)</dd></div><div><dt>Booking identity</dt><dd>Server-side only · status unavailable</dd></div><div><dt>Resource calendars</dt><dd>IDs remain private and are not shown here</dd></div></dl><button class="rc-button rc-button-primary" type="button">Connect Google (disabled in demo)</button></section></RaceControlLayout>

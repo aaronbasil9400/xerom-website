@@ -29,4 +29,23 @@ interface CloudflareEnv {
   PS5_01_CALENDAR_ID?: string;
   PS5_02_CALENDAR_ID?: string;
   BOOKING_CONTROL_CALENDAR_ID?: string;
+  RACE_CONTROL_CONFIG_BUCKET?: R2Bucket;
+  RACE_CONTROL_MEDIA_BUCKET?: R2Bucket;
+  ACCESS_TEAM_DOMAIN?: string;
+  ACCESS_AUDIENCE?: string;
+  OWNER_EMAILS?: string;
+  GOOGLE_OWNER_OAUTH_CLIENT_ID?: string;
+  GOOGLE_OWNER_OAUTH_CLIENT_SECRET?: string;
+  GOOGLE_OWNER_OAUTH_REDIRECT_URI?: string;
+  RACE_CONTROL_TOKEN_ENCRYPTION_KEY?: string;
+}
+
+declare namespace App {
+  interface Locals {
+    owner?: {
+      actorId: string;
+      email: string;
+      subject: string;
+    };
+  }
 }

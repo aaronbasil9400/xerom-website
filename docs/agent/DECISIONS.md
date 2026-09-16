@@ -111,3 +111,13 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Proposed pricing default: lowest eligible per-resource price among base, percentage and exact-duration packages; no stacking, deterministic ties, additions separate. Actual offers stay draft until entered.
 - Proposed resource lifecycle: retire preserves history; permanent deletion is separate and initially limited to empty retired calendars pending retention policy.
 - Build specification: `docs/RACE_CONTROL_PLAN.md`; entry handoff: `docs/agent/RACE_CONTROL_HANDOFF.md`. This change is documentation only; proposed UI, APIs and storage are not implemented or tested integrations.
+
+## 2026-09-16 — Race Control capability and contract baseline
+
+- Preserve the existing live deployment and seven calendars. RC-00 is a local, side-effect-free spike; it does not bind R2, perform OAuth, mutate Google, or deploy.
+- Use immutable private config revisions plus a conditionally written `active.json` pointer. A stale draft or pointer write returns a conflict; public config is constructed through an explicit allowlist.
+- Keep Cloudflare Access owner identity separate from venue-owner Google OAuth. Origin verification requires the Access assertion signature/issuer/audience and exact email allowlist; missing configuration fails closed. Local fixture identity is permitted only on `localhost`/`127.0.0.1` in Astro development mode.
+- Calendar-create recovery uses a durable operation/resource marker and owner-calendar listing. Exactly one owned secondary-calendar match may be reconciled; ambiguity remains fenced for review. Primary calendars are never candidates.
+- Use integer sen and the planned lowest-eligible-price algorithm. Synthetic offers exist only in tests; seed configuration contains no active promotion. Controller add-ons remain gated until the owner confirms capacity and billing unit.
+- Missing FreeBusy calendar entries now fail closed. A Google event insert `409` counts as an idempotent replay only after the existing deterministic event matches the interval and private operation properties.
+- The first dashboard surface is an authenticated, `noindex` Operate shell with explicit demo fixtures. It is not evidence that booking mutations, settings publication, or Google connection are complete.

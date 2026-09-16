@@ -1,6 +1,6 @@
 # Agent Handoff
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## Current state
 
@@ -29,3 +29,13 @@ The remaining gate is external: deploy the pushed branch with a valid `CLOUDFLAR
 Owner discovery is complete. Start dashboard implementation with [RACE_CONTROL_HANDOFF.md](RACE_CONTROL_HANDOFF.md), then follow [the complete plan](../RACE_CONTROL_PLAN.md). Begin with RC-00 capability spike and RC-01 shared contracts; preserve the existing public site and user-owned `docs/mockups/index.html`. No dashboard code, deployment, Google mutation or new storage was performed during planning.
 
 Do not repeat the nine scope questions: answers are recorded in PRODUCT.md and the plan. Remaining real values/identity/retention inputs are in CONTENT_TODO.md. Historical status above describes earlier work and must not be mistaken for verification of these new features.
+
+## Race Control implementation checkpoint — 2026-09-16
+
+RC-00 and the first RC-01/RC-02/RC-03 foundations are implemented locally. See `docs/agent/RC00_CAPABILITY_SPIKE.md`. Shared strict schemas cover config, public projection, quotes, booking actions and operations; the seed contains confirmed hours/prices/resources and no active offer. Owner auth fails closed outside localhost development. The private config repository implements stale-draft rejection, immutable revisions and conditional pointer activation behind an unbound R2 gate. Google FreeBusy and insert replay now fail closed. A typed operation journal/dispatcher prototype persists idempotency state and recovery fences. Runtime pricing tests the no-stacking winner rule with synthetic offers only.
+
+The owner dashboard shell and all stable navigation routes exist under `/race-control`, use the official logo and current design system, default to a phone agenda, and are explicitly labelled as non-live fixtures. The shell is not a complete front desk: actions, settings review/publish, Calendar schedule reads, OAuth/provisioning, media upload and public runtime cutover remain unimplemented.
+
+Local evidence: `npm run check` passed; `npm test` passed 51/51; `npm run build` passed; the Race Control Playwright suite passed 12/12 across all six required widths after fixing 768/1024 overflow. Screenshots are in `.impeccable/review/race-control/`. No production deployment, R2 write, Google mutation, calendar creation or deletion occurred.
+
+Continue in dependency order: finish RC-02 API review/publish and authenticated preview, integrate RC-03 journal/fences into the live coordinator with alarm recovery and failure injection, then RC-04 runtime cutover behind isolated bindings. Do not treat the present static shell as RC-05/RC-06/RC-07 completion.
