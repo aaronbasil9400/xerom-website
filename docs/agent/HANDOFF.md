@@ -51,3 +51,9 @@ Tests at this checkpoint: `npm run check` clean; targeted Calendar adapter tests
 Blocking external action: the Cloudflare account has no Zero Trust organization. Do not expose the deployed owner routes until the owner explicitly confirms creation of a Zero Trust organization and an email-OTP Access policy for the owner identity. No Access app, policy, R2 bucket, Google OAuth credential, Calendar ACL or Calendar event has been created/changed during this branch work.
 
 Update: Zero Trust onboarding reached the Free-plan checkout. Cloudflare requires terms acceptance and authorization of the saved payment card for possible overage charges before activation. This is awaiting explicit owner approval; no plan, Access organization, policy, identity provider, or billing authorization has been activated. The repeatable setup procedure is in `docs/agent/CLIENT_RACE_CONTROL_SETUP.md`.
+
+## Zero Trust activation checkpoint — 2026-09-16
+
+Owner authorized the Free-plan terms/card step. Zero Trust is now active as team `lingering-sky-58df`. Access application `Xerom Race Control Branch Preview` (`6cbb336f-5aff-4659-b1e2-97982924b3aa`) protects the branch hostname paths `/race-control/*` and `/api/admin/*`; reusable Allow policy `Xerom Race Control Owner` (`57014aed-34b5-4b9b-967a-bce1e926400f`) contains only the owner email. Worker runtime variables `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE` plus encrypted `OWNER_EMAILS` were added through the Cloudflare dashboard. The exact recreation steps and non-secret identifiers are in `CLIENT_RACE_CONTROL_SETUP.md`; do not copy the AUD value into public docs or source.
+
+R2 remains unenabled: the account API returns code 10042 and asks for Dashboard enablement. No R2 bucket/binding was created. Treat any R2 billing/terms prompt as a new explicit approval gate.

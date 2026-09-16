@@ -30,6 +30,16 @@ Scope: configure an owner-only Race Control preview and later a production deplo
 7. Copy the application audience tag privately as `ACCESS_AUDIENCE`, and supply the owner email list privately as `OWNER_EMAILS`. Add these as encrypted runtime secrets/variables through the Worker configuration flow, never as build variables.
 8. Test with the allowed owner email: request OTP, sign in, load `/race-control`, and confirm a non-allowed account is denied. Record the test result without copying tokens or PINs.
 
+### Current account setup (2026-09-16)
+
+- Zero Trust plan: Free (activated; due today $0/month).
+- Team name: `lingering-sky-58df`.
+- Access application: `Xerom Race Control Branch Preview` (application ID `6cbb336f-5aff-4659-b1e2-97982924b3aa`).
+- Reusable policy: `Xerom Race Control Owner` (policy ID `57014aed-34b5-4b9b-967a-bce1e926400f`).
+- Protected destinations: `codex-race-control-working-xerom-website.aaronbasil9400.workers.dev/race-control/*` and the same host at `/api/admin/*`.
+- Worker runtime variables: `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE`; encrypted secret `OWNER_EMAILS`. The AUD value is intentionally not repeated in this runbook; retrieve it from the application’s **Additional settings → Application Audience (AUD) Tag** when recreating the setup.
+- The policy is an email allowlist for the owner identity, not a broad domain rule. No non-owner email was added.
+
 ## 4. Google Calendar connection model
 
 - Keep the existing six resource calendars plus the Booking Control calendar private.
@@ -44,6 +54,8 @@ Scope: configure an owner-only Race Control preview and later a production deplo
 2. Bind them only to the preview environment first; generate Worker binding types after adding the binding.
 3. Provide the encryption key for the OAuth token envelope as a Worker secret.
 4. Test immutable revision writes, conditional `active.json` updates, stale drafts, and rollback from an isolated environment before enabling runtime publication on the public site.
+
+Current gate: `wrangler r2 bucket list` reports that R2 must first be enabled through the Cloudflare Dashboard. No R2 bucket or binding has been created; confirm any additional billing/terms impact before enabling it.
 
 ## 6. Release checklist
 

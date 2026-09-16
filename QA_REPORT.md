@@ -139,3 +139,15 @@ Not run and not passed: live R2 conditional writes, Access JWT verification agai
 | Local UI regression | Pass | `npm run check` clean, Calendar adapter tests 4/4, six-width Race Control Playwright suite 12/12 with runtime reads disabled in local fixture mode |
 
 Remaining before web verification: Cloudflare Access has no Zero Trust organization, so owner endpoints must remain deny-by-default. Owner confirmation is required before creating the organization and email-OTP policy. The branch build is not a production deployment.
+
+## Access-protected branch preview checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Zero Trust Free activation | Pass | Cloudflare confirmation showed purchase complete, Zero Trust Free, and $0 due today after owner-authorized terms/card step |
+| Access application | Pass | `Xerom Race Control Branch Preview`, app ID `6cbb336f-5aff-4659-b1e2-97982924b3aa`; destinations are branch `/race-control/*` and `/api/admin/*` only |
+| Owner policy | Pass | Reusable policy `Xerom Race Control Owner`, policy ID `57014aed-34b5-4b9b-967a-bce1e926400f`, one owner email rule |
+| Worker Access variables | Pass | `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE` variables plus encrypted `OWNER_EMAILS` visible in Worker settings; secrets remain out of Git |
+| R2 capability check | Blocked | `npx wrangler r2 bucket list` returned Cloudflare code 10042: enable R2 through Dashboard; no bucket/binding was created |
+
+The branch preview still needs a fresh branch build after the runtime variables were added, followed by owner OTP login and a non-destructive schedule-read check. No production traffic or Google Calendar mutation was performed here.
