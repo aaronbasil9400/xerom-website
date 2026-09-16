@@ -250,6 +250,18 @@ The fresh feature-branch build and authenticated browser test are still pending.
 
 No live mutation was submitted. Creating a synthetic booking would create real shared Calendar events and requires explicit action-time approval followed by cleanup. R2 remains disabled; settings/content publication and other production cutover gates are still open.
 
+## Approved synthetic booking write/cleanup checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Owner booking creation | Pass | Protected branch form created one synthetic one-hour Regular 01 reservation through the separate coordinator and reported confirmation only after Calendar verification |
+| Shared schedule sync | Pass | The new booking appeared in the live agenda immediately after creation; no production site or calendar was changed |
+| Owner cancellation | Pass | Live Bookings search found the grouped record; owner-only Cancel action confirmed and marked the record `cancelled` while preserving its audit record |
+| Availability release | Pass | Follow-up live schedule read for the tested date reported `No busy Calendar events for this business date.` |
+| Post-change regression | Pass | `npm run check`, `npm test` 60/60, `npm run build`, and Playwright six-width suite 12/12 |
+
+The synthetic customer name/phone/notes and booking identifier were not copied into documentation or analytics. No delete operation was performed; cancellation released availability while preserving the Calendar record. Further lifecycle actions, blocks, settings publication, R2, OAuth provisioning, recovery testing and production cutover remain open.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |
