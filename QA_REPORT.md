@@ -290,6 +290,29 @@ No new live booking or block was created for this checkpoint. The guide for clie
 
 The Impeccable detector reported existing Race Control shell side-tab/advisory type/color findings in the shared stylesheet; the schedule changes introduced no new detector category. These are retained as a visual-system follow-up rather than blocking the functional schedule gate.
 
+## Live inspector action checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Conditional lifecycle controls | Pass | Selecting a live confirmed booking visibly exposes Check in, Complete, No-show and Cancel; controls are hidden for non-active or unversioned blocks |
+| Early release guard | Pass | Complete includes an explicit “Release remaining time” checkbox; no release is implicit |
+| Legacy event compatibility | Pass | Missing `groupVersion` falls back to coordinator version 0; no action was sent during this verification |
+| Action request safety | Pass locally | Owner API sends expected booking version, CSRF header and a new idempotency key; coordinator remains ETag-guarded |
+| Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, and clean-server Playwright 12/12 |
+
+No live lifecycle mutation was submitted for this checkpoint. Reschedule/extension quote UI, full activity/audit rendering, recovery fencing and external failure-injection remain open.
+
+## Inspector compatibility checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Legacy booking version fallback | Pass | Existing live booking without an explicit `groupVersion` showed valid lifecycle controls using version 0 |
+| Selection consistency | Pass | Selecting a live booking, then moving to the next date, cleared the inspector before the new live read completed |
+| Empty-date state | Pass | The next date rendered `No busy Calendar events for this business date.` with no stale selection |
+| Console health | Pass | Zero browser console errors after live selection/navigation |
+
+No lifecycle mutation was submitted. This compatibility fix is commit `2beaa72`; the separate coordinator remains deployed and production remains untouched.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |

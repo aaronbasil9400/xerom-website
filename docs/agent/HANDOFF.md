@@ -122,3 +122,13 @@ External owner gates are R2 activation/billing terms, confirmed content/assets a
 The schedule surface is now date-aware and live-safe on the branch. It renders the selected MYT business date instead of a hard-coded fixture date, enables Previous/Today/Next navigation, supports live service filtering, and hides synthetic timeline content while a live read is loading or unavailable. Failed live reads explicitly state that no availability is being claimed. Live Calendar events are selectable and populate the owner inspector with booking/block status, time, resource and summary; the refresh control dispatches a fresh read.
 
 Browser evidence on the protected branch: live read loaded the current date and real busy events; Next moved to the following business date and returned an empty live state; Today returned to the current date; the PS5 service filter removed non-PS5 events; selecting a live event populated the inspector. No mutation was performed in this verification. Local check/test/build and the six-width Playwright suite remain green. The operator walkthrough is [RACE_CONTROL_USER_GUIDE.md](RACE_CONTROL_USER_GUIDE.md).
+
+## Live inspector action checkpoint — 2026-09-16
+
+The selected live-booking inspector now exposes conditional Check in, Complete, No-show and Cancel controls, plus the explicit early-release checkbox for completion. Each action requires a confirmation prompt, sends the grouped expected version and idempotency key through the owner API, updates all linked Calendar events through the separate coordinator, and refreshes the schedule. Legacy events without `groupVersion` safely use version 0, matching the coordinator’s existing default. Reschedule and extension remain review-driven until quote inputs are surfaced.
+
+Protected-branch browser verification selected an existing live booking and visibly showed the four controls; no action was submitted. `npm run check`, `npm test` 64/64, `npm run build` and the clean-server six-width suite remain green. The current branch head is `344158b`; the latest code-bearing schedule/action commits are `f1598ed`, `3c0ffd1` and `344158b`.
+
+## Inspector compatibility checkpoint — 2026-09-16
+
+Legacy live bookings that predate `groupVersion` now receive the coordinator’s version-0 default, so their valid lifecycle controls are not hidden. A date change or refresh clears the selected inspector before the next Calendar read, preventing stale booking details from remaining attached to a different date. The deployed branch browser confirmed an existing live booking exposed its actions, then Next returned to a clean inspector and an empty live state; no lifecycle action was submitted. This fix is commit `2beaa72`.
