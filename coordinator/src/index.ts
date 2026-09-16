@@ -2,13 +2,12 @@ import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
 import { validateBookingWindow, overlaps } from "../../src/lib/booking/time";
 import { calendarGroups, allCalendarIds, resourceIdForCalendar } from "../../src/lib/booking/resources";
-import { queryFreeBusy, insertEvent, deleteEvent } from "../../src/lib/google/calendar";
+import { queryFreeBusy, insertEvent, deleteEvent, listCalendarEvents, patchCalendarEvent } from "../../src/lib/google/calendar";
 import { calculateTotal } from "../../src/lib/booking/pricing";
 import { createBookingId, hashPayload } from "../../src/lib/booking/id";
 import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
 import { bookingActionSchema } from "../../src/lib/race-control/contracts";
-import { listCalendarEvents, patchCalendarEvent } from "../../src/lib/google/calendar";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
@@ -145,13 +144,46 @@ export class BookingCoordinator extends DurableObject<Env> {
       await this.ctx.storage.put(key, { hash, status: "failed" } satisfies ActionAttempt);
       const env = this.env;
       try {
-        const events = (await Promise.all(allCalendarIds(env).filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID).map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, "1970-01-01T00:00:00Z", "2100-01-01T00:00:00Z", `bookingId=${action.expected.bookingId}`) })))).flatMap(({ calendarId, events }) => events.map((event) => ({ calendarId, event })));
+        const events = (await Promise.all(allCalendarIds(env).filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID).map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, "1970-01-01T00:00:00Z", "2100-01-01T00:00:00Z", `bookingId=${action.expected.bookingId}`) })))).flatMap(({ calendarId, events }) => events.map((event) => ({ calendarId, event, resourceId: resourceIdForCalendar(env, calendarId) ?? event.privateProperties.resourceId ?? calendarId })));
         if (events.length === 0) return reply({ error: "Booking could not be found in the private calendars." }, 404);
         const versions = new Set(events.map(({ event }) => Number(event.privateProperties.groupVersion ?? "0")));
         const version = versions.size === 1 ? [...versions][0] : -1;
         if (version < 0 || version !== action.expected.version) return reply({ error: "Booking changed outside Race Control. Review it before retrying." }, 409);
         const nextVersion = String(version + 1);
-        const targetStatus = action.action === "check-in" ? "checked_in" : action.action === "complete" ? "completed" : action.action === "no-show" ? "no_show" : "cancelled";
+        const targetStatus = action.action === "check-in" ? "checked_in" : action.action === "complete" ? "completed" : action.action === "no-show" ? "no_show" : action.action === "cancel" ? "cancelled" : undefined;
+        if (action.action === "reschedule") {
+          const currentResources = events.map(({ resourceId }) => resourceId).sort();
+          const requestedResources = action.resourceIds.slice().sort();
+          if (JSON.stringify(currentResources) !== JSON.stringify(requestedResources)) return reply({ error: "Changing resources requires a fresh owner quote and review." }, 409);
+          const newEnd = new Date(Date.parse(action.start) + (Date.parse(events[0].event.end) - Date.parse(events[0].event.start))).toISOString();
+          const targetCalendarIds = events.map(({ calendarId }) => calendarId);
+          const busy = (await Promise.all(targetCalendarIds.map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, action.start, newEnd) })))).flatMap(({ calendarId, events: listed }) => listed.filter((event) => !events.some((current) => current.calendarId === calendarId && current.event.id === event.id)).map((event) => ({ calendarId, event })));
+          if (busy.some(({ event }) => overlaps(action.start, newEnd, event.start, event.end))) return reply({ error: "The new time overlaps another Calendar block." }, 409);
+          const changed: Array<{ calendarId: string; eventId: string }> = [];
+          for (const { calendarId, event } of events) {
+            await patchCalendarEvent(env, calendarId, event.id, { start: action.start, end: newEnd, privateProperties: { ...event.privateProperties, groupVersion: nextVersion, updatedAt: new Date().toISOString() } }, event.etag);
+            changed.push({ calendarId, eventId: event.id });
+          }
+          const response = { bookingId: action.expected.bookingId, status: eventStatus(events), version: version + 1, start: action.start, end: newEnd, eventCount: changed.length, pricePreserved: true };
+          await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: changed } satisfies ActionAttempt);
+          return reply(response, 200);
+        }
+        if (action.action === "extend") {
+          const additionalEnd = new Date(Math.max(...events.map(({ event }) => Date.parse(event.end))) + action.durationMinutes * 60_000).toISOString();
+          const currentEnd = new Date(Math.max(...events.map(({ event }) => Date.parse(event.end)))).toISOString();
+          const busy = (await Promise.all(events.map(async ({ calendarId }) => ({ calendarId, events: await listCalendarEvents(env, calendarId, currentEnd, additionalEnd) })))).flatMap(({ calendarId, events: listed }) => listed.filter((event) => !events.some((current) => current.calendarId === calendarId && current.event.id === event.id)).map((event) => ({ calendarId, event })));
+          if (busy.some(({ event }) => overlaps(currentEnd, additionalEnd, event.start, event.end))) return reply({ error: "The extension overlaps another Calendar block." }, 409);
+          const changed: Array<{ calendarId: string; eventId: string }> = [];
+          for (const { calendarId, event } of events) {
+            const eventEnd = new Date(Date.parse(event.end) + action.durationMinutes * 60_000).toISOString();
+            await patchCalendarEvent(env, calendarId, event.id, { end: eventEnd, privateProperties: { ...event.privateProperties, groupVersion: nextVersion, updatedAt: new Date().toISOString() } }, event.etag);
+            changed.push({ calendarId, eventId: event.id });
+          }
+          const response = { bookingId: action.expected.bookingId, status: eventStatus(events), version: version + 1, end: additionalEnd, eventCount: changed.length, priceReviewRequired: true };
+          await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: changed } satisfies ActionAttempt);
+          return reply(response, 200);
+        }
+        if (!targetStatus) return reply({ error: "Unsupported booking action." }, 400);
         const changed: Array<{ calendarId: string; eventId: string }> = [];
         for (const { calendarId, event } of events) {
           const privateProperties = { ...event.privateProperties, status: targetStatus, groupVersion: nextVersion, updatedAt: new Date().toISOString() };
@@ -168,6 +200,10 @@ export class BookingCoordinator extends DurableObject<Env> {
       }
     });
   }
+}
+
+function eventStatus(events: Array<{ event: { privateProperties: Record<string, string> } }>): string {
+  return events[0]?.event.privateProperties.status ?? "confirmed";
 }
 
 export default {

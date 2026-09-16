@@ -162,3 +162,14 @@ The branch preview still needs a fresh branch build after the runtime variables 
 | Local contract/build verification | Pass | `npm run check`, Race Control tests 24/24, and `npm run build` |
 
 Not yet run: live owner OTP login, live schedule listing, live owner booking/action, exact Calendar event cleanup, extension/reschedule/maintenance/closure operations, R2 publication, or production traffic changes. These require the protected branch preview and explicit test-booking cleanup authorization.
+
+## Extension/reschedule implementation checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Same-resource reschedule | Implemented locally | Coordinator finds the complete booking group by private booking ID, rejects resource-set changes, excludes verified current event IDs from conflict checks, and patches all events with ETags |
+| Extension | Implemented locally | Coordinator checks the added interval on every linked resource and patches all ends only after the interval is clear; response flags explicit price review |
+| Coordinator dry run | Pass | `WRANGLER_LOG_PATH=/tmp/xerom-coordinator-dry-run.log npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` completed with the existing SQLite DO binding |
+| Local verification | Pass | Astro check clean, Race Control tests 24/24, production build passed |
+
+Not yet run against Google: any extension/reschedule or lifecycle action, partial-update compensation/reconciliation, maintenance/closure, settings publication, R2, or production traffic. Current implementation deliberately does not silently move resources or repackage historical prices.
