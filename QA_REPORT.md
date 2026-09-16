@@ -226,12 +226,23 @@ These rules are pure contract coverage only. No Calendar deletion, retirement, o
 
 The owner OTP/session and live authenticated schedule/booking checks remain unrun in this environment.
 
+## Separate coordinator deployment checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Separate Worker deployment | Pass | `xerom-race-control-coordinator` deployed with SQLite Durable Object and observability; URL `https://xerom-race-control-coordinator.aaronbasil9400.workers.dev` |
+| Google secret provisioning | Pass | `wrangler secret list --config coordinator/wrangler.race-control.jsonc` shows the private key, service-account email, six resource IDs and Booking Control ID; values were never printed or committed |
+| Website feature-branch binding | Implemented | Feature `wrangler.jsonc` now names `xerom-race-control-coordinator`; generated `worker-configuration.d.ts` reflects that binding |
+| Main-site preservation | Pass | `main` remains bound to `xerom-booking-coordinator`; no production Calendar/event mutation was performed |
+
+The fresh feature-branch build and authenticated browser test are still pending. The one-time downloaded Google key file was removed after upload.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |
 |---|---|---|
 | Website branch deployment | Pass | Branch alias builds are current and Access-protected |
-| Existing coordinator compatibility | Not yet verified with owner actions | Website binding remains `script_name: xerom-booking-coordinator`; current production coordinator handles the existing public create protocol |
-| New coordinator commands | Dry-run only | Latest `coordinator/src/index.ts` packages successfully with Wrangler dry-run, but has not been promoted to production traffic |
+| Existing coordinator compatibility | Preserved | Main website remains bound to `script_name: xerom-booking-coordinator`; current production coordinator was not changed |
+| Separate coordinator commands | Deployed, live verification pending | `xerom-race-control-coordinator` has its own SQLite DO, latest coordinator code, observability, and encrypted Google secrets; owner-authenticated action tests have not yet run |
 
-Do not test lifecycle, extension, reschedule, maintenance, closure, or block commands on the web preview yet. They require an additive coordinator deployment decision or a separate coordinator Worker with Google credentials provisioned as encrypted secrets. This preserves the main-site coordinator and Calendar behavior while the deployment choice is reviewed.
+Live lifecycle/extension/reschedule/maintenance/closure/block commands can now be tested only after owner Access login on the branch preview. No test action has been submitted yet; preserve the main-site coordinator and clean up only an explicitly authorized test booking/block.

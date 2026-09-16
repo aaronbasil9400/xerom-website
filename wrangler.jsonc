@@ -10,7 +10,7 @@
       {
         "name": "BOOKING_COORDINATOR",
         "class_name": "BookingCoordinator",
-        "script_name": "xerom-booking-coordinator"
+        "script_name": "xerom-race-control-coordinator"
       }
     ]
   }

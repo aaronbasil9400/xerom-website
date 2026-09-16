@@ -23,6 +23,8 @@ Note: Cloudflare dashboard edits to Worker runtime variables can themselves crea
 
 Coordinator note: a website branch binding to the existing coordinator does not automatically execute newer coordinator source. Dry-run the coordinator separately, then either promote an additive coordinator version after the main-site race/rollback suite passes or create a separate Worker and provision its encrypted Google secrets. Do not point a preview at live calendars with an unverified coordinator.
 
+Separate-worker configuration: `coordinator/wrangler.race-control.jsonc` creates `xerom-race-control-coordinator` with its own SQLite Durable Object namespace and Workers Logs/Traces. Provision `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, all six resource calendar IDs and `BOOKING_CONTROL_CALENDAR_ID` as encrypted secrets on this Worker. Cloudflare does not permit reading/copying an existing Worker’s encrypted private key. Current deployment: `https://xerom-race-control-coordinator.aaronbasil9400.workers.dev`; the feature-branch website binding points to this script.
+
 ## 3. Cloudflare Zero Trust / Access
 
 1. In the Worker dashboard, open **Access**. If the account has no Zero Trust organization, select **Set up Zero Trust**.
