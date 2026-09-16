@@ -1,9 +1,11 @@
 ---
+interface Props { liveEnabled?: boolean }
+const { liveEnabled = false } = Astro.props;
 const resources = ['Regular 01','Regular 02','Regular 03','Pro 01','PS5 01','PS5 02'];
 const events = [['MOCK GROUP','3–5 PM','Regular 01'],['STAFF HOLD','5–6 PM','Regular 02'],['MOCK CUSTOMER','2–4 PM','Regular 03'],['MOCK GROUP','6–7 PM','Pro 01'],['MOCK FAMILY','4–6 PM','PS5 01'],['MAINTENANCE','2–3 PM','PS5 02']];
 const mobileEvents = events.map((event, index) => ({ event, resource: resources[index], startOrder: [15, 17, 14, 18, 16, 14][index] })).sort((left, right) => left.startOrder - right.startOrder || left.resource.localeCompare(right.resource));
 ---
-<section class="rc-panel rc-agenda-panel" aria-labelledby="agenda-title">
+<section class="rc-panel rc-agenda-panel" aria-labelledby="agenda-title" data-rc-live-enabled={liveEnabled ? 'true' : 'false'}>
   <div class="rc-panel-head"><div><h2 id="agenda-title">Sunday · 13 September 2026</h2><span>MYT · synthetic schedule</span></div><div class="rc-legend"><span class="confirmed">Confirmed</span><span class="blocked">Blocked</span><span class="open">Open</span></div></div>
   <p class="rc-mobile-cue">Agenda view · swipe to inspect the full operating window</p>
   <div class="rc-mobile-agenda-list" aria-label="Synthetic agenda by start time">
@@ -26,6 +28,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(value));
   async function refreshSchedule() {
     if (!liveContainer || !dateInput) return;
+    if (document.querySelector<HTMLElement>("[data-rc-live-enabled]")?.dataset.rcLiveEnabled !== "true") return;
     liveContainer.hidden = false;
     liveContainer.textContent = "Loading the shared Google Calendar schedule…";
     try {

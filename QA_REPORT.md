@@ -127,3 +127,15 @@ Environment: local repository on macOS, Astro development fixture mode, no R2 bi
 | Coordinator bundle dry run | Pass | `WRANGLER_LOG_PATH=/tmp/xerom-coordinator-dry-run.log npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` completed; no deployment occurred |
 
 Not run and not passed: live R2 conditional writes, Access JWT verification against the actual team domain, Google owner OAuth, Calendar create/share/probe/delete, real coordinator restart/alarm recovery, config publication, front-desk booking mutations, resource provisioning, media upload, public-runtime cutover, deployed security/rate-limit checks, or production deployment. The dashboard remains a clearly labelled synthetic shell; it does not satisfy the complete Race Control definition of done.
+
+## Race Control branch sync checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Feature branch | Pass | `codex/race-control-working`, baseline commit `5e726da`, Calendar sync commit `d0ce491`, pushed to `origin` |
+| Cloudflare branch build | Pass | Build `bb46454c` for `d0ce491` reported Success in the `xerom-website` Worker dashboard; production traffic remained on the existing version |
+| Shared Calendar schedule contract | Pass locally | Paginated event-list adapter test added; schedule endpoint reads resource/control calendars server-side and keeps IDs out of the response |
+| Shared booking command | Implemented, not externally exercised | Owner booking endpoint delegates to the same named coordinator used by the public site; no live event was created as a test |
+| Local UI regression | Pass | `npm run check` clean, Calendar adapter tests 4/4, six-width Race Control Playwright suite 12/12 with runtime reads disabled in local fixture mode |
+
+Remaining before web verification: Cloudflare Access has no Zero Trust organization, so owner endpoints must remain deny-by-default. Owner confirmation is required before creating the organization and email-OTP policy. The branch build is not a production deployment.

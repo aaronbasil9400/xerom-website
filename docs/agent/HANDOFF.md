@@ -39,3 +39,13 @@ The owner dashboard shell and all stable navigation routes exist under `/race-co
 Local evidence: `npm run check` passed; `npm test` passed 51/51; `npm run build` passed; the Race Control Playwright suite passed 12/12 across all six required widths after fixing 768/1024 overflow. Screenshots are in `.impeccable/review/race-control/`. No production deployment, R2 write, Google mutation, calendar creation or deletion occurred.
 
 Continue in dependency order: finish RC-02 API review/publish and authenticated preview, integrate RC-03 journal/fences into the live coordinator with alarm recovery and failure injection, then RC-04 runtime cutover behind isolated bindings. Do not treat the present static shell as RC-05/RC-06/RC-07 completion.
+
+## Race Control branch-preview progress — 2026-09-16
+
+The implementation now lives on `codex/race-control-working`, pushed to `origin` at `d0ce491` after baseline commit `5e726da`. Cloudflare branch build `bb46454c` completed successfully for `d0ce491`; it uploaded a non-production version and did not change production traffic. The production `main` Worker remains on its prior active version.
+
+The feature branch adds authenticated owner endpoints for a bounded schedule read and owner booking creation. `GET /api/admin/schedule` lists the same private Google resource/control calendars used by the main public booking flow and fails closed if any calendar cannot be read. `POST /api/admin/bookings` uses the existing named booking coordinator, so successful owner bookings create the same linked Calendar events and availability blocks as public bookings. The browser UI changes from fixtures to that live shared schedule only when the runtime calendar/coordinator bindings exist; local development remains fixture-safe.
+
+Tests at this checkpoint: `npm run check` clean; targeted Calendar adapter tests 4/4 pass; local six-width Race Control suite 12/12 passes after live reads were gated away from missing local secrets. A prior local test run generated ignored Playwright report artifacts; `tsconfig.json` now excludes them from Astro checking.
+
+Blocking external action: the Cloudflare account has no Zero Trust organization. Do not expose the deployed owner routes until the owner explicitly confirms creation of a Zero Trust organization and an email-OTP Access policy for the owner identity. No Access app, policy, R2 bucket, Google OAuth credential, Calendar ACL or Calendar event has been created/changed during this branch work.

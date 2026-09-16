@@ -4,13 +4,16 @@ import Agenda from '../../components/race-control/Agenda.astro';
 import BookingInspector from '../../components/race-control/BookingInspector.astro';
 import DemoNotice from '../../components/race-control/DemoNotice.astro';
 import BookingCreateForm from '../../components/race-control/BookingCreateForm.astro';
+import { env as cloudflareEnv } from 'cloudflare:workers';
 
 const malaysiaToday = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit', day: '2-digit',
 }).format(new Date());
+const runtimeEnv = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
+const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEnv.GOOGLE_PRIVATE_KEY && runtimeEnv.BOOKING_COORDINATOR);
 ---
 <RaceControlLayout title="Schedule" section="schedule">
-  <DemoNotice connected />
+  <DemoNotice connected={liveEnabled} />
   <div class="rc-toolbar" aria-label="Schedule controls">
     <div class="rc-toolbar-group">
       <button type="button" disabled>Previous</button><button type="button" disabled>Today</button><button type="button" disabled>Next</button>
@@ -29,6 +32,6 @@ const malaysiaToday = new Intl.DateTimeFormat('en-CA', {
     <div><b>Calendar health</b><strong>Live read</strong><small>fails closed on missing data</small></div>
     <div><b>Timezone</b><strong>MYT</strong><small>Asia/Kuala_Lumpur</small></div>
   </div>
-  <div class="rc-schedule-grid"><Agenda /><BookingInspector /></div>
+  <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} /><BookingInspector /></div>
   <BookingCreateForm />
 </RaceControlLayout>
