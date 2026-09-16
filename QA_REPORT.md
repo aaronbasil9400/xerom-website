@@ -203,3 +203,13 @@ The review endpoint has not been run with live R2 or Google data and intentional
 | Owner search route | Implemented locally | `GET /api/admin/bookings?from=&to=&query=` has bounded date inputs and no permanent customer directory |
 | Bookings UI | Implemented locally | Date range/query form updates a semantic table from the route and retains labelled fixtures on unavailable integration |
 | Responsive regression | Pass | Six-width Race Control browser suite 12/12 after clearing generated Vite cache; no source or production state was removed |
+
+## Hours/resource safety rule checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Hours impact review rules | Pass | Tests block outside-proposed-hours events and open-ended recurring series for explicit owner review |
+| Resource retirement guards | Pass | Tests allow retirement only after future capacity/recurrence is resolved |
+| Permanent deletion guards | Pass | Tests require a retired, non-control, empty calendar and a fresh confirmation; nonempty history is blocked pending retention/export policy |
+
+These rules are pure contract coverage only. No Calendar deletion, retirement, or hours publication was executed.
