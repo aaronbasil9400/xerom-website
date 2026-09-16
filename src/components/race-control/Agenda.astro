@@ -35,6 +35,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   const fixtureTimeline = document.querySelector<HTMLElement>(".rc-agenda");
   const fixtureMobile = document.querySelector<HTMLElement>(".rc-mobile-agenda-list");
   const footer = document.querySelector<HTMLElement>(".rc-agenda-panel .rc-panel-foot");
+  const refreshSummary = document.querySelector<HTMLElement>("[data-rc-refresh-summary]");
   const heading = document.querySelector<HTMLElement>("#agenda-title");
   const subtitle = document.querySelector<HTMLElement>("[data-rc-agenda-subtitle]");
   const dateInput = document.querySelector<HTMLInputElement>("[data-rc-business-date]");
@@ -81,6 +82,10 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     });
   };
   let requestSequence = 0;
+  let refreshInFlight = false;
+  let refreshQueued = false;
+  let pollTimer: number | undefined;
+  let lastSuccessfulReadAt: string | null = null;
   let loadedEvents: LiveEvent[] = [];
   let loadedResources: LiveResource[] = [];
   let loadedWindow: ScheduleWindow | null = null;
@@ -145,35 +150,51 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   };
   async function refreshSchedule() {
     if (!liveContainer || !dateInput || !liveEnabled) return;
+    if (refreshInFlight) { refreshQueued = true; return; }
+    refreshInFlight = true;
     const requestId = ++requestSequence;
+    const requestedBusinessDate = dateInput.value;
     setDateLabel();
     window.dispatchEvent(new CustomEvent("race-control:selection-clear"));
     liveContainer.hidden = false; liveContainer.setAttribute("aria-hidden", "false"); liveContainer.setAttribute("aria-busy", "true");
     if (liveStatus) { liveStatus.hidden = false; liveStatus.textContent = "Loading the shared Google Calendar schedule…"; }
     try {
-      const response = await fetch(`/api/admin/schedule?businessDate=${encodeURIComponent(dateInput.value)}`, { cache: "no-store" });
+      const response = await fetch(`/api/admin/schedule?businessDate=${encodeURIComponent(requestedBusinessDate)}`, { cache: "no-store" });
       const payload = await response.json() as { serverNow: string; error?: { message?: string }; data: { businessWindow: ScheduleWindow; resources: LiveResource[] } };
       if (!response.ok) throw new Error(payload.error?.message ?? "Schedule unavailable.");
-      if (requestId !== requestSequence) return;
+      if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
       loadedResources = payload.data.resources;
       loadedWindow = payload.data.businessWindow;
+      lastSuccessfulReadAt = payload.serverNow;
       loadedEvents = loadedResources.flatMap((resource) => resource.events.map((event) => ({ ...event, resourceId: event.resourceId ?? resource.resourceId, resourceName: resource.displayName, serviceId: event.serviceId ?? resource.serviceId }))).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
       renderLiveEvents();
+      liveContainer.classList.remove("rc-schedule-stale");
       fixtureTimeline?.setAttribute("hidden", ""); fixtureTimeline?.setAttribute("aria-hidden", "true");
       fixtureMobile?.setAttribute("hidden", ""); fixtureMobile?.setAttribute("aria-hidden", "true");
       if (subtitle) subtitle.textContent = "MYT · shared Calendar";
       if (footer) footer.textContent = `Live Calendar read · refreshed ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))}`;
+      if (refreshSummary) refreshSummary.textContent = `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))} · every 15 sec while visible`;
     } catch (error) {
-      if (requestId !== requestSequence) return;
-      loadedResources = []; loadedEvents = []; loadedWindow = null;
-      liveChart?.replaceChildren(); liveMobileList?.replaceChildren();
-      if (liveStatus) { liveStatus.hidden = false; liveStatus.textContent = error instanceof Error ? `${error.message} No availability is being claimed.` : "Schedule unavailable. No availability is being claimed."; }
+      if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
+      const staleContextAvailable = loadedResources.length > 0 && loadedWindow !== null;
+      if (staleContextAvailable) {
+        renderLiveEvents();
+        liveContainer.classList.add("rc-schedule-stale");
+        if (liveStatus) { liveStatus.hidden = false; liveStatus.textContent = "Live Calendar unavailable. Showing the last successful schedule as stale context; no availability is being claimed."; }
+      } else {
+        loadedResources = []; loadedEvents = []; loadedWindow = null;
+        liveChart?.replaceChildren(); liveMobileList?.replaceChildren();
+        if (liveStatus) { liveStatus.hidden = false; liveStatus.textContent = error instanceof Error ? `${error.message} No availability is being claimed.` : "Schedule unavailable. No availability is being claimed."; }
+      }
       fixtureTimeline?.setAttribute("hidden", ""); fixtureTimeline?.setAttribute("aria-hidden", "true");
       fixtureMobile?.setAttribute("hidden", ""); fixtureMobile?.setAttribute("aria-hidden", "true");
       if (subtitle) subtitle.textContent = "MYT · live read unavailable";
       if (footer) footer.textContent = "Live Calendar read unavailable · retry or reconnect Google.";
+      if (refreshSummary) refreshSummary.textContent = lastSuccessfulReadAt ? `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(lastSuccessfulReadAt))} · refresh failed` : "Refresh failed · retry when Calendar is available";
     } finally {
+      refreshInFlight = false;
       if (requestId === requestSequence) liveContainer.setAttribute("aria-busy", "false");
+      if (refreshQueued && document.visibilityState === "visible") { refreshQueued = false; void refreshSchedule(); }
     }
   }
   const setDate = (value: string) => { if (!dateInput || !value) return; dateInput.value = value; setDateLabel(); if (liveEnabled) refreshSchedule(); };
@@ -184,5 +205,17 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   searchInput?.addEventListener("input", renderLiveEvents);
   dateInput?.addEventListener("change", refreshSchedule);
   window.addEventListener("race-control:refresh", refreshSchedule);
-  if (liveEnabled) refreshSchedule();
+  const stopPolling = () => {
+    if (pollTimer !== undefined) { window.clearInterval(pollTimer); pollTimer = undefined; }
+  };
+  const startPolling = () => {
+    if (!liveEnabled || document.visibilityState !== "visible" || pollTimer !== undefined) return;
+    pollTimer = window.setInterval(() => { void refreshSchedule(); }, 15_000);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") { void refreshSchedule(); startPolling(); } else stopPolling();
+  });
+  window.addEventListener("focus", () => { if (document.visibilityState === "visible") void refreshSchedule(); });
+  window.addEventListener("beforeunload", stopPolling);
+  if (liveEnabled) { void refreshSchedule(); startPolling(); }
 </script>
