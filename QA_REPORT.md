@@ -133,7 +133,7 @@ Not run and not passed: live R2 conditional writes, Access JWT verification agai
 | Check | Result | Evidence |
 |---|---|---|
 | Feature branch | Pass | `codex/race-control-working`, baseline commit `5e726da`, Calendar sync commit `d0ce491`, pushed to `origin` |
-| Cloudflare branch build | Pass | Build `bb46454c` for `d0ce491` reported Success in the `xerom-website` Worker dashboard; production traffic remained on the existing version |
+| Cloudflare branch build | Pass | Build `bb46454c` for `d0ce491` reported Success and branch alias versions are separate from the public deployment |
 | Shared Calendar schedule contract | Pass locally | Paginated event-list adapter test added; schedule endpoint reads resource/control calendars server-side and keeps IDs out of the response |
 | Shared booking command | Implemented, not externally exercised | Owner booking endpoint delegates to the same named coordinator used by the public site; no live event was created as a test |
 | Local UI regression | Pass | `npm run check` clean, Calendar adapter tests 4/4, six-width Race Control Playwright suite 12/12 with runtime reads disabled in local fixture mode |
@@ -150,7 +150,7 @@ Remaining before web verification: Cloudflare Access has no Zero Trust organizat
 | Worker Access variables | Pass | `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE` variables plus encrypted `OWNER_EMAILS` visible in Worker settings; secrets remain out of Git |
 | R2 capability check | Blocked | `npx wrangler r2 bucket list` returned Cloudflare code 10042: enable R2 through Dashboard; no bucket/binding was created |
 
-The branch preview still needs a fresh branch build after the runtime variables were added, followed by owner OTP login and a non-destructive schedule-read check. No production traffic or Google Calendar mutation was performed here.
+The branch preview has fresh alias versions (latest observed version number 60) and still needs owner OTP login plus a non-destructive schedule-read check. Saving Access variables through the Worker dashboard also created production deployment `f3cefffa` at 100% traffic from the pre-existing production code; no Race Control branch code was promoted and no Google Calendar mutation was performed here.
 
 ## Front-desk action implementation checkpoint (2026-09-16)
 

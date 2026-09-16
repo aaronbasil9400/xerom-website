@@ -42,7 +42,7 @@ Continue in dependency order: finish RC-02 API review/publish and authenticated 
 
 ## Race Control branch-preview progress — 2026-09-16
 
-The implementation now lives on `codex/race-control-working`, pushed to `origin` at `d0ce491` after baseline commit `5e726da`. Cloudflare branch build `bb46454c` completed successfully for `d0ce491`; it uploaded a non-production version and did not change production traffic. The production `main` Worker remains on its prior active version.
+The implementation now lives on `codex/race-control-working`, pushed to `origin` at `d0ce491` after baseline commit `5e726da`. Cloudflare branch build `bb46454c` completed successfully for `d0ce491`; it uploaded a non-production version. Saving Access runtime variables later created production deployment `f3cefffa` from the existing production code; that deployment did not contain the feature-branch Race Control code and changed no public route behavior, but it is still recorded as production deployment activity.
 
 The feature branch adds authenticated owner endpoints for a bounded schedule read and owner booking creation. `GET /api/admin/schedule` lists the same private Google resource/control calendars used by the main public booking flow and fails closed if any calendar cannot be read. `POST /api/admin/bookings` uses the existing named booking coordinator, so successful owner bookings create the same linked Calendar events and availability blocks as public bookings. The browser UI changes from fixtures to that live shared schedule only when the runtime calendar/coordinator bindings exist; local development remains fixture-safe.
 
@@ -73,5 +73,7 @@ Update: maintenance and venue-closure blocks are now available through `POST /ap
 Update: configuration review now has a fail-closed `POST /api/admin/config/review` boundary. It hashes the saved draft, binds a five-minute HMAC review token to its base revision, and explicitly reports that the complete future-booking impact scan is still required. It cannot publish without the R2 repository, encryption secret and coordinator-backed impact review.
 
 Update: bounded owner booking search is now available at `GET /api/admin/bookings?from=&to=&query=` and the Bookings screen can query it. Results group only matching private `bookingId` events; unrecognized manual events remain separate `Calendar block` records. A fresh branch build receives the Access runtime variables. Local browser QA remains green after clearing a generated Vite SSR cache; the cache issue was tooling-only.
+
+Update: the latest observed branch alias is version 60. Access app setup and the owner policy are active; owner OTP/Cloudflare identity sign-in and a live schedule-read check remain unverified in this automation session.
 
 Update: pure hours-impact and resource-lifecycle guards now cover outside-proposed-hours bookings, open-ended recurring series, retirement with future reservations, control/primary protections, and nonempty-calendar deletion retention gates. They are not yet wired to the settings UI or a live review job.

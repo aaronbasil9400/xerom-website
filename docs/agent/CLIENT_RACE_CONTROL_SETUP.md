@@ -19,6 +19,8 @@ Scope: configure an owner-only Race Control preview and later a production deplo
 3. Confirm the build uses the project’s server build command and uploads a version without changing production traffic.
 4. Do not deploy a branch version to production traffic. Keep the active production version unchanged until a dedicated cutover review.
 
+Note: Cloudflare dashboard edits to Worker runtime variables can themselves create a production version/deployment. Record that version in the client change log and verify its source code before assuming only configuration changed. In this setup, the Access variables produced `f3cefffa` from the prior production code; the Race Control branch remained on its alias.
+
 ## 3. Cloudflare Zero Trust / Access
 
 1. In the Worker dashboard, open **Access**. If the account has no Zero Trust organization, select **Set up Zero Trust**.
