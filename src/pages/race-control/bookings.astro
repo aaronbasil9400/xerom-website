@@ -1,4 +1,54 @@
 ---
-import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
+import DemoNotice from '../../components/race-control/DemoNotice.astro';
 ---
-<RaceControlLayout title="Bookings" section="bookings"><DemoNotice /><section class="rc-panel"><div class="rc-panel-head"><h2>Reservation register · synthetic history</h2><button class="rc-button" type="button">Filter</button></div><div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Synthetic booking fixtures</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead><tbody><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>Demo</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>Demo</td></tr></tbody></table></div></section></RaceControlLayout>
+<RaceControlLayout title="Bookings" section="bookings">
+  <DemoNotice />
+  <section class="rc-panel">
+    <div class="rc-panel-head"><h2>Reservation register</h2><span>Same private calendars as the main site</span></div>
+    <form class="rc-booking-search" data-rc-booking-search>
+      <label>Date from<input name="from" type="date" required /></label>
+      <label>Date to<input name="to" type="date" required /></label>
+      <label>Booking or customer search<input name="query" type="search" placeholder="Optional" /></label>
+      <button class="rc-button rc-button-primary" type="submit">Search Calendar</button>
+      <output data-rc-search-result aria-live="polite"></output>
+    </form>
+    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Events</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>1</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>1</td></tr></tbody></table></div>
+  </section>
+</RaceControlLayout>
+
+<script>
+  const searchForm = document.querySelector<HTMLFormElement>("[data-rc-booking-search]");
+  const rows = document.querySelector<HTMLElement>("[data-rc-booking-rows]");
+  const result = document.querySelector<HTMLOutputElement>("[data-rc-search-result]");
+  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur" }).format(new Date());
+  searchForm?.querySelector<HTMLInputElement>('input[name="from"]')?.setAttribute("value", date);
+  searchForm?.querySelector<HTMLInputElement>('input[name="to"]')?.setAttribute("value", date);
+  const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  searchForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!rows || !result) return;
+    result.textContent = "Reading Calendar events…";
+    const values = new FormData(searchForm);
+    const params = new URLSearchParams();
+    for (const [key, value] of values.entries()) params.set(key, String(value));
+    try {
+      const response = await fetch(`/api/admin/bookings?${params}`, { cache: "no-store" });
+      const payload = await response.json() as { data?: Array<{ bookingId: string | null; status: string; start: string; end: string; resources: string[]; eventCount: number }>; error?: { message?: string } };
+      if (!response.ok) throw new Error(payload.error?.message ?? "Bookings unavailable.");
+      rows.replaceChildren();
+      for (const booking of payload.data ?? []) {
+        const row = document.createElement("tr");
+        const id = document.createElement("th"); id.scope = "row"; id.textContent = booking.bookingId ?? "Calendar block";
+        const when = document.createElement("td"); when.textContent = `${formatTime(booking.start)}–${formatTime(booking.end)}`;
+        const resources = document.createElement("td"); resources.textContent = booking.resources.join(" + ");
+        const status = document.createElement("td"); status.textContent = booking.status;
+        const count = document.createElement("td"); count.textContent = String(booking.eventCount);
+        row.appendChild(id); row.appendChild(when); row.appendChild(resources); row.appendChild(status); row.appendChild(count); rows.appendChild(row);
+      }
+      result.textContent = `${payload.data?.length ?? 0} grouped Calendar record(s).`;
+    } catch (error) {
+      result.textContent = error instanceof Error ? `${error.message} Showing labelled fixtures.` : "Bookings unavailable. Showing labelled fixtures.";
+    }
+  });
+</script>

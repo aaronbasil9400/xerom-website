@@ -194,3 +194,12 @@ No live maintenance/closure block was created. Real conflict review, compensatio
 | Safe publication boundary | Pass | No publish action is exposed until complete future-booking impact review and R2 activation prerequisites exist |
 
 The review endpoint has not been run with live R2 or Google data and intentionally cannot authorize publication while those gates are absent.
+
+## Bounded owner booking search checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Search contract | Pass | Local booking-search tests validate reversed-date rejection, private booking grouping and separate manual blocks |
+| Owner search route | Implemented locally | `GET /api/admin/bookings?from=&to=&query=` has bounded date inputs and no permanent customer directory |
+| Bookings UI | Implemented locally | Date range/query form updates a semantic table from the route and retains labelled fixtures on unavailable integration |
+| Responsive regression | Pass | Six-width Race Control browser suite 12/12 after clearing generated Vite cache; no source or production state was removed |

@@ -2,9 +2,24 @@ import type { APIRoute } from "astro";
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { bookingRequestSchema } from "@/lib/booking/schema";
 import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
+import { searchRaceControlBookings } from "@/lib/race-control/bookings";
 
 export const prerender = false;
 const headers = { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" };
+
+export const GET: APIRoute = async ({ request }) => {
+  const params = new URL(request.url).searchParams;
+  const from = params.get("from") ?? "";
+  const to = params.get("to") ?? from;
+  const query = params.get("query") ?? "";
+  try {
+    const data = await searchRaceControlBookings(cloudflareEnv as typeof cloudflareEnv & CloudflareEnv, from, to, query);
+    return new Response(JSON.stringify({ data }), { headers });
+  } catch (error) {
+    console.error(JSON.stringify({ message: "race_control_booking_search_failed", error: error instanceof Error ? error.message : "unknown" }));
+    return new Response(JSON.stringify({ error: { code: "BOOKINGS_UNAVAILABLE", message: "Bookings could not be loaded.", retryable: true } }), { status: 503, headers });
+  }
+};
 
 export const POST: APIRoute = async ({ request }) => {
   if (!verifyOwnerMutationOrigin(request)) return new Response(JSON.stringify({ error: { code: "CSRF_REJECTED", message: "Refresh Race Control and try again.", retryable: false } }), { status: 403, headers });
