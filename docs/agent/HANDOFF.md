@@ -138,3 +138,9 @@ Legacy live bookings that predate `groupVersion` now receive the coordinator’s
 The branch now returns a `businessWindow` alongside the Calendar events and renders a real desktop resource timeline: resource rows (including Venue control), hour columns covering the opening window, proportional event positions/widths, lane stacking for overlaps, status/maintenance styling, and open space for resources with no busy events. The mobile presentation remains a chronological event list. Filtering and search apply to both views, and event selection continues to populate the inspector.
 
 The previous flat list happened because the client only rendered `<article>` rows; no timeline layout was being generated from the available resource/start/end data. The chart is implemented in commit `4e94e5b`, with the responsive test suite passing 12/12; no live booking or block was created for this change.
+
+## Manual booking error-flow checkpoint — 2026-09-16
+
+The owner screenshot showed the manual form remaining in place with the generic `Review the booking details.` output. The form was not intentionally routing to a review page: the admin endpoint returned a 400 validation response, while the client discarded its field-level issues. The branch now normalizes `datetime-local` values before adding the MYT offset, returns `Review the highlighted booking fields.`, renders the rejected field path/reason in the output, and scrolls back to the live schedule after a confirmed create. No new live reservation was created for this fix.
+
+The browser preview after deployment shows the live schedule, corrected manual guidance and 30/60/120-minute options; `npm run check`, `npm test` 64/64, `npm run build` and clean-server Playwright 12/12 pass. Code commits are `c45b420` and `3a92ae6`; production remains untouched.

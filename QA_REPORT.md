@@ -348,3 +348,15 @@ The browser session confirmed the shared-calendar connection state and live even
 | Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12, detector run |
 
 No new live reservation or block was created. The chart is a read-only rendering change over the existing Calendar response; production remains untouched.
+
+## Manual booking error-flow checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Error diagnosis | Pass | The generic review message was traced to an admin 400 whose `fieldErrors` were not rendered by the client |
+| Datetime normalization | Pass | Manual `datetime-local` values now safely receive one MYT offset regardless of whether seconds are present |
+| Field-level feedback | Pass | API and form expose the exact rejected path/reason instead of only `Review the booking details.` |
+| Success navigation | Pass | Confirmed manual creates dispatch a shared-schedule refresh and scroll to the live agenda |
+| Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12, live browser form read |
+
+No live reservation was created for this fix. The approved earlier synthetic create/cancel test remains the live write proof.
