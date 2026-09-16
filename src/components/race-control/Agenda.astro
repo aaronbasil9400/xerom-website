@@ -25,6 +25,8 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
 </section>
 
 <script>
+  import { assignTimelineLanes } from "@/lib/race-control/timeline";
+
   type LiveEvent = { id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; resourceId: string; resourceName: string; serviceId: string };
   type LiveResource = { resourceId: string; serviceId: string; displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; resourceId?: string; serviceId?: string }> };
   type ScheduleWindow = { start: string; end: string };
@@ -71,16 +73,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     for (let cursor = start; Number.isFinite(cursor) && cursor < end; cursor += 60 * 60_000) ticks.push(new Date(cursor).toISOString());
     return ticks;
   };
-  const assignLanes = (events: LiveEvent[]) => {
-    const laneEnds: number[] = [];
-    return events.slice().sort((left, right) => Date.parse(left.start) - Date.parse(right.start)).map((event) => {
-      const start = Date.parse(event.start);
-      let lane = laneEnds.findIndex((end) => end <= start);
-      if (lane === -1) { lane = laneEnds.length; laneEnds.push(0); }
-      laneEnds[lane] = Date.parse(event.end);
-      return { event, lane, laneCount: laneEnds.length };
-    });
-  };
   let requestSequence = 0;
   let refreshInFlight = false;
   let refreshQueued = false;
@@ -125,8 +117,8 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     const startMs = Date.parse(loadedWindow.start); const endMs = Date.parse(loadedWindow.end); const span = endMs - startMs;
     for (const resource of loadedResources) {
       const resourceEvents = events.filter((event) => event.resourceId === resource.resourceId);
-      const lanes = assignLanes(resourceEvents);
-      const row = document.createElement("div"); row.className = "rc-live-resource-row"; row.setAttribute("role", "row"); row.setAttribute("aria-label", `${resource.displayName} live schedule`); row.style.minHeight = `${Math.max(1, lanes.length) * 3.6}rem`;
+      const { items: lanes, laneCount } = assignTimelineLanes(resourceEvents);
+      const row = document.createElement("div"); row.className = "rc-live-resource-row"; row.setAttribute("role", "row"); row.setAttribute("aria-label", `${resource.displayName} live schedule`); row.style.minHeight = `${Math.max(1, laneCount) * 3.6}rem`;
       const label = document.createElement("div"); label.className = "rc-live-resource-label"; label.setAttribute("role", "rowheader");
       const led = document.createElement("i"); led.className = resourceEvents.length > 0 ? resource.serviceId === "control" || resourceEvents.some((event) => event.privateProperties?.blockType) ? "warning" : "busy" : "";
       const labelText = document.createElement("span"); labelText.textContent = resource.displayName; const labelSub = document.createElement("small"); labelSub.textContent = serviceNames[resource.serviceId] ?? resource.serviceId; labelText.appendChild(labelSub); label.appendChild(led); label.appendChild(labelText);
