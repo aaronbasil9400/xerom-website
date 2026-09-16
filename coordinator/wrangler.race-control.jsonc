@@ -1,0 +1,22 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "xerom-race-control-coordinator",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-16",
+  "durable_objects": {
+    "bindings": [
+      { "name": "BOOKING_COORDINATOR", "class_name": "BookingCoordinator" }
+    ]
+  },
+  "exports": {
+    "BookingCoordinator": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}

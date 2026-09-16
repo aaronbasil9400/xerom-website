@@ -20,7 +20,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (localDevelopment) {
       context.locals.owner = { actorId: "local:race-control-fixture", email: "fixture@localhost.invalid", subject: "local-fixture" };
     } else {
-      const identity = await verifyOwnerRequest(context.request, cloudflareEnv);
+      const identity = await verifyOwnerRequest(context.request, cloudflareEnv as typeof cloudflareEnv & CloudflareEnv);
       if (!identity) return ownerDeniedResponse();
       context.locals.owner = identity;
     }

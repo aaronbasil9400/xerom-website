@@ -44,6 +44,7 @@ Separate-worker configuration: `coordinator/wrangler.race-control.jsonc` creates
 - Reusable policy: `Xerom Race Control Owner` (policy ID `57014aed-34b5-4b9b-967a-bce1e926400f`).
 - Protected destinations: `codex-race-control-working-xerom-website.aaronbasil9400.workers.dev/race-control/*` and the same host at `/api/admin/*`.
 - Worker runtime variables: `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE`; encrypted secret `OWNER_EMAILS`. The AUD value is intentionally not repeated in this runbook; retrieve it from the application’s **Additional settings → Application Audience (AUD) Tag** when recreating the setup.
+- For branch builds, `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE` are declared as non-secret feature config vars so version uploads receive them; `OWNER_EMAILS` remains an encrypted runtime secret. The audience tag is an identifier, not a credential.
 - The policy is an email allowlist for the owner identity, not a broad domain rule. No non-owner email was added.
 
 The branch build alias currently resolves at `https://codex-race-control-working-xerom-website.aaronbasil9400.workers.dev`. Access redirects only the two configured Race Control/admin paths; the public homepage remains open.
