@@ -127,7 +127,7 @@ Browser evidence on the protected branch: live read loaded the current date and 
 
 The selected live-booking inspector now exposes conditional Check in, Complete, No-show and Cancel controls, plus the explicit early-release checkbox for completion. Each action requires a confirmation prompt, sends the grouped expected version and idempotency key through the owner API, updates all linked Calendar events through the separate coordinator, and refreshes the schedule. Legacy events without `groupVersion` safely use version 0, matching the coordinator’s existing default. Reschedule and extension remain review-driven until quote inputs are surfaced.
 
-Protected-branch browser verification selected an existing live booking and visibly showed the four controls; no action was submitted. `npm run check`, `npm test` 64/64, `npm run build` and the clean-server six-width suite remain green. The current branch head is `344158b`; the latest code-bearing schedule/action commits are `f1598ed`, `3c0ffd1` and `344158b`.
+Protected-branch browser verification selected an existing live booking and visibly showed the four controls; no action was submitted. `npm run check`, `npm test` 64/64, `npm run build` and the clean-server six-width suite remain green. The current code-bearing branch head is `344158b`; the latest documentation checkpoint is `34154cd` and the latest code-bearing schedule/action commits are `f1598ed`, `3c0ffd1` and `344158b`.
 
 ## Inspector compatibility checkpoint — 2026-09-16
 
