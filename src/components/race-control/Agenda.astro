@@ -1,22 +1,23 @@
 ---
-interface Props { liveEnabled?: boolean }
-const { liveEnabled = false } = Astro.props;
+interface Props { liveEnabled?: boolean; businessDate?: string }
+const { liveEnabled = false, businessDate = "2026-09-16" } = Astro.props;
+const agendaDate = new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${businessDate}T12:00:00+08:00`));
 const resources = ['Regular 01','Regular 02','Regular 03','Pro 01','PS5 01','PS5 02'];
 const events = [['MOCK GROUP','3–5 PM','Regular 01'],['STAFF HOLD','5–6 PM','Regular 02'],['MOCK CUSTOMER','2–4 PM','Regular 03'],['MOCK GROUP','6–7 PM','Pro 01'],['MOCK FAMILY','4–6 PM','PS5 01'],['MAINTENANCE','2–3 PM','PS5 02']];
 const mobileEvents = events.map((event, index) => ({ event, resource: resources[index], startOrder: [15, 17, 14, 18, 16, 14][index] })).sort((left, right) => left.startOrder - right.startOrder || left.resource.localeCompare(right.resource));
 ---
 <section class="rc-panel rc-agenda-panel" aria-labelledby="agenda-title" data-rc-live-enabled={liveEnabled ? 'true' : 'false'}>
-  <div class="rc-panel-head"><div><h2 id="agenda-title">Sunday · 13 September 2026</h2><span>MYT · synthetic schedule</span></div><div class="rc-legend"><span class="confirmed">Confirmed</span><span class="blocked">Blocked</span><span class="open">Open</span></div></div>
+  <div class="rc-panel-head"><div><h2 id="agenda-title">{agendaDate}</h2><span data-rc-agenda-subtitle>{liveEnabled ? 'MYT · shared Calendar' : 'MYT · synthetic schedule'}</span></div><div class="rc-legend"><span class="confirmed">Confirmed</span><span class="blocked">Blocked</span><span class="open">Open</span></div></div>
   <p class="rc-mobile-cue">Agenda view · swipe to inspect the full operating window</p>
-  <div class="rc-mobile-agenda-list" aria-label="Synthetic agenda by start time">
+  <div class="rc-mobile-agenda-list" aria-label="Synthetic agenda by start time" hidden={liveEnabled}>
     {mobileEvents.map(({ event, resource }) => <article><time>{event[1]}</time><div><strong>{event[0]}</strong><span>{resource} · fixture</span></div><button type="button" aria-label={`Details for ${event[0]}, ${resource}, ${event[1]}`}>Details</button></article>)}
   </div>
-  <div class="rc-agenda" aria-label="Demo fixture resource timeline">
+  <div class="rc-agenda" aria-label="Demo fixture resource timeline" hidden={liveEnabled}>
     <div class="rc-time-row"><span>Resource</span>{['2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM','9 PM','10 PM','11 PM','12 AM'].map((t) => <span>{t}</span>)}</div>
     {resources.map((resource, index) => <div class="rc-resource-row"><div class="rc-resource-label"><i class:list={{busy:index===0||index===2||index===4, warning:index===5}}></i><span>{resource}<small>{resource.startsWith('PS5') ? 'play lounge' : resource.startsWith('Pro') ? 'pro sim' : 'sim racing'}</small></span></div><div class="rc-track" aria-label={`${resource} demo fixture events`}><span class="rc-open-track"></span>{events[index] && <button class:list={{'rc-event':true,'rc-event-maintenance':index===5}} type="button" aria-label={`${events[index][0]}, ${resource}, ${events[index][1]}`}><b>{events[index][0]}</b><small>{events[index][1]}</small></button>}</div></div>)}
   </div>
-  <p class="rc-panel-foot">All blocks are labelled synthetic fixtures. A future live view must treat every busy Calendar event as unavailable.</p>
-  <div class="rc-live-events" data-rc-live-events hidden></div>
+  <p class="rc-panel-foot">{liveEnabled ? 'Loading the shared Google Calendar schedule…' : 'All blocks are labelled synthetic fixtures. A future live view must treat every busy Calendar event as unavailable.'}</p>
+  <div class="rc-live-events" data-rc-live-events hidden={!liveEnabled} aria-live="polite" aria-busy={liveEnabled}></div>
 </section>
 
 <script>
@@ -24,54 +25,116 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   const fixtureTimeline = document.querySelector<HTMLElement>(".rc-agenda");
   const fixtureMobile = document.querySelector<HTMLElement>(".rc-mobile-agenda-list");
   const footer = document.querySelector<HTMLElement>(".rc-agenda-panel .rc-panel-foot");
+  const heading = document.querySelector<HTMLElement>("#agenda-title");
+  const subtitle = document.querySelector<HTMLElement>("[data-rc-agenda-subtitle]");
   const dateInput = document.querySelector<HTMLInputElement>("[data-rc-business-date]");
+  const previousButton = document.querySelector<HTMLButtonElement>("[data-rc-date-nav='previous']");
+  const todayButton = document.querySelector<HTMLButtonElement>("[data-rc-date-nav='today']");
+  const nextButton = document.querySelector<HTMLButtonElement>("[data-rc-date-nav='next']");
+  const serviceFilter = document.querySelector<HTMLElement>("[data-rc-service-filter]");
+  const searchInput = document.querySelector<HTMLInputElement>("[data-rc-schedule-search]");
+  const liveEnabled = document.querySelector<HTMLElement>("[data-rc-live-enabled]")?.dataset.rcLiveEnabled === "true";
   const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(value));
+  const formatBusinessDate = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00+08:00`));
+  const shiftDate = (value: string, days: number) => {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+  };
+  const setDateLabel = () => {
+    if (dateInput?.value && heading) heading.textContent = formatBusinessDate(dateInput.value);
+  };
+  let requestSequence = 0;
+  let loadedEvents: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; resourceName: string; serviceId: string }> = [];
+  const renderLiveEvents = () => {
+    if (!liveContainer) return;
+    const service = (serviceFilter as (HTMLElement & { value: string }) | null)?.value ?? "all";
+    const needle = searchInput?.value.trim().toLowerCase() ?? "";
+    const events = loadedEvents.filter((event) => {
+      const serviceMatch = service === "all" || event.serviceId === service;
+      const searchMatch = !needle || `${event.summary} ${event.resourceName} ${event.privateProperties?.status ?? "busy"} ${event.privateProperties?.bookingId ?? ""}`.toLowerCase().includes(needle);
+      return serviceMatch && searchMatch;
+    });
+    liveContainer.replaceChildren();
+    if (events.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "rc-live-empty";
+      empty.textContent = loadedEvents.length === 0 ? "No busy Calendar events for this business date." : "No matching Calendar events.";
+      liveContainer.appendChild(empty);
+    }
+    for (const event of events) {
+      const article = document.createElement("article");
+      const time = document.createElement("time");
+      time.textContent = `${formatTime(event.start)}–${formatTime(event.end)}`;
+      const details = document.createElement("button");
+      details.type = "button";
+      details.className = "rc-live-event-select";
+      details.setAttribute("aria-label", `Details for ${event.summary || "Calendar block"}, ${event.resourceName}, ${formatTime(event.start)}–${formatTime(event.end)}`);
+      const title = document.createElement("strong");
+      title.textContent = event.summary || "Calendar block";
+      const resource = document.createElement("span");
+      resource.textContent = event.resourceName;
+      details.appendChild(title);
+      details.appendChild(resource);
+      details.addEventListener("click", () => window.dispatchEvent(new CustomEvent("race-control:select-event", { detail: {
+        bookingId: event.privateProperties?.bookingId ?? null,
+        status: event.privateProperties?.status ?? "busy",
+        summary: event.summary || "Calendar block",
+        resourceName: event.resourceName,
+        start: event.start,
+        end: event.end,
+      } })));
+      const status = document.createElement("span");
+      status.className = "rc-status";
+      status.textContent = event.privateProperties?.status ?? "Busy";
+      article.appendChild(time);
+      article.appendChild(details);
+      article.appendChild(status);
+      liveContainer.appendChild(article);
+    }
+  };
   async function refreshSchedule() {
     if (!liveContainer || !dateInput) return;
-    if (document.querySelector<HTMLElement>("[data-rc-live-enabled]")?.dataset.rcLiveEnabled !== "true") return;
+    if (!liveEnabled) return;
+    const requestId = ++requestSequence;
+    setDateLabel();
     liveContainer.hidden = false;
+    liveContainer.setAttribute("aria-busy", "true");
     liveContainer.textContent = "Loading the shared Google Calendar schedule…";
     try {
       const response = await fetch(`/api/admin/schedule?businessDate=${encodeURIComponent(dateInput.value)}`, { cache: "no-store" });
-      const payload = await response.json() as { serverNow: string; error?: { message?: string }; data: { resources: Array<{ displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }> } };
+      const payload = await response.json() as { serverNow: string; error?: { message?: string }; data: { resources: Array<{ displayName: string; serviceId: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }> } };
       if (!response.ok) throw new Error(payload.error?.message ?? "Schedule unavailable.");
-      const events = payload.data.resources.flatMap((resource: { displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }) => resource.events.map((event) => ({ ...event, resourceName: resource.displayName }))).sort((a: { start: string }, b: { start: string }) => Date.parse(a.start) - Date.parse(b.start));
-      liveContainer.replaceChildren();
-      if (events.length === 0) {
-        const empty = document.createElement("p");
-        empty.className = "rc-live-empty";
-        empty.textContent = "No busy Calendar events for this business date.";
-        liveContainer.appendChild(empty);
-      }
-      for (const event of events) {
-        const article = document.createElement("article");
-        const time = document.createElement("time");
-        time.textContent = `${formatTime(event.start)}–${formatTime(event.end)}`;
-        const details = document.createElement("div");
-        const title = document.createElement("strong");
-        title.textContent = event.summary || "Calendar block";
-        const resource = document.createElement("span");
-        resource.textContent = event.resourceName;
-        details.appendChild(title);
-        details.appendChild(resource);
-        const status = document.createElement("span");
-        status.className = "rc-status";
-        status.textContent = event.privateProperties?.status ?? "Busy";
-        article.appendChild(time);
-        article.appendChild(details);
-        article.appendChild(status);
-        liveContainer.appendChild(article);
-      }
+      if (requestId !== requestSequence) return;
+      loadedEvents = payload.data.resources.flatMap((resource: { displayName: string; serviceId: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }) => resource.events.map((event) => ({ ...event, resourceName: resource.displayName, serviceId: resource.serviceId }))).sort((a: { start: string }, b: { start: string }) => Date.parse(a.start) - Date.parse(b.start));
+      renderLiveEvents();
       fixtureTimeline?.setAttribute("hidden", "");
       fixtureMobile?.setAttribute("hidden", "");
+      if (subtitle) subtitle.textContent = "MYT · shared Calendar";
       if (footer) footer.textContent = `Live Calendar read · refreshed ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))}`;
     } catch (error) {
-      liveContainer.textContent = error instanceof Error ? `${error.message} Showing labelled fixtures.` : "Schedule unavailable. Showing labelled fixtures.";
-      fixtureTimeline?.removeAttribute("hidden");
-      fixtureMobile?.removeAttribute("hidden");
+      if (requestId !== requestSequence) return;
+      loadedEvents = [];
+      liveContainer.textContent = error instanceof Error ? `${error.message} No availability is being claimed.` : "Schedule unavailable. No availability is being claimed.";
+      fixtureTimeline?.setAttribute("hidden", "");
+      fixtureMobile?.setAttribute("hidden", "");
+      if (subtitle) subtitle.textContent = "MYT · live read unavailable";
+      if (footer) footer.textContent = "Live Calendar read unavailable · retry or reconnect Google.";
+    } finally {
+      if (requestId === requestSequence) liveContainer.setAttribute("aria-busy", "false");
     }
   }
+  const setDate = (value: string) => {
+    if (!dateInput) return;
+    dateInput.value = value;
+    setDateLabel();
+    if (liveEnabled) refreshSchedule();
+  };
+  previousButton?.addEventListener("click", () => dateInput?.value && setDate(shiftDate(dateInput.value, -1)));
+  todayButton?.addEventListener("click", () => setDate(dateInput?.dataset.rcToday ?? dateInput?.value ?? ""));
+  nextButton?.addEventListener("click", () => dateInput?.value && setDate(shiftDate(dateInput.value, 1)));
+  serviceFilter?.addEventListener("change", renderLiveEvents);
+  searchInput?.addEventListener("input", renderLiveEvents);
   dateInput?.addEventListener("change", refreshSchedule);
   window.addEventListener("race-control:refresh", refreshSchedule);
-  refreshSchedule();
+  if (liveEnabled) refreshSchedule();
 </script>

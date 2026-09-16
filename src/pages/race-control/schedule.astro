@@ -17,13 +17,13 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
   <DemoNotice connected={liveEnabled} />
   <div class="rc-toolbar" aria-label="Schedule controls">
     <div class="rc-toolbar-group">
-      <button type="button" disabled>Previous</button><button type="button" disabled>Today</button><button type="button" disabled>Next</button>
-      <label><span>Date</span><input data-rc-business-date type="date" value={malaysiaToday} /></label>
+      <button type="button" data-rc-date-nav="previous">Previous</button><button type="button" data-rc-date-nav="today">Today</button><button type="button" data-rc-date-nav="next">Next</button>
+      <label><span>Date</span><input data-rc-business-date data-rc-today={malaysiaToday} type="date" value={malaysiaToday} /></label>
     </div>
     <div class="rc-toolbar-group">
       <button type="button" class="active" disabled>Day</button><button type="button" disabled>Agenda</button>
-      <label><span>Service</span><select disabled><option>All services</option></select></label>
-      <label class="rc-toolbar-search"><span>Search</span><input type="search" placeholder="Search coming next" disabled /></label>
+      <label><span>Service</span><select data-rc-service-filter disabled={!liveEnabled}><option value="all">All services</option><option value="regular-sim">Regular Sim</option><option value="pro-sim">Pro Sim</option><option value="ps5">PS5</option><option value="control">Venue control</option></select></label>
+      <label class="rc-toolbar-search"><span>Search</span><input data-rc-schedule-search type="search" placeholder={liveEnabled ? 'Booking, resource or status' : 'Search coming next'} disabled={!liveEnabled} /></label>
     </div>
     <div class="rc-toolbar-actions"><a class="rc-button" href="#block-time">Block time</a><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
   </div>
@@ -33,7 +33,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     <div><b>Calendar health</b><strong>Live read</strong><small>fails closed on missing data</small></div>
     <div><b>Timezone</b><strong>MYT</strong><small>Asia/Kuala_Lumpur</small></div>
   </div>
-  <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} /><BookingInspector live={liveEnabled} /></div>
+  <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} businessDate={malaysiaToday} /><BookingInspector live={liveEnabled} /></div>
   <BookingCreateForm />
   <BlockTimeForm />
 </RaceControlLayout>

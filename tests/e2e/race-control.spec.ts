@@ -9,6 +9,10 @@ test("Race Control shell is private-labelled, responsive, and free of browser er
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/race-control/schedule");
   await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Previous", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Today", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Next", exact: true })).toBeEnabled();
+  await expect(page.locator("#agenda-title")).not.toHaveText("Sunday · 13 September 2026");
   await expect(page.getByText(/Demo fixture · private owner workspace/i)).toBeVisible();
   await expect(page.locator(".rc-notice")).toContainText(/Demo fixture|Shared Calendar mode/);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");

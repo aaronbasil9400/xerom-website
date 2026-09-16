@@ -24,7 +24,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
       <a class="rc-brand" href="/race-control/" aria-label="Xerom Race Control home"><img src={xeromLogo.src} alt="Xerom" /></a>
       <div class="rc-top-title"><strong>Race Control</strong><span>Owner front desk</span></div>
       <span class:list={{'rc-sync':true,'rc-sync-demo':!liveEnabled}}><i aria-hidden="true"></i> {liveEnabled ? 'Live Calendar' : 'Demo data'}</span>
-      <button class="rc-icon-button" type="button" aria-label={liveEnabled ? 'Refresh shared Calendar data' : 'Refresh demo data'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7v5h-5M5 17v-5h5M18 12a6 6 0 0 0-10.6-3.8L5 10M6 12a6 6 0 0 0 10.6 3.8L19 14" /></svg></button>
+      <button class="rc-icon-button" data-rc-refresh type="button" aria-label={liveEnabled ? 'Refresh shared Calendar data' : 'Refresh demo data'}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7v5h-5M5 17v-5h5M18 12a6 6 0 0 0-10.6-3.8L5 10M6 12a6 6 0 0 0 10.6 3.8L19 14" /></svg></button>
       <a class="rc-button rc-button-primary" href="/race-control/schedule#new-booking">New booking</a>
     </header>
     <div class="rc-shell">
@@ -36,3 +36,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     </div>
   </body>
 </html>
+
+<script>
+  document.querySelector<HTMLButtonElement>("[data-rc-refresh]")?.addEventListener("click", () => window.dispatchEvent(new CustomEvent("race-control:refresh")));
+</script>

@@ -4,5 +4,30 @@ const { live = false } = Astro.props;
 ---
 <aside class="rc-inspector rc-panel" aria-labelledby="selected-booking">
   <div class="rc-panel-head"><h2 id="selected-booking">{live ? 'Select a live booking' : 'Mock group booking · selected fixture'}</h2><button class="rc-close" type="button" aria-label="Close booking details"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
-  {live ? <div class="rc-inspector-body"><div class="rc-empty"><h2>Live inspector ready</h2><p>Choose a booking block from the live Calendar read to inspect its status, resources, locked price and available actions.</p></div></div> : <div class="rc-inspector-body"><dl><div><dt>Booking ID</dt><dd class="rc-mono">XR-DEMO-42</dd></div><div><dt>Status</dt><dd><span class="rc-status">Confirmed · fixture</span></dd></div><div><dt>When</dt><dd>Sun, 13 Sep · 6–7 PM MYT</dd></div><div><dt>Resources</dt><dd><span class="rc-chip">Regular 01</span> <span class="rc-chip">Pro 01</span></dd></div><div><dt>Customer</dt><dd>Demo customer · synthetic</dd></div></dl><button class="rc-button rc-button-primary" type="button">View actions (demo)</button><button class="rc-button" type="button">Copy fixture ID</button><div class="rc-note"><strong>Calendar is authoritative</strong><p>Live mutation actions will be enabled only after owner authentication and contract-backed Calendar reads.</p></div></div>}
+  {live ? <div class="rc-inspector-body" data-rc-live-inspector><div class="rc-empty" data-rc-live-empty><h2>Live inspector ready</h2><p>Choose a booking block from the live Calendar read to inspect its status, resource, timing and available actions.</p></div><dl data-rc-live-details hidden><div><dt>Booking ID</dt><dd class="rc-mono" data-live-booking-id>—</dd></div><div><dt>Status</dt><dd><span class="rc-status" data-live-status>—</span></dd></div><div><dt>When</dt><dd data-live-when>—</dd></div><div><dt>Resource</dt><dd data-live-resource>—</dd></div><div><dt>Calendar event</dt><dd data-live-summary>—</dd></div></dl><div class="rc-note" data-rc-live-note hidden><strong>Calendar is authoritative</strong><p>Lifecycle actions will remain conditional on the latest grouped Calendar version.</p></div></div> : <div class="rc-inspector-body"><dl><div><dt>Booking ID</dt><dd class="rc-mono">XR-DEMO-42</dd></div><div><dt>Status</dt><dd><span class="rc-status">Confirmed · fixture</span></dd></div><div><dt>When</dt><dd>Sun, 13 Sep · 6–7 PM MYT</dd></div><div><dt>Resources</dt><dd><span class="rc-chip">Regular 01</span> <span class="rc-chip">Pro 01</span></dd></div><div><dt>Customer</dt><dd>Demo customer · synthetic</dd></div></dl><button class="rc-button rc-button-primary" type="button">View actions (demo)</button><button class="rc-button" type="button">Copy fixture ID</button><div class="rc-note"><strong>Calendar is authoritative</strong><p>Live mutation actions will be enabled only after owner authentication and contract-backed Calendar reads.</p></div></div>}
 </aside>
+
+{live && <script>
+  const inspectorHeading = document.querySelector<HTMLElement>("#selected-booking");
+  const inspectorEmpty = document.querySelector<HTMLElement>("[data-rc-live-empty]");
+  const inspectorDetails = document.querySelector<HTMLElement>("[data-rc-live-details]");
+  const inspectorNote = document.querySelector<HTMLElement>("[data-rc-live-note]");
+  const setInspectorValue = (selector: string, value: string) => { const target = document.querySelector<HTMLElement>(selector); if (target) target.textContent = value; };
+  const formatInspectorWhen = (start: string, end: string) => {
+    const formatter = new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" });
+    return `${formatter.format(new Date(start))}–${formatter.format(new Date(end))}`;
+  };
+  window.addEventListener("race-control:select-event", (event) => {
+    const selected = (event as CustomEvent<{ bookingId: string | null; status: string; summary: string; resourceName: string; start: string; end: string }>).detail;
+    if (!selected) return;
+    if (inspectorHeading) inspectorHeading.textContent = selected.bookingId ? "Live booking" : "Live Calendar block";
+    if (inspectorEmpty) inspectorEmpty.hidden = true;
+    if (inspectorDetails) inspectorDetails.hidden = false;
+    if (inspectorNote) inspectorNote.hidden = false;
+    setInspectorValue("[data-live-booking-id]", selected.bookingId ?? "Calendar block");
+    setInspectorValue("[data-live-status]", selected.status);
+    setInspectorValue("[data-live-when]", formatInspectorWhen(selected.start, selected.end));
+    setInspectorValue("[data-live-resource]", selected.resourceName);
+    setInspectorValue("[data-live-summary]", selected.summary);
+  });
+</script>}
