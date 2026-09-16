@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
 import { validateBookingWindow, overlaps } from "../../src/lib/booking/time";
+import { manualBookingRules } from "../../src/config/booking";
 import { calendarGroups, allCalendarIds, resourceIdForCalendar, calendarIdForResource } from "../../src/lib/booking/resources";
 import { queryFreeBusy, insertEvent, deleteEvent, listCalendarEvents, patchCalendarEvent } from "../../src/lib/google/calendar";
 import { calculateTotal } from "../../src/lib/booking/pricing";
@@ -25,7 +26,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
     const booking = parsed.data;
     const bookingSource = request.headers.get("x-xerom-source") === "race-control-owner" ? "race-control-owner" : "xerom.my";
-    const windowError = validateBookingWindow(booking.start, booking.durationMinutes);
+    const windowError = validateBookingWindow(booking.start, booking.durationMinutes, new Date(), bookingSource === "race-control-owner" ? manualBookingRules : undefined);
     if (windowError) return reply({ error: windowError }, 400);
     return this.ctx.blockConcurrencyWhile(async () => {
       const hash = await hashPayload(booking);

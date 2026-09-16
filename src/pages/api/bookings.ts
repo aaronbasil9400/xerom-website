@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { bookingRequestSchema } from "@/lib/booking/schema";
+import { publicBookingRequestSchema } from "@/lib/booking/schema";
 import { calculateTotal } from "@/lib/booking/pricing";
 import { createBookingId } from "@/lib/booking/id";
 import { verifyTurnstile } from "@/lib/security/turnstile";
@@ -23,7 +23,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   let incoming: unknown;
   try { incoming = await request.json(); } catch { return json({ error: "Booking request is not valid JSON." }, 400); }
   const token = typeof incoming === "object" && incoming ? String((incoming as Record<string, unknown>).turnstileToken ?? "") : "";
-  const parsed = bookingRequestSchema.safeParse(incoming);
+  const parsed = publicBookingRequestSchema.safeParse(incoming);
   if (!parsed.success) return json({ error: "Check your booking details.", issues: parsed.error.issues.map(({ path, message }) => ({ path, message })) }, 400);
 
   const env = cloudflareEnv as unknown as CloudflareEnv;

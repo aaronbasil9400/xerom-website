@@ -34,6 +34,10 @@ Read AGENTS.md, PRODUCT.md, CONTENT_TODO.md, WEBSITE_PLAN.md, BOOKING_ARCHITECTU
 - Authentication through Cloudflare Access; Calendar provisioning through venue-owner OAuth.
 - R2 versioned objects for configuration/media; existing Durable Object for serialization and recovery metadata.
 
+### Owner policy update — 2026-09-16
+
+Race Control/manual owner bookings are allowed at any future minute within opening hours, without a minimum-notice floor, and support 30, 60 and 120 minutes. Public customer bookings remain on the confirmed 60/120-minute and one-hour-notice policy until the owner explicitly changes the customer-facing rules. This update does not bypass Calendar availability, venue closures or the existing three-day horizon.
+
 These are precise starting rules for builders. Do not interpret illustrative examples or feature support as activation of a real promotion, new price, holiday schedule, or longer session duration.
 
 ## 2. Existing implementation and required refactors

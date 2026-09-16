@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingRequestSchema } from "@/lib/booking/schema";
+import { bookingRequestSchema, publicBookingRequestSchema } from "@/lib/booking/schema";
 import { resolveBookingMode } from "@/lib/booking/mode";
 
 const valid = {
@@ -12,6 +12,8 @@ const valid = {
 
 describe("booking validation", () => {
   it("accepts a minimal booking", () => expect(bookingRequestSchema.safeParse(valid).success).toBe(true));
+  it("accepts a 30-minute owner booking structurally", () => expect(bookingRequestSchema.safeParse({ ...valid, durationMinutes: 30 }).success).toBe(true));
+  it("keeps 30-minute bookings out of the public API contract", () => expect(publicBookingRequestSchema.safeParse({ ...valid, durationMinutes: 30 }).success).toBe(false));
   it("normalizes a valid phone number to E.164", () => expect(bookingRequestSchema.parse(valid).customer.phone).toBe("+60129401440"));
   it("rejects no selected resources", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [{ serviceId: "regular-sim", quantity: 0 }] }).success).toBe(false));
   it("rejects duplicate service lines", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [valid.items[0], valid.items[0]] }).success).toBe(false));

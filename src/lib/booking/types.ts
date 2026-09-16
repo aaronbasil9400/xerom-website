@@ -8,7 +8,7 @@ export interface BookingLineItem {
 
 export interface BookingRequest {
   start: string;
-  durationMinutes: 60 | 120;
+  durationMinutes: 30 | 60 | 120;
   items: BookingLineItem[];
   customer: { name: string; phone: string; notes?: string };
   idempotencyKey: string;

@@ -24,9 +24,12 @@ export const lineItemSchema = z.object({
   }
 });
 
+const bookingDurationSchema = z.union([z.literal(30), z.literal(60), z.literal(120)]);
+const publicBookingDurationSchema = z.union([z.literal(60), z.literal(120)]);
+
 export const bookingRequestSchema = z.object({
   start: z.iso.datetime({ offset: true }),
-  durationMinutes: z.union([z.literal(60), z.literal(120)]),
+  durationMinutes: bookingDurationSchema,
   items: z.array(lineItemSchema).min(1).max(3),
   customer: z.object({
     name: z.string().trim().min(2).max(80),
@@ -41,6 +44,12 @@ export const bookingRequestSchema = z.object({
     context.addIssue({ code: "custom", path: ["items"], message: "Each experience may appear only once." });
   }
 });
+
+/** Public customer bookings retain the owner-confirmed 60/120-minute policy. */
+export const publicBookingRequestSchema = bookingRequestSchema.refine(
+  (request) => publicBookingDurationSchema.safeParse(request.durationMinutes).success,
+  { path: ["durationMinutes"], message: "Public bookings support one- or two-hour sessions." },
+);
 
 export const availabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

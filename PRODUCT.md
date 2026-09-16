@@ -54,6 +54,11 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - Timezone is `Asia/Kuala_Lumpur`.
 - Payment processing, deposits, memberships, customer accounts, customer-entered promo codes, WhatsApp Business API automation, and leaderboards remain outside this phase. Owner-only administration, percentage/day-based promotions and duration packages are included in the 2026-09-15 expansion; actual offer values require owner input.
 
+## Owner update — 2026-09-16 manual booking policy
+
+- Race Control/manual owner bookings may start at any minute inside the configured opening window and no longer require one hour of advance notice. The start must still be in the future, within the existing three-day horizon, and pass Calendar availability/control-calendar checks.
+- Manual owner bookings support 30, 60, and 120 minutes. This is an owner front-desk policy; the public customer flow remains 60/120 minutes with one-hour notice until the owner explicitly changes and publishes that customer-facing rule.
+
 ## Brand Commitments
 
 - Use the name “Xerom SimRacing & Cafe.”

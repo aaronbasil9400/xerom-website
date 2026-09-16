@@ -118,6 +118,12 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Use immutable private config revisions plus a conditionally written `active.json` pointer. A stale draft or pointer write returns a conflict; public config is constructed through an explicit allowlist.
 - Keep Cloudflare Access owner identity separate from venue-owner Google OAuth. Origin verification requires the Access assertion signature/issuer/audience and exact email allowlist; missing configuration fails closed. Local fixture identity is permitted only on `localhost`/`127.0.0.1` in Astro development mode.
 - Calendar-create recovery uses a durable operation/resource marker and owner-calendar listing. Exactly one owned secondary-calendar match may be reconciled; ambiguity remains fenced for review. Primary calendars are never candidates.
+
+## 2026-09-16 — Manual owner booking time policy
+
+- Apply the owner's requested timing change to Race Control/manual bookings: no one-hour notice floor, any future minute within opening hours, and 30/60/120-minute durations.
+- Keep the public customer flow unchanged at 60/120 minutes, one-hour notice and hourly availability until the owner explicitly requests a customer-facing policy update; this avoids silently changing the published product contract.
+- Keep the three-day horizon, future-start guard, Calendar busy/control checks, and serialized coordinator path unchanged.
 - Use integer sen and the planned lowest-eligible-price algorithm. Synthetic offers exist only in tests; seed configuration contains no active promotion. Controller add-ons remain gated until the owner confirms capacity and billing unit.
 - Missing FreeBusy calendar entries now fail closed. A Google event insert `409` counts as an idempotent replay only after the existing deterministic event matches the interval and private operation properties.
 - The first dashboard surface is an authenticated, `noindex` Operate shell with explicit demo fixtures. It is not evidence that booking mutations, settings publication, or Google connection are complete.

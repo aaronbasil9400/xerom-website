@@ -16,3 +16,15 @@ export const bookingRules = {
     6: [{ open: "12:00", close: "25:00" }],
   },
 } as const;
+
+/**
+ * Owner front-desk overrides. These apply only to Race Control/manual bookings;
+ * public customer policy stays on the owner-confirmed values above until it is
+ * explicitly changed and published through runtime configuration.
+ */
+export const manualBookingRules = {
+  minimumNoticeMinutes: 0,
+  maximumAdvanceMinutes: bookingRules.maximumAdvanceMinutes,
+  allowedDurationsMinutes: [30, 60, 120] as const,
+  enforceSlotAlignment: false,
+} as const;

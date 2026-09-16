@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { manualBookingRules } from "@/config/booking";
 import { buildAvailability, generateCandidateSlots, localIso, overlaps, validateBookingWindow } from "@/lib/booking/time";
 
 describe("booking time rules", () => {
@@ -19,18 +20,26 @@ describe("booking time rules", () => {
     expect(slots.at(-1)?.end).toBe("2026-09-14T01:00:00+08:00");
   });
 
-  it("enforces notice and the rolling horizon", () => {
+  it("enforces notice and the rolling horizon for public bookings", () => {
     const now = new Date("2026-09-09T10:00:00+08:00");
     expect(validateBookingWindow("2026-09-09T10:30:00+08:00", 60, now)).toMatch(/one hour/i);
     expect(validateBookingWindow("2026-09-13T10:00:00+08:00", 60, now)).toMatch(/three days/i);
     expect(validateBookingWindow("2026-09-10T14:00:00+08:00", 60, now)).toBeNull();
   });
 
-  it("rejects times outside opening hours and off the hourly grid", () => {
+  it("rejects times outside opening hours and off the public hourly grid", () => {
     const now = new Date("2026-09-09T10:00:00+08:00");
     expect(validateBookingWindow("2026-09-10T13:00:00+08:00", 60, now)).toMatch(/opening hours/i);
     expect(validateBookingWindow("2026-09-10T14:30:00+08:00", 60, now)).toMatch(/hourly slot/i);
     expect(validateBookingWindow("2026-09-13T23:00:00+08:00", 120, new Date("2026-09-13T10:00:00+08:00"))).toBeNull();
+  });
+
+  it("allows owner manual bookings without notice or hourly alignment", () => {
+    const now = new Date("2026-09-10T14:00:00+08:00");
+    expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 30, now, manualBookingRules)).toBeNull();
+    expect(validateBookingWindow("2026-09-10T14:00:30+08:00", 60, now, manualBookingRules)).toMatch(/future|minute/i);
+    expect(validateBookingWindow("2026-09-10T13:59:00+08:00", 60, now, manualBookingRules)).toMatch(/future/i);
+    expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 45, now, manualBookingRules)).toMatch(/30|60|120/);
   });
 });
 

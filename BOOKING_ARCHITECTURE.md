@@ -74,6 +74,10 @@ Responses:
 
 Overlap uses half-open intervals: `[start, end)`. Therefore an event ending at 8:00 PM does not conflict with one starting at 8:00 PM, enabling confirmed back-to-back sessions.
 
+### Manual owner booking policy update — 2026-09-16
+
+Race Control/manual owner requests use the same Calendar authority, serialization, resource allocation and three-day horizon, but may start at any minute in the future and may use 30, 60 or 120 minutes without the customer-facing one-hour notice floor. Public customer requests retain the currently confirmed 60/120-minute and one-hour-notice policy until it is explicitly changed and published. Manual requests still must fit configured opening hours and cannot overlap busy resource or Booking Control events.
+
 ## Concurrency strategy
 
 All create operations route through one named booking-coordinator Durable Object for the MVP. Xerom’s scale favors simple global serialization over fragile per-slot locking, and it safely covers mixed-tier allocations and overlapping one-/two-hour requests. Availability reads remain direct and concurrent; only final booking creation is serialized.

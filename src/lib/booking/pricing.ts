@@ -1,7 +1,7 @@
 import { pricing, pricingVersion } from "@/config/pricing";
 import type { BookingLineItem } from "./types";
 
-export function calculateTotal(items: BookingLineItem[], durationMinutes: 60 | 120) {
+export function calculateTotal(items: BookingLineItem[], durationMinutes: 30 | 60 | 120) {
   const hours = durationMinutes / 60;
   const lines = items.filter((item) => item.quantity > 0).map((item) => {
     const config = pricing.services[item.serviceId];

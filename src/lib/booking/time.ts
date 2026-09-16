@@ -62,19 +62,27 @@ function localWeekdayFromParts(parts: MalaysiaLocalParts): keyof typeof bookingR
   return new Date(Date.UTC(parts.year, parts.month - 1, parts.day)).getUTCDay() as keyof typeof bookingRules.weeklyHours;
 }
 
+export interface BookingWindowPolicy {
+  minimumNoticeMinutes: number;
+  maximumAdvanceMinutes: number;
+  allowedDurationsMinutes: readonly number[];
+  enforceSlotAlignment?: boolean;
+}
+
 export function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
   return Date.parse(aStart) < Date.parse(bEnd) && Date.parse(bStart) < Date.parse(aEnd);
 }
 
-export function validateBookingWindow(start: string, durationMinutes: number, now = new Date()): string | null {
+export function validateBookingWindow(start: string, durationMinutes: number, now = new Date(), policy: BookingWindowPolicy = bookingRules): string | null {
   const startMs = Date.parse(start);
   if (!Number.isFinite(startMs)) return "Invalid start time.";
-  if (startMs < now.getTime() + bookingRules.minimumNoticeMinutes * 60_000) return "Bookings need at least one hour of notice.";
-  if (startMs > now.getTime() + bookingRules.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
-  if (!bookingRules.allowedDurationsMinutes.includes(durationMinutes as 60 | 120)) return "Choose a one- or two-hour session.";
+  if (startMs <= now.getTime()) return "Bookings must start in the future.";
+  if (startMs < now.getTime() + policy.minimumNoticeMinutes * 60_000) return "Bookings need at least one hour of notice.";
+  if (startMs > now.getTime() + policy.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
+  if (!policy.allowedDurationsMinutes.includes(durationMinutes)) return "Choose a 30-, 60-, or 120-minute session.";
 
   const startParts = malaysiaLocalParts(new Date(startMs));
-  if (startParts.second !== 0) return "Choose an hourly slot.";
+  if (startParts.second !== 0) return "Choose a time on the minute.";
   const endParts = malaysiaLocalParts(new Date(startMs + durationMinutes * 60_000));
   const startLocalMinutes = localCalendarMinutes(startParts);
   const endLocalMinutes = localCalendarMinutes(endParts);
@@ -107,7 +115,7 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
         && (relativeStart - open) % bookingRules.slotIntervalMinutes === 0;
     });
   });
-  if (!alignedToHourlyGrid) return "Choose an hourly slot.";
+  if (policy.enforceSlotAlignment !== false && !alignedToHourlyGrid) return "Choose an hourly slot.";
   return null;
 }
 
