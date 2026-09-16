@@ -246,3 +246,13 @@ The fresh feature-branch build and authenticated browser test are still pending.
 | Separate coordinator commands | Deployed, live verification pending | `xerom-race-control-coordinator` has its own SQLite DO, latest coordinator code, observability, and encrypted Google secrets; owner-authenticated action tests have not yet run |
 
 Live lifecycle/extension/reschedule/maintenance/closure/block commands can now be tested only after owner Access login on the branch preview. No test action has been submitted yet; preserve the main-site coordinator and clean up only an explicitly authorized test booking/block.
+
+## Browser shared-calendar read checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Protected branch browser route | Pass | In-app browser loaded `/race-control/schedule` on the feature preview after the separate coordinator binding and Access variables were present |
+| Shared Calendar read | Pass | Live agenda replaced fixtures with one existing private resource-calendar event and displayed the server refresh timestamp; no customer details were copied into this report |
+| Live write test | Pending | Creating a browser test booking would create a real reservation event; it has not been submitted yet |
+
+The browser session confirmed the shared-calendar connection state and live event list. Owner-authenticated mutation verification remains pending a clearly labelled test booking and cleanup.
