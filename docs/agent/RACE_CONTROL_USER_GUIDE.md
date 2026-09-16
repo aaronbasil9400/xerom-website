@@ -16,7 +16,7 @@ The homepage and public booking pages are open. `/race-control/*` and `/api/admi
 2. Confirm the summary reads **Shared record: Google**, **Calendar health: Live read**, and **Timezone: MYT / Asia/Kuala_Lumpur**.
 3. Use **Previous**, **Today**, **Next**, or the date field to move between business dates. The heading updates to the selected date.
 4. Every opaque/busy event returned by the private resource or control calendars is shown as unavailable. Transparent/cancelled historical records do not block the live schedule.
-5. Select a live event to populate the inspector with booking/block status, resource, time and Calendar summary. The inspector is informational until the corresponding owner action is implemented and confirmed.
+5. Select a live event to populate the inspector with booking/block status, resource, time and Calendar summary. For an active grouped booking, the inspector exposes conditional **Check in**, **Complete**, **No-show** and **Cancel** actions; each asks for confirmation and updates all linked Calendar events with the expected version.
 6. Use the refresh icon after a Calendar change or owner booking. A live read failure shows **No availability is being claimed**; do not treat a failed read as an open schedule.
 
 On phones the schedule becomes a chronological agenda. On wider screens it uses the denser Race Control panel layout. The schedule is server-authoritative; a gap in the chart is not a promise of availability until the read succeeds.
@@ -41,7 +41,7 @@ The form reports success only after the coordinator verifies all required Calend
 3. Select **Search Calendar**. Results group linked resource events by private booking ID and show unrecognized manual events as **Calendar block**.
 4. For a cancellable reservation, select **Cancel** and confirm the prompt. Cancellation makes all linked events transparent and keeps the historical Calendar record, so the interval is released without erasing the audit trail.
 
-Check-in, completion, no-show, reschedule, extension and block operations are being completed in the next front-desk slice; do not improvise those changes directly in Google Calendar during the demo.
+Check-in, completion, no-show and cancellation are available from the inspector for active grouped bookings. Reschedule and extension remain review-driven until quote inputs are available; do not improvise those changes directly in Google Calendar during the demo.
 
 ## Block maintenance or a venue closure
 

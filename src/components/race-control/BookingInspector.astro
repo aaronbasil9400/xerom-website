@@ -4,30 +4,93 @@ const { live = false } = Astro.props;
 ---
 <aside class="rc-inspector rc-panel" aria-labelledby="selected-booking">
   <div class="rc-panel-head"><h2 id="selected-booking">{live ? 'Select a live booking' : 'Mock group booking · selected fixture'}</h2><button class="rc-close" type="button" aria-label="Close booking details"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button></div>
-  {live ? <div class="rc-inspector-body" data-rc-live-inspector><div class="rc-empty" data-rc-live-empty><h2>Live inspector ready</h2><p>Choose a booking block from the live Calendar read to inspect its status, resource, timing and available actions.</p></div><dl data-rc-live-details hidden><div><dt>Booking ID</dt><dd class="rc-mono" data-live-booking-id>—</dd></div><div><dt>Status</dt><dd><span class="rc-status" data-live-status>—</span></dd></div><div><dt>When</dt><dd data-live-when>—</dd></div><div><dt>Resource</dt><dd data-live-resource>—</dd></div><div><dt>Calendar event</dt><dd data-live-summary>—</dd></div></dl><div class="rc-note" data-rc-live-note hidden><strong>Calendar is authoritative</strong><p>Lifecycle actions will remain conditional on the latest grouped Calendar version.</p></div></div> : <div class="rc-inspector-body"><dl><div><dt>Booking ID</dt><dd class="rc-mono">XR-DEMO-42</dd></div><div><dt>Status</dt><dd><span class="rc-status">Confirmed · fixture</span></dd></div><div><dt>When</dt><dd>Sun, 13 Sep · 6–7 PM MYT</dd></div><div><dt>Resources</dt><dd><span class="rc-chip">Regular 01</span> <span class="rc-chip">Pro 01</span></dd></div><div><dt>Customer</dt><dd>Demo customer · synthetic</dd></div></dl><button class="rc-button rc-button-primary" type="button">View actions (demo)</button><button class="rc-button" type="button">Copy fixture ID</button><div class="rc-note"><strong>Calendar is authoritative</strong><p>Live mutation actions will be enabled only after owner authentication and contract-backed Calendar reads.</p></div></div>}
+  {live ? <div class="rc-inspector-body" data-rc-live-inspector>
+    <div class="rc-empty" data-rc-live-empty><h2>Live inspector ready</h2><p>Choose a booking block from the live Calendar read to inspect its status, resource, timing and available actions.</p></div>
+    <dl data-rc-live-details hidden>
+      <div><dt>Booking ID</dt><dd class="rc-mono" data-live-booking-id>—</dd></div>
+      <div><dt>Status</dt><dd><span class="rc-status" data-live-status>—</span></dd></div>
+      <div><dt>When</dt><dd data-live-when>—</dd></div>
+      <div><dt>Resource</dt><dd data-live-resource>—</dd></div>
+      <div><dt>Calendar event</dt><dd data-live-summary>—</dd></div>
+    </dl>
+    <div class="rc-live-actions" data-rc-live-actions hidden>
+      <p>Actions update every linked Calendar event conditionally.</p>
+      <label><input type="checkbox" data-live-release /> Release remaining time when completing</label>
+      <div class="rc-live-action-buttons">
+        <button class="rc-button rc-button-small" type="button" data-live-action="check-in">Check in</button>
+        <button class="rc-button rc-button-small" type="button" data-live-action="complete">Complete</button>
+        <button class="rc-button rc-button-small" type="button" data-live-action="no-show">No-show</button>
+        <button class="rc-button rc-button-small" type="button" data-live-action="cancel">Cancel</button>
+      </div>
+      <output data-live-action-result aria-live="polite"></output>
+    </div>
+    <div class="rc-note" data-rc-live-note hidden><strong>Calendar is authoritative</strong><p>Lifecycle actions remain conditional on the latest grouped Calendar version.</p></div>
+  </div> : <div class="rc-inspector-body"><dl><div><dt>Booking ID</dt><dd class="rc-mono">XR-DEMO-42</dd></div><div><dt>Status</dt><dd><span class="rc-status">Confirmed · fixture</span></dd></div><div><dt>When</dt><dd>Sun, 13 Sep · 6–7 PM MYT</dd></div><div><dt>Resources</dt><dd><span class="rc-chip">Regular 01</span> <span class="rc-chip">Pro 01</span></dd></div><div><dt>Customer</dt><dd>Demo customer · synthetic</dd></div></dl><button class="rc-button rc-button-primary" type="button">View actions (demo)</button><button class="rc-button" type="button">Copy fixture ID</button><div class="rc-note"><strong>Calendar is authoritative</strong><p>Live mutation actions will be enabled only after owner authentication and contract-backed Calendar reads.</p></div></div>}
 </aside>
 
 {live && <script>
+  type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; start: string; end: string };
   const inspectorHeading = document.querySelector<HTMLElement>("#selected-booking");
   const inspectorEmpty = document.querySelector<HTMLElement>("[data-rc-live-empty]");
   const inspectorDetails = document.querySelector<HTMLElement>("[data-rc-live-details]");
   const inspectorNote = document.querySelector<HTMLElement>("[data-rc-live-note]");
+  const inspectorActions = document.querySelector<HTMLElement>("[data-rc-live-actions]");
+  const releaseInput = document.querySelector<HTMLInputElement>("[data-live-release]");
+  const actionResult = document.querySelector<HTMLOutputElement>("[data-live-action-result]");
+  let selectedEvent: SelectedEvent | null = null;
   const setInspectorValue = (selector: string, value: string) => { const target = document.querySelector<HTMLElement>(selector); if (target) target.textContent = value; };
   const formatInspectorWhen = (start: string, end: string) => {
     const formatter = new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" });
     return `${formatter.format(new Date(start))}–${formatter.format(new Date(end))}`;
   };
+  const syncActionVisibility = () => {
+    if (!inspectorActions || !selectedEvent) return;
+    const status = selectedEvent.status.toLowerCase();
+    const isActive = status === "confirmed" || status === "checked_in";
+    inspectorActions.hidden = !selectedEvent.bookingId || selectedEvent.version < 0 || !isActive;
+    inspectorActions.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((button) => {
+      const action = button.dataset.liveAction;
+      button.hidden = action === "check-in" ? status !== "confirmed" : action === "complete" ? status !== "checked_in" : action === "no-show" || action === "cancel" ? status === "completed" || status === "no_show" || status === "cancelled" : true;
+    });
+  };
   window.addEventListener("race-control:select-event", (event) => {
-    const selected = (event as CustomEvent<{ bookingId: string | null; status: string; summary: string; resourceName: string; start: string; end: string }>).detail;
-    if (!selected) return;
-    if (inspectorHeading) inspectorHeading.textContent = selected.bookingId ? "Live booking" : "Live Calendar block";
+    selectedEvent = (event as CustomEvent<SelectedEvent>).detail;
+    if (!selectedEvent) return;
+    if (inspectorHeading) inspectorHeading.textContent = selectedEvent.bookingId ? "Live booking" : "Live Calendar block";
     if (inspectorEmpty) inspectorEmpty.hidden = true;
     if (inspectorDetails) inspectorDetails.hidden = false;
     if (inspectorNote) inspectorNote.hidden = false;
-    setInspectorValue("[data-live-booking-id]", selected.bookingId ?? "Calendar block");
-    setInspectorValue("[data-live-status]", selected.status);
-    setInspectorValue("[data-live-when]", formatInspectorWhen(selected.start, selected.end));
-    setInspectorValue("[data-live-resource]", selected.resourceName);
-    setInspectorValue("[data-live-summary]", selected.summary);
+    if (actionResult) actionResult.textContent = "";
+    setInspectorValue("[data-live-booking-id]", selectedEvent.bookingId ?? "Calendar block");
+    setInspectorValue("[data-live-status]", selectedEvent.status);
+    setInspectorValue("[data-live-when]", formatInspectorWhen(selectedEvent.start, selectedEvent.end));
+    setInspectorValue("[data-live-resource]", selectedEvent.resourceName);
+    setInspectorValue("[data-live-summary]", selectedEvent.summary);
+    syncActionVisibility();
   });
+  inspectorActions?.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((button) => button.addEventListener("click", async () => {
+    if (!selectedEvent?.bookingId) return;
+    const action = button.dataset.liveAction;
+    if (!action || !["check-in", "complete", "no-show", "cancel"].includes(action)) return;
+    if (!window.confirm(`${action === "cancel" ? "Cancel" : action === "no-show" ? "Mark no-show" : action === "check-in" ? "Check in" : "Complete"} booking ${selectedEvent.bookingId}?`)) return;
+    const reason = action === "cancel" || action === "no-show" ? window.prompt(`${action === "cancel" ? "Cancellation" : "No-show"} reason`) : undefined;
+    if ((action === "cancel" || action === "no-show") && !reason?.trim()) return;
+    inspectorActions.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((item) => { item.disabled = true; });
+    if (actionResult) actionResult.textContent = "Updating and verifying Calendar events…";
+    const actionPayload = action === "check-in" ? { action, expected: { bookingId: selectedEvent.bookingId, version: selectedEvent.version } } : action === "complete" ? { action, expected: { bookingId: selectedEvent.bookingId, version: selectedEvent.version }, releaseRemainingTime: Boolean(releaseInput?.checked) } : { action, expected: { bookingId: selectedEvent.bookingId, version: selectedEvent.version }, reason: reason!.trim() };
+    try {
+      const response = await fetch(`/api/admin/bookings/${encodeURIComponent(selectedEvent.bookingId)}/actions`, { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ action: actionPayload, idempotencyKey: crypto.randomUUID() }) });
+      const payload = await response.json() as { status?: string; version?: number; error?: { message?: string } | string };
+      if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : payload.error?.message ?? "The booking action could not be completed.");
+      selectedEvent = { ...selectedEvent, status: payload.status ?? selectedEvent.status, version: payload.version ?? selectedEvent.version + 1 };
+      setInspectorValue("[data-live-status]", selectedEvent.status);
+      if (actionResult) actionResult.textContent = `Booking ${selectedEvent.bookingId} is ${selectedEvent.status}. Refreshing the shared schedule…`;
+      syncActionVisibility();
+      window.dispatchEvent(new CustomEvent("race-control:refresh"));
+    } catch (error) {
+      if (actionResult) actionResult.textContent = error instanceof Error ? error.message : "The booking action could not be completed.";
+    } finally {
+      inspectorActions.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((item) => { item.disabled = false; });
+    }
+  }));
 </script>}

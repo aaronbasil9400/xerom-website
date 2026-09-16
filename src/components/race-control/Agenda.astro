@@ -77,6 +77,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       details.appendChild(resource);
       details.addEventListener("click", () => window.dispatchEvent(new CustomEvent("race-control:select-event", { detail: {
         bookingId: event.privateProperties?.bookingId ?? null,
+        version: Number(event.privateProperties?.groupVersion ?? "-1"),
         status: event.privateProperties?.status ?? "busy",
         summary: event.summary || "Calendar block",
         resourceName: event.resourceName,
