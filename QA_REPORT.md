@@ -274,6 +274,22 @@ The synthetic customer name/phone/notes and booking identifier were not copied i
 
 This change was verified in the browser without creating a second live reservation. The earlier approved synthetic booking create/cancel test remains the live proof of the shared Calendar write path.
 
+## Live schedule hardening checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Date-aware live heading | Pass | Protected branch renders the selected MYT business date; it no longer shows the hard-coded synthetic date |
+| Date navigation | Pass | Browser Next moved to the following date and returned a live empty state; Today returned to the current date |
+| Live-safe loading/error state | Pass | Synthetic timeline is hidden in live mode; empty and failure states do not claim availability |
+| Service filtering | Pass | PS5 filter removed non-PS5 live events in the browser |
+| Live inspector selection | Pass | Selecting a live event populated booking ID, status, time, resource and Calendar summary |
+| Refresh control | Pass | Topbar refresh affordance is wired to the schedule refresh event |
+| Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, detector run, and clean-server Playwright 12/12 |
+
+No new live booking or block was created for this checkpoint. The guide for client demos and owner operations is [RACE_CONTROL_USER_GUIDE.md](docs/agent/RACE_CONTROL_USER_GUIDE.md).
+
+The Impeccable detector reported existing Race Control shell side-tab/advisory type/color findings in the shared stylesheet; the schedule changes introduced no new detector category. These are retained as a visual-system follow-up rather than blocking the functional schedule gate.
+
 ## Coordinator deployment boundary (2026-09-16)
 
 | Check | Result | Evidence |

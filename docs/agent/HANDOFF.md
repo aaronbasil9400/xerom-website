@@ -116,3 +116,9 @@ Browser verification after the branch build shows the manual form with all three
 5. Stage cutover: client UAT on the branch, a planned maintenance window, public runtime-config cutover and only then a separately approved production deployment. The existing production site/coordinator stays unchanged until that gate.
 
 External owner gates are R2 activation/billing terms, confirmed content/assets and Turnstile values, OAuth consent, and any additional Access viewers. Code/UI work can proceed in parallel, but publication and production cutover cannot be marked complete without those inputs.
+
+## Live schedule hardening checkpoint — 2026-09-16
+
+The schedule surface is now date-aware and live-safe on the branch. It renders the selected MYT business date instead of a hard-coded fixture date, enables Previous/Today/Next navigation, supports live service filtering, and hides synthetic timeline content while a live read is loading or unavailable. Failed live reads explicitly state that no availability is being claimed. Live Calendar events are selectable and populate the owner inspector with booking/block status, time, resource and summary; the refresh control dispatches a fresh read.
+
+Browser evidence on the protected branch: live read loaded the current date and real busy events; Next moved to the following business date and returned an empty live state; Today returned to the current date; the PS5 service filter removed non-PS5 events; selecting a live event populated the inspector. No mutation was performed in this verification. Local check/test/build and the six-width Playwright suite remain green. The operator walkthrough is [RACE_CONTROL_USER_GUIDE.md](RACE_CONTROL_USER_GUIDE.md).
