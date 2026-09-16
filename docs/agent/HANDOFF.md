@@ -132,3 +132,9 @@ Protected-branch browser verification selected an existing live booking and visi
 ## Inspector compatibility checkpoint — 2026-09-16
 
 Legacy live bookings that predate `groupVersion` now receive the coordinator’s version-0 default, so their valid lifecycle controls are not hidden. A date change or refresh clears the selected inspector before the next Calendar read, preventing stale booking details from remaining attached to a different date. The deployed branch browser confirmed an existing live booking exposed its actions, then Next returned to a clean inspector and an empty live state; no lifecycle action was submitted. This fix is commit `2beaa72`.
+
+## Live resource timeline chart checkpoint — 2026-09-16
+
+The branch now returns a `businessWindow` alongside the Calendar events and renders a real desktop resource timeline: resource rows (including Venue control), hour columns covering the opening window, proportional event positions/widths, lane stacking for overlaps, status/maintenance styling, and open space for resources with no busy events. The mobile presentation remains a chronological event list. Filtering and search apply to both views, and event selection continues to populate the inspector.
+
+The previous flat list happened because the client only rendered `<article>` rows; no timeline layout was being generated from the available resource/start/end data. The chart is implemented in commit `4e94e5b`, with the responsive test suite passing 12/12; no live booking or block was created for this change.

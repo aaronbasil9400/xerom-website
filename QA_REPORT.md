@@ -334,3 +334,17 @@ Live lifecycle/extension/reschedule/maintenance/closure/block commands can now b
 | Live write test | Pending | Creating a browser test booking would create a real reservation event; it has not been submitted yet |
 
 The browser session confirmed the shared-calendar connection state and live event list. Owner-authenticated mutation verification remains pending a clearly labelled test booking and cleanup.
+
+## Live resource timeline chart checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Business-window contract | Pass | Schedule API now returns the selected business window derived from the confirmed MYT operating hours |
+| Desktop chart data mapping | Pass | Each live Calendar resource renders its own row; event start/end map to proportional hour-axis positions and widths |
+| Multiple-resource/group visibility | Pass | Linked events remain on their individual resource rows; lane assignment prevents visual overlap within a row |
+| Block/open semantics | Pass | Control/maintenance events use blocked styling; resources without events remain visible as open rows |
+| Mobile fallback | Pass | Narrow view keeps a chronological live agenda list with the same filtered event set |
+| Filter/search/inspector continuity | Pass | Service/search filtering applies before both renders; selecting a chart/list event still updates the inspector |
+| Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12, detector run |
+
+No new live reservation or block was created. The chart is a read-only rendering change over the existing Calendar response; production remains untouched.
