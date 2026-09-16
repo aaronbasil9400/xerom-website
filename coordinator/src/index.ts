@@ -1,21 +1,25 @@
 import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
 import { validateBookingWindow, overlaps } from "../../src/lib/booking/time";
-import { calendarGroups, allCalendarIds } from "../../src/lib/booking/resources";
+import { calendarGroups, allCalendarIds, resourceIdForCalendar } from "../../src/lib/booking/resources";
 import { queryFreeBusy, insertEvent, deleteEvent } from "../../src/lib/google/calendar";
 import { calculateTotal } from "../../src/lib/booking/pricing";
 import { createBookingId, hashPayload } from "../../src/lib/booking/id";
 import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
+import { bookingActionSchema } from "../../src/lib/race-control/contracts";
+import { listCalendarEvents, patchCalendarEvent } from "../../src/lib/google/calendar";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
+type ActionAttempt = { hash: string; status: "complete" | "failed"; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 export class BookingCoordinator extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     if (request.method !== "POST") return reply({ error: "Method not allowed." }, 405);
+    if (request.headers.get("x-xerom-command") === "booking-action") return this.handleBookingAction(request);
     const parsed = bookingRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
     const booking = parsed.data;
@@ -62,7 +66,6 @@ export class BookingCoordinator extends DurableObject<Env> {
 
         const bookingId = createBookingId();
         const price = calculateTotal(booking.items, booking.durationMinutes);
-        let resourceIndex = 0;
         for (const [serviceId, calendarIds] of allocations) {
           for (const calendarId of calendarIds) {
             const eventId = (await hashPayload({ attempt: booking.idempotencyKey, calendarId })).slice(0, 28);
@@ -86,7 +89,8 @@ export class BookingCoordinator extends DurableObject<Env> {
                 attemptHash: hash.slice(0, 40),
                 source: bookingSource,
                 serviceType: serviceId,
-                resourceId: String(resourceIndex++),
+                resourceId: resourceIdForCalendar(env, calendarId) ?? calendarId,
+                groupVersion: "0",
                 durationMinutes: String(booking.durationMinutes),
                 quantity: String(requested[serviceId]),
                 status: "confirmed",
@@ -119,6 +123,48 @@ export class BookingCoordinator extends DurableObject<Env> {
         if (!rollbackFailed) await this.ctx.storage.delete(key);
         console.error("booking_create_failed", { attempt: booking.idempotencyKey, createdCount: createdEvents.length, rollbackFailed, message: error instanceof Error ? error.message : "unknown" });
         return reply({ error: rollbackFailed ? "Booking could not be completed and needs staff review. Please contact Xerom." : "Booking could not be completed. Please try again." }, 503);
+      }
+    });
+  }
+
+  private async handleBookingAction(request: Request): Promise<Response> {
+    const incoming = await request.json().catch(() => null) as { action?: unknown; idempotencyKey?: unknown } | null;
+    const actionParsed = bookingActionSchema.safeParse(incoming?.action);
+    const idempotencyKey = typeof incoming?.idempotencyKey === "string" ? incoming.idempotencyKey : "";
+    if (!actionParsed.success || !/^[A-Za-z0-9_-]{8,128}$/.test(idempotencyKey)) return reply({ error: "Invalid booking action." }, 400);
+    const action = actionParsed.data;
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const hash = await hashPayload({ action, idempotencyKey });
+      const key = `action:${idempotencyKey}`;
+      const prior = await this.ctx.storage.get<ActionAttempt>(key);
+      if (prior) {
+        if (prior.hash !== hash) return reply({ error: "This action attempt was already used with different details." }, 409);
+        if (prior.status === "complete") return reply({ ...(prior.response as object), replayed: true }, 200);
+        return reply({ error: "This action needs staff review before retrying." }, 503);
+      }
+      await this.ctx.storage.put(key, { hash, status: "failed" } satisfies ActionAttempt);
+      const env = this.env;
+      try {
+        const events = (await Promise.all(allCalendarIds(env).filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID).map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, "1970-01-01T00:00:00Z", "2100-01-01T00:00:00Z", `bookingId=${action.expected.bookingId}`) })))).flatMap(({ calendarId, events }) => events.map((event) => ({ calendarId, event })));
+        if (events.length === 0) return reply({ error: "Booking could not be found in the private calendars." }, 404);
+        const versions = new Set(events.map(({ event }) => Number(event.privateProperties.groupVersion ?? "0")));
+        const version = versions.size === 1 ? [...versions][0] : -1;
+        if (version < 0 || version !== action.expected.version) return reply({ error: "Booking changed outside Race Control. Review it before retrying." }, 409);
+        const nextVersion = String(version + 1);
+        const targetStatus = action.action === "check-in" ? "checked_in" : action.action === "complete" ? "completed" : action.action === "no-show" ? "no_show" : "cancelled";
+        const changed: Array<{ calendarId: string; eventId: string }> = [];
+        for (const { calendarId, event } of events) {
+          const privateProperties = { ...event.privateProperties, status: targetStatus, groupVersion: nextVersion, updatedAt: new Date().toISOString() };
+          const end = action.action === "complete" && action.releaseRemainingTime && Date.parse(event.end) > Date.now() ? new Date().toISOString() : undefined;
+          await patchCalendarEvent(env, calendarId, event.id, { privateProperties, transparency: targetStatus === "cancelled" ? "transparent" : "opaque", end }, event.etag);
+          changed.push({ calendarId, eventId: event.id });
+        }
+        const response = { bookingId: action.expected.bookingId, status: targetStatus, version: version + 1, eventCount: changed.length };
+        await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: changed } satisfies ActionAttempt);
+        return reply(response, 200);
+      } catch (error) {
+        console.error(JSON.stringify({ message: "booking_action_failed", bookingId: action.expected.bookingId, action: action.action, error: error instanceof Error ? error.message : "unknown" }));
+        return reply({ error: "Booking action could not be completed and needs staff review." }, 503);
       }
     });
   }

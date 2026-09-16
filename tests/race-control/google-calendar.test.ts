@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { insertEventWithToken, listCalendarEventsWithToken, queryFreeBusyWithToken, type CalendarEventInput } from "@/lib/google/calendar";
+import { insertEventWithToken, listCalendarEventsWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -59,5 +59,16 @@ describe("Google Calendar fail-closed adapters", () => {
     expect(events[0].privateProperties.bookingId).toBe("fixture-booking");
     expect(events[1]).toMatchObject({ summary: "Manual block", transparency: "opaque" });
     expect(fetchMock.mock.calls[1][0]).toContain("pageToken=next");
+  });
+
+  it("patches only owned fields with If-Match and exposes external edits as 412", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({ id: event.eventId, etag: "etag-2", summary: "Cancelled", start: { dateTime: event.start }, end: { dateTime: event.end }, transparency: "transparent", extendedProperties: { private: { ...event.privateProperties, status: "cancelled" } } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await patchCalendarEventWithToken("token", event.calendarId, event.eventId, { transparency: "transparent", privateProperties: { ...event.privateProperties, status: "cancelled" } }, "etag-1");
+    expect(result.privateProperties.status).toBe("cancelled");
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "PATCH", headers: expect.objectContaining({ "if-match": "etag-1" }) });
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 412 })));
+    await expect(patchCalendarEventWithToken("token", event.calendarId, event.eventId, { transparency: "opaque" }, "etag-1")).rejects.toBeInstanceOf(CalendarVersionConflictError);
   });
 });

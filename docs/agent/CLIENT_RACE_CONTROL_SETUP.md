@@ -40,6 +40,8 @@ Scope: configure an owner-only Race Control preview and later a production deplo
 - Worker runtime variables: `ACCESS_TEAM_DOMAIN` and `ACCESS_AUDIENCE`; encrypted secret `OWNER_EMAILS`. The AUD value is intentionally not repeated in this runbook; retrieve it from the application’s **Additional settings → Application Audience (AUD) Tag** when recreating the setup.
 - The policy is an email allowlist for the owner identity, not a broad domain rule. No non-owner email was added.
 
+The branch build alias currently resolves at `https://codex-race-control-working-xerom-website.aaronbasil9400.workers.dev`. Access redirects only the two configured Race Control/admin paths; the public homepage remains open.
+
 ## 4. Google Calendar connection model
 
 - Keep the existing six resource calendars plus the Booking Control calendar private.

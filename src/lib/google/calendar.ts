@@ -122,16 +122,17 @@ export interface CalendarEventRecord {
   privateProperties: Record<string, string>;
 }
 
-export async function listCalendarEvents(env: CloudflareEnv, calendarId: string, timeMin: string, timeMax: string): Promise<CalendarEventRecord[]> {
+export async function listCalendarEvents(env: CloudflareEnv, calendarId: string, timeMin: string, timeMax: string, privateProperty?: string): Promise<CalendarEventRecord[]> {
   const token = await getGoogleAccessToken(env);
-  return listCalendarEventsWithToken(token, calendarId, timeMin, timeMax);
+  return listCalendarEventsWithToken(token, calendarId, timeMin, timeMax, privateProperty);
 }
 
-export async function listCalendarEventsWithToken(token: string, calendarId: string, timeMin: string, timeMax: string): Promise<CalendarEventRecord[]> {
+export async function listCalendarEventsWithToken(token: string, calendarId: string, timeMin: string, timeMax: string, privateProperty?: string): Promise<CalendarEventRecord[]> {
   const events: CalendarEventRecord[] = [];
   let pageToken: string | undefined;
   do {
     const params = new URLSearchParams({ timeMin, timeMax, singleEvents: "true", orderBy: "startTime", maxResults: "2500" });
+    if (privateProperty) params.append("privateExtendedProperty", privateProperty);
     if (pageToken) params.set("pageToken", pageToken);
     const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
       headers: { authorization: `Bearer ${token}` },
@@ -158,4 +159,51 @@ export async function listCalendarEventsWithToken(token: string, calendarId: str
     pageToken = data.nextPageToken;
   } while (pageToken);
   return events;
+}
+
+export class CalendarVersionConflictError extends Error {}
+
+export interface CalendarEventPatch {
+  summary?: string;
+  description?: string;
+  start?: string;
+  end?: string;
+  transparency?: "opaque" | "transparent";
+  privateProperties?: Record<string, string>;
+}
+
+export async function patchCalendarEvent(env: CloudflareEnv, calendarId: string, eventId: string, patch: CalendarEventPatch, etag: string): Promise<CalendarEventRecord> {
+  const token = await getGoogleAccessToken(env);
+  return patchCalendarEventWithToken(token, calendarId, eventId, patch, etag);
+}
+
+export async function patchCalendarEventWithToken(token: string, calendarId: string, eventId: string, patch: CalendarEventPatch, etag: string): Promise<CalendarEventRecord> {
+  const body: Record<string, unknown> = {};
+  if (patch.summary !== undefined) body.summary = patch.summary;
+  if (patch.description !== undefined) body.description = patch.description;
+  if (patch.start !== undefined) body.start = { dateTime: patch.start, timeZone: "Asia/Kuala_Lumpur" };
+  if (patch.end !== undefined) body.end = { dateTime: patch.end, timeZone: "Asia/Kuala_Lumpur" };
+  if (patch.transparency !== undefined) body.transparency = patch.transparency;
+  if (patch.privateProperties !== undefined) body.extendedProperties = { private: patch.privateProperties };
+  const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`, {
+    method: "PATCH",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "if-match": etag },
+    body: JSON.stringify(body),
+  });
+  if (response.status === 412) throw new CalendarVersionConflictError("The Calendar event changed outside Race Control.");
+  if (response.status === 404 || response.status === 410) throw new Error("Calendar event no longer exists.");
+  if (!response.ok) throw new Error(`Calendar event update failed (${response.status}).`);
+  const data = await response.json<GoogleEventRecord>();
+  if (!data.id || !data.start?.dateTime || !data.end?.dateTime) throw new Error("Calendar event update returned an invalid response.");
+  return {
+    id: data.id,
+    etag: data.etag ?? "",
+    summary: data.summary ?? "Calendar block",
+    description: data.description ?? "",
+    start: data.start.dateTime,
+    end: data.end.dateTime,
+    status: data.status ?? "confirmed",
+    transparency: data.transparency ?? "opaque",
+    privateProperties: data.extendedProperties?.private ?? {},
+  };
 }

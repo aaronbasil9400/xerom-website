@@ -151,3 +151,14 @@ Remaining before web verification: Cloudflare Access has no Zero Trust organizat
 | R2 capability check | Blocked | `npx wrangler r2 bucket list` returned Cloudflare code 10042: enable R2 through Dashboard; no bucket/binding was created |
 
 The branch preview still needs a fresh branch build after the runtime variables were added, followed by owner OTP login and a non-destructive schedule-read check. No production traffic or Google Calendar mutation was performed here.
+
+## Front-desk action implementation checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Owner booking creation route | Implemented | `POST /api/admin/bookings` validates the existing booking schema and delegates to the same global coordinator/calendar path as public bookings |
+| Group lifecycle action route | Implemented locally | `POST /api/admin/bookings/:id/actions` supports check-in, complete, no-show and cancel; owner auth/CSRF and coordinator binding gates apply |
+| Calendar mutation safety | Adapter-tested | ETag `If-Match`, 412 conflict handling, private booking lookup and transparent cancellation are covered by local mocked Calendar tests |
+| Local contract/build verification | Pass | `npm run check`, Race Control tests 24/24, and `npm run build` |
+
+Not yet run: live owner OTP login, live schedule listing, live owner booking/action, exact Calendar event cleanup, extension/reschedule/maintenance/closure operations, R2 publication, or production traffic changes. These require the protected branch preview and explicit test-booking cleanup authorization.
