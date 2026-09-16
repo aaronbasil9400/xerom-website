@@ -38,6 +38,15 @@ const { live = false } = Astro.props;
   const releaseInput = document.querySelector<HTMLInputElement>("[data-live-release]");
   const actionResult = document.querySelector<HTMLOutputElement>("[data-live-action-result]");
   let selectedEvent: SelectedEvent | null = null;
+  const clearInspector = () => {
+    selectedEvent = null;
+    if (inspectorHeading) inspectorHeading.textContent = "Select a live booking";
+    if (inspectorEmpty) inspectorEmpty.hidden = false;
+    if (inspectorDetails) inspectorDetails.hidden = true;
+    if (inspectorActions) inspectorActions.hidden = true;
+    if (inspectorNote) inspectorNote.hidden = true;
+    if (actionResult) actionResult.textContent = "";
+  };
   const setInspectorValue = (selector: string, value: string) => { const target = document.querySelector<HTMLElement>(selector); if (target) target.textContent = value; };
   const formatInspectorWhen = (start: string, end: string) => {
     const formatter = new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" });
@@ -68,6 +77,7 @@ const { live = false } = Astro.props;
     setInspectorValue("[data-live-summary]", selectedEvent.summary);
     syncActionVisibility();
   });
+  window.addEventListener("race-control:selection-clear", clearInspector);
   inspectorActions?.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((button) => button.addEventListener("click", async () => {
     if (!selectedEvent?.bookingId) return;
     const action = button.dataset.liveAction;

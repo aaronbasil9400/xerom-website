@@ -98,6 +98,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     if (!liveEnabled) return;
     const requestId = ++requestSequence;
     setDateLabel();
+    window.dispatchEvent(new CustomEvent("race-control:selection-clear"));
     liveContainer.hidden = false;
     liveContainer.setAttribute("aria-busy", "true");
     liveContainer.textContent = "Loading the shared Google Calendar schedule…";
