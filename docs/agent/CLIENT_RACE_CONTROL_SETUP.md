@@ -1,0 +1,54 @@
+# Client Race Control setup
+
+Status: working runbook; update after each verified external setup step.  
+Scope: configure an owner-only Race Control preview and later a production deployment while preserving the existing Google Calendar booking record.
+
+## 1. Prerequisites
+
+- An active Cloudflare account that owns the Worker service and its public hostname.
+- A Git repository connected to the Worker build system, with non-production branch builds enabled.
+- One owner email address for the first Access policy.
+- Google account ownership of the resource/control calendars.
+- A Google service account with **Make changes and see all event details** on each resource/control calendar.
+- Existing encrypted Worker secrets for the service-account credentials and calendar IDs. Never copy them into Git, a build variable, browser code, screenshots, or this document.
+
+## 2. Feature branch and build
+
+1. Create a branch such as `codex/race-control-working` from the current website baseline.
+2. Commit and push the branch. Confirm Cloudflare records a successful non-production build for the branch.
+3. Confirm the build uses the project’s server build command and uploads a version without changing production traffic.
+4. Do not deploy a branch version to production traffic. Keep the active production version unchanged until a dedicated cutover review.
+
+## 3. Cloudflare Zero Trust / Access
+
+1. In the Worker dashboard, open **Access**. If the account has no Zero Trust organization, select **Set up Zero Trust**.
+2. Select **Zero Trust Free** only after the account owner accepts the current billing/terms screen. The free plan may still require a saved payment method and acknowledgement of charges beyond free limits.
+3. Choose a unique team name based on the client/venue, for example `xerom-race-control`. Record the resulting `https://<team>.cloudflareaccess.com` issuer privately as `ACCESS_TEAM_DOMAIN`.
+4. Under **Integrations → Identity providers**, enable One-time PIN if it is not already available.
+5. Under **Access controls → Applications**, create a self-hosted public application for the actual Worker hostname. Scope it to `/race-control/*` and `/api/admin/*`; do not protect the public booking pages.
+6. Create a reusable **Allow** policy scoped initially to the verified owner email only. Access is default-deny, so do not add a broad email-domain rule without owner approval.
+7. Copy the application audience tag privately as `ACCESS_AUDIENCE`, and supply the owner email list privately as `OWNER_EMAILS`. Add these as encrypted runtime secrets/variables through the Worker configuration flow, never as build variables.
+8. Test with the allowed owner email: request OTP, sign in, load `/race-control`, and confirm a non-allowed account is denied. Record the test result without copying tokens or PINs.
+
+## 4. Google Calendar connection model
+
+- Keep the existing six resource calendars plus the Booking Control calendar private.
+- The public booking site and Race Control both call the same booking coordinator. A successful booking creates the same linked opaque events and therefore immediately blocks capacity everywhere.
+- Race Control schedule reads list those same calendars server-side. Calendar IDs never leave the Worker response.
+- Do not create, delete, or unshare production calendars merely to test. Use a separate owned test calendar account for lifecycle testing.
+- Calendar lifecycle automation needs venue-owner OAuth, distinct from the service-account event writer. Obtain client credentials and consent only when RC-08 provisioning begins.
+
+## 5. Runtime configuration and media
+
+1. Create private, non-production R2 buckets for configuration and media.
+2. Bind them only to the preview environment first; generate Worker binding types after adding the binding.
+3. Provide the encryption key for the OAuth token envelope as a Worker secret.
+4. Test immutable revision writes, conditional `active.json` updates, stale drafts, and rollback from an isolated environment before enabling runtime publication on the public site.
+
+## 6. Release checklist
+
+- Run check, unit/contract tests, build and the six-width browser suite.
+- Run a non-production Calendar schedule read and owner booking creation. Verify the linked event appears in the correct resource calendar and availability changes on the main booking site. Clean up only an explicitly authorized test booking.
+- Test Access allow/deny and token validation at the Worker origin.
+- Review rate limits, Turnstile production configuration, observability, privacy, and all owner-content gates before production cutover.
+- Use a planned maintenance window for the runtime-config cutover; drain/reconcile pending coordinator operations first.
