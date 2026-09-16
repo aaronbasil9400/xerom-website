@@ -385,3 +385,18 @@ No Calendar mutation was created for the polling check. The owner guide now docu
 | Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12 |
 
 No production code or Calendar state was changed. The attached screenshot was used only as a visual reference for the warning treatment.
+
+## Compact timeline lanes and polling copy checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Sequential events keep one row lane | Pass | Three non-overlapping bookings on one resource resolve to lane `0`; the resource row stays at `3.6rem` |
+| Same-resource collisions stack | Pass | Three overlapping same-hour intervals resolve to lanes `0`, `1`, and `2` |
+| Adjacent events reuse a lane | Pass | An event ending exactly when the next begins remains in one lane |
+| Same-hour group on separate resources | Pass | Each resource row independently resolves to one lane; a grouped booking does not increase either row height |
+| Browser live data check | Pass | The protected preview showed Regular 01 with three sequential blocks at `3.6rem`, not the former `10.8rem`; no Calendar mutation was made |
+| Background-poll copy | Pass by implementation | The transient `Loading the shared Google Calendar schedule…` footer/status is removed; ARIA `busy` remains for assistive technology and error/empty states remain visible |
+| Typecheck/unit/build | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build` (pass) |
+| Playwright six-width suite | Environment blocked | Chromium was denied the macOS Mach-port rendezvous permission before any test page loaded; this is recorded as unrun, not a product failure |
+
+The waste space came from sizing a resource row by **the number of events**, rather than the number of concurrent visual lanes. The implementation now uses a typed pure lane allocator with half-open intervals, so only genuine time overlap adds vertical space. No live bookings, blocks, or calendar events were created, edited, or deleted.

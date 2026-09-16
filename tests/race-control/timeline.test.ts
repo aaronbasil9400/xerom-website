@@ -30,4 +30,15 @@ describe("Race Control schedule timeline lanes", () => {
     expect(result.laneCount).toBe(1);
     expect(result.items.map((item) => item.lane)).toEqual([0, 0]);
   });
+
+  it("keeps a same-hour group compact on each separate resource row", () => {
+    const regularOne = assignTimelineLanes([
+      { start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T22:00:00+08:00" },
+    ]);
+    const regularTwo = assignTimelineLanes([
+      { start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T22:00:00+08:00" },
+    ]);
+    expect(regularOne.laneCount).toBe(1);
+    expect(regularTwo.laneCount).toBe(1);
+  });
 });
