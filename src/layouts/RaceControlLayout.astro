@@ -30,7 +30,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     <div class="rc-shell">
       <RaceControlNav active={section} />
       <main class="rc-main" id="main-content">
-        <div class="rc-page-heading"><h1>{title}</h1><span class="rc-draft-pill">Draft surface</span></div>
+        <div class="rc-page-heading"><h1>{title}</h1><span class:list={{'rc-draft-pill':true,'rc-live-pill':liveEnabled}}>Draft surface</span></div>
         <slot />
       </main>
     </div>
