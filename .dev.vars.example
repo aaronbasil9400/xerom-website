@@ -12,3 +12,11 @@ PRO_SIM_01_CALENDAR_ID=replace-me
 PS5_01_CALENDAR_ID=replace-me
 PS5_02_CALENDAR_ID=replace-me
 BOOKING_CONTROL_CALENDAR_ID=replace-me
+
+# Race Control owner access (never commit real values)
+ACCESS_TEAM_DOMAIN=https://your-team.cloudflareaccess.com
+ACCESS_AUDIENCE=replace-with-access-application-aud
+OWNER_EMAILS=owner@example.com
+
+# Runtime settings remain unavailable until a private R2 bucket is enabled/bound.
+# RACE_CONTROL_CONFIG_BUCKET and RACE_CONTROL_MEDIA_BUCKET are bindings, not vars.
