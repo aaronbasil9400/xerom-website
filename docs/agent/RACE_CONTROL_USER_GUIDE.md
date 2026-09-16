@@ -19,7 +19,7 @@ The homepage and public booking pages are open. `/race-control/*` and `/api/admi
 5. Select a live event to populate the inspector with booking/block status, resource, time and Calendar summary. For an active grouped booking, the inspector exposes conditional **Check in**, **Complete**, **No-show** and **Cancel** actions; each asks for confirmation and updates all linked Calendar events with the expected version.
 6. Use the refresh icon after a Calendar change or owner booking. A live read failure shows **No availability is being claimed**; do not treat a failed read as an open schedule.
 
-On phones the schedule becomes a chronological agenda. On wider screens it uses the denser Race Control panel layout. The schedule is server-authoritative; a gap in the chart is not a promise of availability until the read succeeds.
+On phones the schedule becomes a chronological agenda. On wider screens it is a resource timeline: each row is a real rig/lounge/control Calendar, the hour axis covers that day’s opening window, and each block’s left edge/width represents its actual start/end. The schedule is server-authoritative; a gap in the chart is not a promise of availability until the read succeeds.
 
 ## Create a manual owner booking
 
