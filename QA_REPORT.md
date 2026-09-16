@@ -225,3 +225,13 @@ These rules are pure contract coverage only. No Calendar deletion, retirement, o
 | Branch access smoke | Pass | Read-only curl: `/race-control/schedule` returns Access 302; public `/` returns 200; no Calendar mutation |
 
 The owner OTP/session and live authenticated schedule/booking checks remain unrun in this environment.
+
+## Coordinator deployment boundary (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Website branch deployment | Pass | Branch alias builds are current and Access-protected |
+| Existing coordinator compatibility | Not yet verified with owner actions | Website binding remains `script_name: xerom-booking-coordinator`; current production coordinator handles the existing public create protocol |
+| New coordinator commands | Dry-run only | Latest `coordinator/src/index.ts` packages successfully with Wrangler dry-run, but has not been promoted to production traffic |
+
+Do not test lifecycle, extension, reschedule, maintenance, closure, or block commands on the web preview yet. They require an additive coordinator deployment decision or a separate coordinator Worker with Google credentials provisioned as encrypted secrets. This preserves the main-site coordinator and Calendar behavior while the deployment choice is reviewed.

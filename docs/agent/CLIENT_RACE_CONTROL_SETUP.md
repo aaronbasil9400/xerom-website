@@ -21,6 +21,8 @@ Scope: configure an owner-only Race Control preview and later a production deplo
 
 Note: Cloudflare dashboard edits to Worker runtime variables can themselves create a production version/deployment. Record that version in the client change log and verify its source code before assuming only configuration changed. In this setup, the Access variables produced `f3cefffa` from the prior production code; the Race Control branch remained on its alias.
 
+Coordinator note: a website branch binding to the existing coordinator does not automatically execute newer coordinator source. Dry-run the coordinator separately, then either promote an additive coordinator version after the main-site race/rollback suite passes or create a separate Worker and provision its encrypted Google secrets. Do not point a preview at live calendars with an unverified coordinator.
+
 ## 3. Cloudflare Zero Trust / Access
 
 1. In the Worker dashboard, open **Access**. If the account has no Zero Trust organization, select **Set up Zero Trust**.

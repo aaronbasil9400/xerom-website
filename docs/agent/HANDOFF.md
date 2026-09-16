@@ -78,4 +78,6 @@ Update: the latest observed branch alias is version 60. Access app setup and the
 
 Latest verification (2026-09-16): `npm run check` clean across 103 files; `npm test` 60/60; `npm run build` passed; `git diff --check` clean. Latest branch commit is `2203d2a` (Zero Trust deployment audit). The branch preview URL is `https://codex-race-control-working-xerom-website.aaronbasil9400.workers.dev`; unauthenticated Race Control requests return Access 302, while the public root returns 200.
 
+Deployment boundary: the website branch is built and Access-protected, but `coordinator/src/index.ts` changes for lifecycle actions, extensions, reschedules and blocks are only dry-run verified. The branch binding still points to the existing production `xerom-booking-coordinator`, so owner booking creation can use the shared main-site path, while the new `x-xerom-command` action/block paths must not be described as live until the coordinator is promoted additively or a separate coordinator with securely provisioned Google secrets is created.
+
 Update: pure hours-impact and resource-lifecycle guards now cover outside-proposed-hours bookings, open-ended recurring series, retirement with future reservations, control/primary protections, and nonempty-calendar deletion retention gates. They are not yet wired to the settings UI or a live review job.
