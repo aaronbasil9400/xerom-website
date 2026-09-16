@@ -360,3 +360,16 @@ No new live reservation or block was created. The chart is a read-only rendering
 | Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12, live browser form read |
 
 No live reservation was created for this fix. The approved earlier synthetic create/cancel test remains the live write proof.
+
+## Client-demo banner checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Live banner treatment | Pass | Amber live banners are neutral gray Broadcast panels; status text remains visible and truthful |
+| Sync/draft treatment | Pass | Live Calendar sync is green; the live Draft surface badge uses neutral structural styling |
+| Validation output treatment | Pass | Booking output is muted by default, coral for errors and green for successful confirmation |
+| Deployed browser preview | Pass | Branch preview visually verified the neutral treatment with zero console errors |
+| GitHub branch | Pass | Local HEAD `988d88b` matched `origin/codex-race-control-working` before this docs-only checkpoint |
+| Regression | Pass | `npm run check`, `npm test` 64/64, `npm run build`, clean-server Playwright 12/12 |
+
+No production code or Calendar state was changed. The attached screenshot was used only as a visual reference for the warning treatment.
