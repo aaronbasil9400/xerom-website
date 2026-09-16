@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { insertEventWithToken, queryFreeBusyWithToken, type CalendarEventInput } from "@/lib/google/calendar";
+import { insertEventWithToken, listCalendarEventsWithToken, queryFreeBusyWithToken, type CalendarEventInput } from "@/lib/google/calendar";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -47,5 +47,17 @@ describe("Google Calendar fail-closed adapters", () => {
         extendedProperties: { private: { ...event.privateProperties, bookingId: "different-booking" } },
       })));
     await expect(insertEventWithToken("token", event)).rejects.toThrow("did not match");
+  });
+
+  it("lists paginated events with private booking metadata", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({ items: [{ id: "event-1", etag: "etag-1", summary: "XR-FIXTURE", start: { dateTime: event.start }, end: { dateTime: event.end }, status: "confirmed", transparency: "opaque", extendedProperties: { private: { bookingId: "fixture-booking" } } }], nextPageToken: "next" }))
+      .mockResolvedValueOnce(Response.json({ items: [{ id: "event-2", summary: "Manual block", start: { dateTime: event.end }, end: { dateTime: "2026-09-16T22:00:00+08:00" } }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const events = await listCalendarEventsWithToken("token", "fixture-calendar", event.start, "2026-09-17T02:00:00+08:00");
+    expect(events).toHaveLength(2);
+    expect(events[0].privateProperties.bookingId).toBe("fixture-booking");
+    expect(events[1]).toMatchObject({ summary: "Manual block", transparency: "opaque" });
+    expect(fetchMock.mock.calls[1][0]).toContain("pageToken=next");
   });
 });

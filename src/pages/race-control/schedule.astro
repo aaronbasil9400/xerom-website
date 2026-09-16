@@ -1,4 +1,34 @@
 ---
-import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import Agenda from '../../components/race-control/Agenda.astro'; import BookingInspector from '../../components/race-control/BookingInspector.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
+import Agenda from '../../components/race-control/Agenda.astro';
+import BookingInspector from '../../components/race-control/BookingInspector.astro';
+import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import BookingCreateForm from '../../components/race-control/BookingCreateForm.astro';
+
+const malaysiaToday = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit', day: '2-digit',
+}).format(new Date());
 ---
-<RaceControlLayout title="Schedule" section="schedule"><DemoNotice /><div class="rc-toolbar" aria-label="Schedule controls"><div class="rc-toolbar-group"><button type="button" disabled aria-label="Previous business date in demo">Previous</button><button type="button" disabled>Today</button><button type="button" disabled aria-label="Next business date in demo">Next</button><label><span>Date</span><input type="date" value="2026-09-13" disabled /></label></div><div class="rc-toolbar-group"><button type="button" class="active" disabled>Day</button><button type="button" disabled>Agenda</button><label><span>Service</span><select disabled><option>All services</option></select></label><label class="rc-toolbar-search"><span>Search</span><input type="search" placeholder="Fixture search unavailable" disabled /></label></div><div class="rc-toolbar-actions"><button class="rc-button" type="button" disabled>Block time</button><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div></div><div class="rc-summary"><div><b>Now active</b><strong>02 / 06</strong><small>demo fixture count</small></div><div><b>Next open</b><strong>08:00 PM</strong><small>synthetic example</small></div><div><b>Calendar health</b><strong>—</strong><small>not connected</small></div><div><b>Operating window</b><strong>Draft</strong><small>owner values apply live</small></div></div><div class="rc-schedule-grid"><Agenda /><BookingInspector /></div><section id="new-booking" class="rc-panel rc-quick-form"><div class="rc-panel-head"><h2>New booking · draft flow</h2></div><p>Booking creation will use the typed contract and serialized Calendar operation. This shell intentionally has no functional mutation.</p><button class="rc-button rc-button-primary" type="button">Start demo flow</button></section></RaceControlLayout>
+<RaceControlLayout title="Schedule" section="schedule">
+  <DemoNotice connected />
+  <div class="rc-toolbar" aria-label="Schedule controls">
+    <div class="rc-toolbar-group">
+      <button type="button" disabled>Previous</button><button type="button" disabled>Today</button><button type="button" disabled>Next</button>
+      <label><span>Date</span><input data-rc-business-date type="date" value={malaysiaToday} /></label>
+    </div>
+    <div class="rc-toolbar-group">
+      <button type="button" class="active" disabled>Day</button><button type="button" disabled>Agenda</button>
+      <label><span>Service</span><select disabled><option>All services</option></select></label>
+      <label class="rc-toolbar-search"><span>Search</span><input type="search" placeholder="Search coming next" disabled /></label>
+    </div>
+    <div class="rc-toolbar-actions"><button class="rc-button" type="button" disabled>Block time</button><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
+  </div>
+  <div class="rc-summary">
+    <div><b>Shared record</b><strong>Google</strong><small>same calendars as main site</small></div>
+    <div><b>Refresh</b><strong>On load</strong><small>and after owner booking</small></div>
+    <div><b>Calendar health</b><strong>Live read</strong><small>fails closed on missing data</small></div>
+    <div><b>Timezone</b><strong>MYT</strong><small>Asia/Kuala_Lumpur</small></div>
+  </div>
+  <div class="rc-schedule-grid"><Agenda /><BookingInspector /></div>
+  <BookingCreateForm />
+</RaceControlLayout>

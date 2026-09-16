@@ -42,6 +42,10 @@ export async function insertEvent(env: CloudflareEnv, event: CalendarEventInput)
 
 interface GoogleEventRecord {
   id?: string;
+  etag?: string;
+  summary?: string;
+  description?: string;
+  status?: string;
   start?: { dateTime?: string };
   end?: { dateTime?: string };
   visibility?: string;
@@ -104,4 +108,54 @@ export async function deleteEvent(env: CloudflareEnv, calendarId: string, eventI
     headers: { authorization: `Bearer ${token}` },
   });
   if (!response.ok && response.status !== 404 && response.status !== 410) throw new Error(`Calendar rollback failed (${response.status}).`);
+}
+
+export interface CalendarEventRecord {
+  id: string;
+  etag: string;
+  summary: string;
+  description: string;
+  start: string;
+  end: string;
+  status: string;
+  transparency: string;
+  privateProperties: Record<string, string>;
+}
+
+export async function listCalendarEvents(env: CloudflareEnv, calendarId: string, timeMin: string, timeMax: string): Promise<CalendarEventRecord[]> {
+  const token = await getGoogleAccessToken(env);
+  return listCalendarEventsWithToken(token, calendarId, timeMin, timeMax);
+}
+
+export async function listCalendarEventsWithToken(token: string, calendarId: string, timeMin: string, timeMax: string): Promise<CalendarEventRecord[]> {
+  const events: CalendarEventRecord[] = [];
+  let pageToken: string | undefined;
+  do {
+    const params = new URLSearchParams({ timeMin, timeMax, singleEvents: "true", orderBy: "startTime", maxResults: "2500" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error(`Calendar event listing failed (${response.status}).`);
+    const data = await response.json<{ items?: GoogleEventRecord[]; nextPageToken?: string }>();
+    if (!Array.isArray(data.items)) throw new Error("Calendar event listing returned an invalid response.");
+    for (const item of data.items) {
+      const start = item.start?.dateTime;
+      const end = item.end?.dateTime;
+      if (!item.id || !start || !end) continue;
+      events.push({
+        id: item.id,
+        etag: item.etag ?? "",
+        summary: item.summary ?? "Calendar block",
+        description: item.description ?? "",
+        start,
+        end,
+        status: item.status ?? "confirmed",
+        transparency: item.transparency ?? "opaque",
+        privateProperties: item.extendedProperties?.private ?? {},
+      });
+    }
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+  return events;
 }

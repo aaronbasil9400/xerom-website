@@ -10,6 +10,7 @@ test("Race Control shell is private-labelled, responsive, and free of browser er
   await page.goto("/race-control/schedule");
   await expect(page.getByRole("heading", { name: "Schedule", exact: true })).toBeVisible();
   await expect(page.getByText(/Demo fixture · private owner workspace/i)).toBeVisible();
+  await expect(page.getByText("Shared Calendar mode", { exact: true })).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow");
   await expect(page.locator("body")).not.toContainText("fixture-calendar-ref");
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);

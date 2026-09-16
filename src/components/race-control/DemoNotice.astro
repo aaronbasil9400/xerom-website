@@ -1,1 +1,5 @@
-<aside class="rc-notice" role="note"><strong>Demo fixture</strong><span>Illustrative values only. Nothing on this surface writes to Google Calendar or publishes website changes.</span></aside>
+---
+interface Props { connected?: boolean }
+const { connected = false } = Astro.props;
+---
+<aside class="rc-notice" role="note"><strong>{connected ? 'Shared Calendar mode' : 'Demo fixture'}</strong><span>{connected ? 'Schedule reads and owner-created bookings use the same private Google Calendars as the main booking site. Settings publication remains disabled.' : 'Illustrative values only. Nothing on this surface writes to Google Calendar or publishes website changes.'}</span></aside>

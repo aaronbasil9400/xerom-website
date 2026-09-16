@@ -14,4 +14,61 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     {resources.map((resource, index) => <div class="rc-resource-row"><div class="rc-resource-label"><i class:list={{busy:index===0||index===2||index===4, warning:index===5}}></i><span>{resource}<small>{resource.startsWith('PS5') ? 'play lounge' : resource.startsWith('Pro') ? 'pro sim' : 'sim racing'}</small></span></div><div class="rc-track" aria-label={`${resource} demo fixture events`}><span class="rc-open-track"></span>{events[index] && <button class:list={{'rc-event':true,'rc-event-maintenance':index===5}} type="button" aria-label={`${events[index][0]}, ${resource}, ${events[index][1]}`}><b>{events[index][0]}</b><small>{events[index][1]}</small></button>}</div></div>)}
   </div>
   <p class="rc-panel-foot">All blocks are labelled synthetic fixtures. A future live view must treat every busy Calendar event as unavailable.</p>
+  <div class="rc-live-events" data-rc-live-events hidden></div>
 </section>
+
+<script>
+  const liveContainer = document.querySelector<HTMLElement>("[data-rc-live-events]");
+  const fixtureTimeline = document.querySelector<HTMLElement>(".rc-agenda");
+  const fixtureMobile = document.querySelector<HTMLElement>(".rc-mobile-agenda-list");
+  const footer = document.querySelector<HTMLElement>(".rc-agenda-panel .rc-panel-foot");
+  const dateInput = document.querySelector<HTMLInputElement>("[data-rc-business-date]");
+  const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(value));
+  async function refreshSchedule() {
+    if (!liveContainer || !dateInput) return;
+    liveContainer.hidden = false;
+    liveContainer.textContent = "Loading the shared Google Calendar schedule…";
+    try {
+      const response = await fetch(`/api/admin/schedule?businessDate=${encodeURIComponent(dateInput.value)}`, { cache: "no-store" });
+      const payload = await response.json() as { serverNow: string; error?: { message?: string }; data: { resources: Array<{ displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }> } };
+      if (!response.ok) throw new Error(payload.error?.message ?? "Schedule unavailable.");
+      const events = payload.data.resources.flatMap((resource: { displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string> }> }) => resource.events.map((event) => ({ ...event, resourceName: resource.displayName }))).sort((a: { start: string }, b: { start: string }) => Date.parse(a.start) - Date.parse(b.start));
+      liveContainer.replaceChildren();
+      if (events.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "rc-live-empty";
+        empty.textContent = "No busy Calendar events for this business date.";
+        liveContainer.appendChild(empty);
+      }
+      for (const event of events) {
+        const article = document.createElement("article");
+        const time = document.createElement("time");
+        time.textContent = `${formatTime(event.start)}–${formatTime(event.end)}`;
+        const details = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = event.summary || "Calendar block";
+        const resource = document.createElement("span");
+        resource.textContent = event.resourceName;
+        details.appendChild(title);
+        details.appendChild(resource);
+        const status = document.createElement("span");
+        status.className = "rc-status";
+        status.textContent = event.privateProperties?.status ?? "Busy";
+        article.appendChild(time);
+        article.appendChild(details);
+        article.appendChild(status);
+        liveContainer.appendChild(article);
+      }
+      fixtureTimeline?.setAttribute("hidden", "");
+      fixtureMobile?.setAttribute("hidden", "");
+      if (footer) footer.textContent = `Live Calendar read · refreshed ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))}`;
+    } catch (error) {
+      liveContainer.textContent = error instanceof Error ? `${error.message} Showing labelled fixtures.` : "Schedule unavailable. Showing labelled fixtures.";
+      fixtureTimeline?.removeAttribute("hidden");
+      fixtureMobile?.removeAttribute("hidden");
+    }
+  }
+  dateInput?.addEventListener("change", refreshSchedule);
+  window.addEventListener("race-control:refresh", refreshSchedule);
+  refreshSchedule();
+</script>

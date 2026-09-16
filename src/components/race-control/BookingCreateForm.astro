@@ -1,0 +1,57 @@
+<section id="new-booking" class="rc-panel rc-booking-form">
+  <div class="rc-panel-head"><h2>New booking</h2><span>Creates the same private Calendar events as the main site</span></div>
+  <form data-rc-booking-form>
+    <div class="rc-form-grid">
+      <label>Start time<input name="start" type="datetime-local" required /></label>
+      <label>Duration<select name="duration"><option value="60">60 minutes</option><option value="120">120 minutes</option></select></label>
+      <label>Regular rigs<input name="regular" type="number" min="0" max="3" value="1" required /></label>
+      <label>Pro rigs<input name="pro" type="number" min="0" max="1" value="0" required /></label>
+      <label>PS5 lounges<input name="ps5" type="number" min="0" max="2" value="0" required /></label>
+      <label>Customer name<input name="name" minlength="2" maxlength="80" required /></label>
+      <label>Mobile / WhatsApp<input name="phone" inputmode="tel" required /></label>
+      <label class="rc-wide">Notes<textarea name="notes" maxlength="300"></textarea></label>
+    </div>
+    <div class="rc-form-actions"><button class="rc-button rc-button-primary" type="submit">Create booking</button><output data-rc-booking-result aria-live="polite"></output></div>
+  </form>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("[data-rc-booking-form]");
+  const output = document.querySelector<HTMLOutputElement>("[data-rc-booking-result]");
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!output) return;
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    submit?.setAttribute("disabled", "");
+    output.textContent = "Creating and verifying Calendar events…";
+    const values = new FormData(form);
+    const localStart = String(values.get("start") ?? "");
+    const items = [
+      { serviceId: "regular-sim", quantity: Number(values.get("regular")) },
+      { serviceId: "pro-sim", quantity: Number(values.get("pro")) },
+      { serviceId: "ps5", quantity: Number(values.get("ps5")) },
+    ];
+    try {
+      const response = await fetch("/api/admin/bookings", {
+        method: "POST",
+        headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" },
+        body: JSON.stringify({
+          start: `${localStart}:00+08:00`,
+          durationMinutes: Number(values.get("duration")),
+          items,
+          customer: { name: values.get("name"), phone: values.get("phone"), notes: values.get("notes") || undefined },
+          idempotencyKey: crypto.randomUUID(),
+        }),
+      });
+      const result = await response.json() as { bookingId?: string; error?: { message?: string } | string };
+      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : result.error?.message ?? "Booking could not be created.");
+      output.textContent = `Confirmed ${result.bookingId}. Refreshing the shared Calendar schedule…`;
+      window.dispatchEvent(new CustomEvent("race-control:refresh"));
+      form.reset();
+    } catch (error) {
+      output.textContent = error instanceof Error ? error.message : "Booking could not be created.";
+    } finally {
+      submit?.removeAttribute("disabled");
+    }
+  });
+</script>

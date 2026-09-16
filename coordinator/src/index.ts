@@ -19,6 +19,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     const parsed = bookingRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
     const booking = parsed.data;
+    const bookingSource = request.headers.get("x-xerom-source") === "race-control-owner" ? "race-control-owner" : "xerom.my";
     const windowError = validateBookingWindow(booking.start, booking.durationMinutes);
     if (windowError) return reply({ error: windowError }, 400);
     return this.ctx.blockConcurrencyWhile(async () => {
@@ -83,7 +84,7 @@ export class BookingCoordinator extends DurableObject<Env> {
               privateProperties: {
                 bookingId,
                 attemptHash: hash.slice(0, 40),
-                source: "xerom.my",
+                source: bookingSource,
                 serviceType: serviceId,
                 resourceId: String(resourceIndex++),
                 durationMinutes: String(booking.durationMinutes),
