@@ -76,4 +76,6 @@ Update: bounded owner booking search is now available at `GET /api/admin/booking
 
 Update: the latest observed branch alias is version 60. Access app setup and the owner policy are active; owner OTP/Cloudflare identity sign-in and a live schedule-read check remain unverified in this automation session.
 
+Latest verification (2026-09-16): `npm run check` clean across 103 files; `npm test` 60/60; `npm run build` passed; `git diff --check` clean. Latest branch commit is `2203d2a` (Zero Trust deployment audit). The branch preview URL is `https://codex-race-control-working-xerom-website.aaronbasil9400.workers.dev`; unauthenticated Race Control requests return Access 302, while the public root returns 200.
+
 Update: pure hours-impact and resource-lifecycle guards now cover outside-proposed-hours bookings, open-ended recurring series, retirement with future reservations, control/primary protections, and nonempty-calendar deletion retention gates. They are not yet wired to the settings UI or a live review job.

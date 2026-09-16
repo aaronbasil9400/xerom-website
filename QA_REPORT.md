@@ -213,3 +213,15 @@ The review endpoint has not been run with live R2 or Google data and intentional
 | Permanent deletion guards | Pass | Tests require a retired, non-control, empty calendar and a fresh confirmation; nonempty history is blocked pending retention/export policy |
 
 These rules are pure contract coverage only. No Calendar deletion, retirement, or hours publication was executed.
+
+## Latest repository checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro diagnostics | Pass | `npm run check`: 0 errors, 0 warnings, 0 hints across 103 files |
+| Full unit/contract suite | Pass | `npm test`: 60/60 tests across 16 files |
+| Production build | Pass | `npm run build`: Cloudflare server output completed successfully |
+| Working tree | Pass | `git diff --check` clean; latest feature-branch commit `2203d2a` pushed to origin |
+| Branch access smoke | Pass | Read-only curl: `/race-control/schedule` returns Access 302; public `/` returns 200; no Calendar mutation |
+
+The owner OTP/session and live authenticated schedule/booking checks remain unrun in this environment.
