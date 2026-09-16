@@ -361,6 +361,18 @@ No new live reservation or block was created. The chart is a read-only rendering
 
 No live reservation was created for this fix. The approved earlier synthetic create/cancel test remains the live write proof.
 
+## Live schedule polling checkpoint (2026-09-16)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Visible-tab polling | Pass | Protected preview refresh timestamp advanced from 6:24:44 PM to 6:24:59 PM without a page reload |
+| Poll interval | Pass | Summary displays `15 sec` and the last successful MYT sync time |
+| Focus/visibility behavior | Implemented | Browser code starts polling only for visible tabs, stops it when hidden, and immediately reads on visibility/focus return |
+| Overlap safety | Pass by implementation | A concurrent refresh queues one follow-up read after the active request completes; date changes cannot render an older response over the newly selected date |
+| Failure safety | Pass by implementation | Last successful chart remains stale context with no availability claim on poll failure |
+
+No Calendar mutation was created for the polling check. The owner guide now documents the refresh behavior.
+
 ## Client-demo banner checkpoint (2026-09-16)
 
 | Check | Result | Evidence |

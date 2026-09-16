@@ -17,7 +17,8 @@ The homepage and public booking pages are open. `/race-control/*` and `/api/admi
 3. Use **Previous**, **Today**, **Next**, or the date field to move between business dates. The heading updates to the selected date.
 4. Every opaque/busy event returned by the private resource or control calendars is shown as unavailable. Transparent/cancelled historical records do not block the live schedule.
 5. Select a live event to populate the inspector with booking/block status, resource, time and Calendar summary. For an active grouped booking, the inspector exposes conditional **Check in**, **Complete**, **No-show** and **Cancel** actions; each asks for confirmation and updates all linked Calendar events with the expected version.
-6. Use the refresh icon after a Calendar change or owner booking. A live read failure shows **No availability is being claimed**; do not treat a failed read as an open schedule.
+6. The open Schedule tab refreshes automatically every 15 seconds while it is visible and refreshes again when it regains focus. The **Last sync** text records the latest successful read. Use the refresh icon after a Calendar change when you want an immediate read.
+7. A live read failure shows **No availability is being claimed** and retains the previous chart as stale context; do not treat a failed read as an open schedule.
 
 On phones the schedule becomes a chronological agenda. On wider screens it is a resource timeline: each row is a real rig/lounge/control Calendar, the hour axis covers that day’s opening window, and each block’s left edge/width represents its actual start/end. The schedule is server-authoritative; a gap in the chart is not a promise of availability until the read succeeds.
 

@@ -145,6 +145,10 @@ The owner screenshot showed the manual form remaining in place with the generic 
 
 The browser preview after deployment shows the live schedule, corrected manual guidance and 30/60/120-minute options; `npm run check`, `npm test` 64/64, `npm run build` and clean-server Playwright 12/12 pass. Code commits are `c45b420` and `3a92ae6`; production remains untouched.
 
+## Live schedule polling checkpoint — 2026-09-16
+
+The branch Schedule now polls the shared Calendar every 15 seconds only while the tab is visible, refreshes immediately on focus/visibility return, and records the actual last successful MYT sync time in the summary strip. Polls do not overlap: a changed date or focus event queues one follow-up read after the active request finishes. A failed poll retains the last chart as stale context and explicitly states that availability is not being claimed. The live preview was observed to update its refresh timestamp from 6:24:44 PM to 6:24:59 PM without a page reload. This is commit `dc7f925`.
+
 ## Client-demo banner checkpoint — 2026-09-16
 
 The prominent amber/yellow live-state banners were replaced with neutral Broadcast-panel status treatments while retaining truthful text: shared Calendar mode, owner workspace, live sync, and draft boundary. Live form output is neutral by default, coral on validation errors and green on success. The browser preview verified the neutral appearance and zero console errors. The styling commit is `7befa54`; the subsequent live draft-badge polish is `988d88b`.
