@@ -89,7 +89,7 @@ Update: pure hours-impact and resource-lifecycle guards now cover outside-propos
 
 ## Latest Race Control branch checkpoint — 2026-09-16
 
-The live-state UI correction is committed as `7249049` and pushed to `origin/codex/race-control-working`. It replaces the stale demo banner and synthetic inspector whenever the server-side Google/coordinator binding gate is present, while keeping local development fixture-safe. The latest branch alias version observed through Wrangler is 67.
+The live-state UI correction is committed as `7249049` and pushed to `origin/codex/race-control-working`; the documentation checkpoint is `3900f16`. It replaces the stale demo banner and synthetic inspector whenever the server-side Google/coordinator binding gate is present, while keeping local development fixture-safe. The latest branch alias version observed through Wrangler is 68.
 
 Verification: `npm run check` (0 errors, 0 warnings, 0 hints), `npm test` (60/60), `npm run build` (pass), and the local six-width Race Control Playwright suite (12/12) all pass. The first local rerun was discarded as an invalid environment attempt because it used an external localhost URL without a running server; after clearing only the generated Vite SSR cache and confirming the clean dev server, the configured suite passed. The in-app browser then verified the protected branch’s live shared-calendar agenda, live inspector state and zero console errors; a temporary public-home test tab also loaded with zero console errors.
 

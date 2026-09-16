@@ -242,7 +242,7 @@ The fresh feature-branch build and authenticated browser test are still pending.
 | Check | Result | Evidence |
 |---|---|---|
 | Live-state UI correction | Pass | Commit `7249049` replaces the stale demo banner and synthetic inspector when the server-side Google/coordinator binding gate is present; local fixture mode remains unchanged |
-| Feature branch sync | Pass | `codex/race-control-working` pushed to `origin`; latest observed Cloudflare branch alias version 67 |
+| Feature branch sync | Pass | `codex/race-control-working` pushed to `origin`; latest observed Cloudflare branch alias version 68 |
 | Local validation | Pass | `npm run check` clean; `npm test` 60/60; `npm run build` completed successfully |
 | Responsive browser suite | Pass | Configured local Playwright run after clearing only generated Vite cache: 12/12 at 375, 390, 430, 768, 1024 and 1440 CSS px |
 | Protected live browser read | Pass | In-app browser showed the Access-protected branch schedule, live shared-calendar agenda, live inspector-ready state and refresh timestamp; no customer details were recorded |
