@@ -105,7 +105,7 @@ The cancellation UI and live-state banner/sync labels are committed in `57bf428`
 
 The owner-confirmed Race Control/manual booking change is committed in `7180fb3` and deployed to the separate coordinator. Manual bookings now allow any future minute inside opening hours, no minimum-notice floor, and 30/60/120-minute durations. The existing three-day horizon, future-start guard, opening-hours check, Calendar busy/control checks and serialized allocation remain enforced. The public customer flow remains on 60/120 minutes, one-hour notice and hourly availability until an explicit customer-facing policy decision.
 
-Browser verification after the branch build shows the manual form with all three duration options and the minute-level/no-notice guidance; no second live reservation was created. Unit coverage now passes 64/64. The live manual path was previously proven end-to-end with an approved synthetic create/cancel test; this policy change itself has not created another live Calendar event.
+Browser verification after the branch build shows the manual form with all three duration options and the minute-level/no-notice guidance; no second live reservation was created. Unit coverage now passes 64/64 and the clean-server six-width Playwright suite passes 12/12. The live manual path was previously proven end-to-end with an approved synthetic create/cancel test; this policy change itself has not created another live Calendar event.
 
 ## Remaining work plan — dependency order
 
