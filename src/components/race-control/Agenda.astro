@@ -164,7 +164,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       fixtureMobile?.setAttribute("hidden", ""); fixtureMobile?.setAttribute("aria-hidden", "true");
       if (subtitle) subtitle.textContent = "MYT · shared Calendar";
       if (footer) footer.textContent = `Live Calendar read · refreshed ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))}`;
-      if (refreshSummary) refreshSummary.textContent = `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))} · every 15 sec while visible`;
+      if (refreshSummary) refreshSummary.textContent = `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))} · every 60 sec while visible`;
     } catch (error) {
       if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
       const staleContextAvailable = loadedResources.length > 0 && loadedWindow !== null;
@@ -201,7 +201,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   };
   const startPolling = () => {
     if (!liveEnabled || document.visibilityState !== "visible" || pollTimer !== undefined) return;
-    pollTimer = window.setInterval(() => { void refreshSchedule(); }, 15_000);
+    pollTimer = window.setInterval(() => { void refreshSchedule(); }, 60_000);
   };
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") { void refreshSchedule(); startPolling(); } else stopPolling();

@@ -414,3 +414,14 @@ The waste space came from sizing a resource row by **the number of events**, rat
 The user-supplied sidebar patch was applied as a reviewed integration rather than verbatim: its desktop/tablet behavior was retained, but its collapse selector was scoped above the mobile breakpoint so a persisted preference cannot make phone navigation disappear. Generated Playwright screenshots were restored after verification. No Calendar or production state changed.
 
 Cloudflare verification: the feature branch was uploaded as preview Worker version `98` under the `codex-race-control-working` alias at 2026-09-17 11:11:56 UTC. The production deployment list was inspected separately and was not changed. A new browser session reached the expected Cloudflare Access owner-login page; no login code was requested or submitted, so the protected remote visual read remains intentionally pending an authenticated owner session.
+
+## Schedule polling interval update (2026-09-17)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Visible-tab interval | Pass | The shared Calendar polling timer and the live Last sync summary now use 60 seconds |
+| Immediate reads preserved | Pass by implementation | Focus/visibility return, date changes, owner writes, and the manual refresh action still request an immediate schedule read |
+| Owner documentation | Pass | The Race Control plan and user guide now describe the 60-second visible-tab interval |
+| Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build`, and Playwright (18 passed; 6 intentional skips) |
+
+No Calendar or production mutation was made. The 60-second interval is a freshness/read-cost adjustment only; it does not alter final booking validation or availability safeguards.

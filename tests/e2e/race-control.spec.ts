@@ -12,6 +12,7 @@ test("Race Control shell is private-labelled, responsive, and free of browser er
   await expect(page.getByRole("button", { name: "Previous", exact: true })).toBeEnabled();
   await expect(page.getByRole("button", { name: "Today", exact: true })).toBeEnabled();
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeEnabled();
+  await expect(page.getByText("60 sec", { exact: true })).toBeVisible();
   await expect(page.locator("#agenda-title")).not.toHaveText("Sunday · 13 September 2026");
   await expect(page.getByText(/Any minute within opening hours; no one-hour notice floor/i)).toBeVisible();
   await expect(page.locator("#new-booking select[name='duration'] option")).toHaveText(["30 minutes", "60 minutes", "120 minutes"]);
