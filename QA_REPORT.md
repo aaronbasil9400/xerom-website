@@ -412,3 +412,5 @@ The waste space came from sizing a resource row by **the number of events**, rat
 | Static verification | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build` (pass), clean diff |
 
 The user-supplied sidebar patch was applied as a reviewed integration rather than verbatim: its desktop/tablet behavior was retained, but its collapse selector was scoped above the mobile breakpoint so a persisted preference cannot make phone navigation disappear. Generated Playwright screenshots were restored after verification. No Calendar or production state changed.
+
+Cloudflare verification: the feature branch was uploaded as preview Worker version `98` under the `codex-race-control-working` alias at 2026-09-17 11:11:56 UTC. The production deployment list was inspected separately and was not changed. A new browser session reached the expected Cloudflare Access owner-login page; no login code was requested or submitted, so the protected remote visual read remains intentionally pending an authenticated owner session.
