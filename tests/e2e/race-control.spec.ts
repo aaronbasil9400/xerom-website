@@ -28,6 +28,38 @@ test("Race Control shell is private-labelled, responsive, and free of browser er
   await page.screenshot({ path: `.impeccable/review/race-control/${testInfo.project.name}.png`, fullPage: true, animations: "disabled" });
 });
 
+test("Race Control sidebar collapses, persists, and restores without narrowing the work area", async ({ page, viewport }) => {
+  test.skip((viewport?.width ?? 0) < 701, "Phone navigation remains a horizontal bar.");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/race-control/schedule");
+  const toggle = page.getByRole("button", { name: "Collapse section navigation" });
+  const nav = page.locator("#rc-sidebar");
+  await expect(nav).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await toggle.click();
+  await expect(nav).toBeHidden();
+  await expect(page.getByRole("button", { name: "Expand section navigation" })).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(async () => (await page.locator(".rc-shell").evaluate((element) => getComputedStyle(element).gridTemplateColumns)).split(" ")[0]).toBe("0px");
+  const widths = await page.evaluate(() => ({ shell: document.querySelector<HTMLElement>(".rc-shell")!.getBoundingClientRect().width, main: document.querySelector<HTMLElement>(".rc-main")!.getBoundingClientRect().width }));
+  expect(widths.main).toBeGreaterThan(widths.shell * 0.9);
+  await page.reload();
+  await expect(nav).toBeHidden();
+  await page.getByRole("button", { name: "Expand section navigation" }).click();
+  await expect(nav).toBeVisible();
+  await expect(page.getByRole("button", { name: "Collapse section navigation" })).toHaveAttribute("aria-expanded", "true");
+});
+
+test("Race Control phone navigation ignores a saved desktop collapse preference", async ({ page, viewport }) => {
+  test.skip((viewport?.width ?? 0) >= 701, "Only phone widths use the horizontal navigation bar.");
+  await page.addInitScript(() => localStorage.setItem("rc-sidebar", "collapsed"));
+  await page.goto("/race-control/schedule");
+  await expect(page.locator("#rc-sidebar")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Bookings", exact: true })).toBeVisible();
+  await expect(page.locator("[data-rc-sidebar-toggle]")).toBeHidden();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+});
+
 test("Race Control settings routes remain explicit drafts", async ({ page }) => {
   for (const path of ["resources", "hours", "pricing", "offers", "rules"]) {
     await page.goto(`/race-control/settings/${path}`);

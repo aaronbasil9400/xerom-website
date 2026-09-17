@@ -400,3 +400,15 @@ No production code or Calendar state was changed. The attached screenshot was us
 | Playwright six-width suite | Environment blocked | Chromium was denied the macOS Mach-port rendezvous permission before any test page loaded; this is recorded as unrun, not a product failure |
 
 The waste space came from sizing a resource row by **the number of events**, rather than the number of concurrent visual lanes. The implementation now uses a typed pure lane allocator with half-open intervals, so only genuine time overlap adds vertical space. The implementation and initial log are commit `16c64c5` on `origin/codex/race-control-working`. No live bookings, blocks, or calendar events were created, edited, or deleted.
+
+## Collapsible Race Control navigation checkpoint (2026-09-17)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Desktop/tablet collapse | Pass | The header control collapses the 701px-and-up section navigation, updates its accessible label/expanded state, and gives the work area more than 90% of the shell width |
+| Persistence and restore | Pass | The selected state is stored in local storage before navigation; reload remains collapsed and the same control restores the rail |
+| Phone safety | Pass | At 375, 390 and 430px, a saved desktop collapse preference does not hide the horizontal navigation; the collapse control is intentionally unavailable |
+| Responsive browser suite | Pass | Playwright: 18 passed, 6 intentional viewport-specific skips across 375, 390, 430, 768, 1024 and 1440px |
+| Static verification | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build` (pass), clean diff |
+
+The user-supplied sidebar patch was applied as a reviewed integration rather than verbatim: its desktop/tablet behavior was retained, but its collapse selector was scoped above the mobile breakpoint so a persisted preference cannot make phone navigation disappear. Generated Playwright screenshots were restored after verification. No Calendar or production state changed.

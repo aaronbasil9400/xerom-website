@@ -9,7 +9,7 @@ const links = [
   { id:'activity', label:'Changes & Activity', href:'/race-control/activity' }, { id:'connection', label:'Connection', href:'/race-control/connection' },
 ];
 ---
-<nav class="rc-nav" aria-label="Race Control sections">
+<nav class="rc-nav" id="rc-sidebar" aria-label="Race Control sections">
   <span class="rc-nav-cue" aria-hidden="true">Swipe for all sections</span>
   <p class="rc-nav-label">Front desk</p>
   {links.slice(0,2).map((link) => <a class:list={{active: active === link.id}} href={link.href} aria-current={active === link.id ? 'page' : undefined}>{link.label}</a>)}
