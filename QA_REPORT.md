@@ -425,3 +425,15 @@ Cloudflare verification: the feature branch was uploaded as preview Worker versi
 | Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build`, and Playwright (18 passed; 6 intentional skips) |
 
 No Calendar or production mutation was made. The 60-second interval is a freshness/read-cost adjustment only; it does not alter final booking validation or availability safeguards.
+
+## Schedule chrome reduction checkpoint (2026-09-17)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Owner-requested removals | Pass | Removed the workspace banner, Draft Surface badge, shared-Calendar explanatory notice, and four-cell status strip from the Schedule surface |
+| Operational controls retained | Pass | Live Calendar state, refresh control, date/service/search toolbar, schedule failure/stale states, chart, inspector, booking, and block-time actions remain available |
+| Desktop/mobile parity | Pass | Fresh 1440px and 375px visual screenshots show the Schedule begins directly with title and toolbar, with no displaced or duplicate chrome |
+| Overflow and browser health | Pass | Playwright verified no horizontal page overflow and no browser console/request failures at 375, 390, 430, 768, 1024, and 1440px |
+| Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build`, and Playwright (18 passed; 6 intentional skips) |
+
+The attached screenshot was used only to identify the owner-selected elements. No Calendar or production state changed.

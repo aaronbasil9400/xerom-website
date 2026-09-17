@@ -37,7 +37,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   const fixtureTimeline = document.querySelector<HTMLElement>(".rc-agenda");
   const fixtureMobile = document.querySelector<HTMLElement>(".rc-mobile-agenda-list");
   const footer = document.querySelector<HTMLElement>(".rc-agenda-panel .rc-panel-foot");
-  const refreshSummary = document.querySelector<HTMLElement>("[data-rc-refresh-summary]");
   const heading = document.querySelector<HTMLElement>("#agenda-title");
   const subtitle = document.querySelector<HTMLElement>("[data-rc-agenda-subtitle]");
   const dateInput = document.querySelector<HTMLInputElement>("[data-rc-business-date]");
@@ -77,7 +76,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
   let refreshInFlight = false;
   let refreshQueued = false;
   let pollTimer: number | undefined;
-  let lastSuccessfulReadAt: string | null = null;
   let loadedEvents: LiveEvent[] = [];
   let loadedResources: LiveResource[] = [];
   let loadedWindow: ScheduleWindow | null = null;
@@ -156,7 +154,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
       loadedResources = payload.data.resources;
       loadedWindow = payload.data.businessWindow;
-      lastSuccessfulReadAt = payload.serverNow;
       loadedEvents = loadedResources.flatMap((resource) => resource.events.map((event) => ({ ...event, resourceId: event.resourceId ?? resource.resourceId, resourceName: resource.displayName, serviceId: event.serviceId ?? resource.serviceId }))).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
       renderLiveEvents();
       liveContainer.classList.remove("rc-schedule-stale");
@@ -164,7 +161,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       fixtureMobile?.setAttribute("hidden", ""); fixtureMobile?.setAttribute("aria-hidden", "true");
       if (subtitle) subtitle.textContent = "MYT · shared Calendar";
       if (footer) footer.textContent = `Live Calendar read · refreshed ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))}`;
-      if (refreshSummary) refreshSummary.textContent = `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(payload.serverNow))} · every 60 sec while visible`;
     } catch (error) {
       if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
       const staleContextAvailable = loadedResources.length > 0 && loadedWindow !== null;
@@ -181,7 +177,6 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       fixtureMobile?.setAttribute("hidden", ""); fixtureMobile?.setAttribute("aria-hidden", "true");
       if (subtitle) subtitle.textContent = "MYT · live read unavailable";
       if (footer) footer.textContent = "Live Calendar read unavailable · retry or reconnect Google.";
-      if (refreshSummary) refreshSummary.textContent = lastSuccessfulReadAt ? `Last sync ${new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(lastSuccessfulReadAt))} · refresh failed` : "Refresh failed · retry when Calendar is available";
     } finally {
       refreshInFlight = false;
       if (requestId === requestSequence) liveContainer.setAttribute("aria-busy", "false");

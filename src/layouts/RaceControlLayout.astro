@@ -19,7 +19,6 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
   <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex, nofollow" /><meta name="theme-color" content="#080808" /><title>{title} · Race Control · Xerom</title><script is:inline>try { if (localStorage.getItem("rc-sidebar") === "collapsed") document.documentElement.classList.add("rc-sidebar-collapsed"); } catch {}</script></head>
   <body class="rc-body">
     <a class="rc-skip" href="#main-content">Skip to main content</a>
-    <div class:list={{'rc-demo-banner':true,'rc-live-banner':liveEnabled}} role="status">{liveEnabled ? 'Owner workspace · shared Google Calendar connection active' : 'Demo fixture · private owner workspace · no live Calendar connection'}</div>
     <header class="rc-topbar">
       <a class="rc-brand" href="/race-control/" aria-label="Xerom Race Control home"><img src={xeromLogo.src} alt="Xerom" /></a>
       <div class="rc-top-title"><strong>Race Control</strong><span>Owner front desk</span></div>
@@ -31,7 +30,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     <div class="rc-shell">
       <RaceControlNav active={section} />
       <main class="rc-main" id="main-content">
-        <div class="rc-page-heading"><h1>{title}</h1><span class:list={{'rc-draft-pill':true,'rc-live-pill':liveEnabled}}>Draft surface</span></div>
+        <div class="rc-page-heading"><h1>{title}</h1></div>
         <slot />
       </main>
     </div>

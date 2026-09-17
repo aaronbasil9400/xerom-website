@@ -2,7 +2,6 @@
 import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
 import Agenda from '../../components/race-control/Agenda.astro';
 import BookingInspector from '../../components/race-control/BookingInspector.astro';
-import DemoNotice from '../../components/race-control/DemoNotice.astro';
 import BookingCreateForm from '../../components/race-control/BookingCreateForm.astro';
 import BlockTimeForm from '../../components/race-control/BlockTimeForm.astro';
 import { env as cloudflareEnv } from 'cloudflare:workers';
@@ -14,7 +13,6 @@ const runtimeEnv = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
 const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEnv.GOOGLE_PRIVATE_KEY && runtimeEnv.BOOKING_COORDINATOR);
 ---
 <RaceControlLayout title="Schedule" section="schedule">
-  <DemoNotice connected={liveEnabled} />
   <div class="rc-toolbar" aria-label="Schedule controls">
     <div class="rc-toolbar-group">
       <button type="button" data-rc-date-nav="previous">Previous</button><button type="button" data-rc-date-nav="today">Today</button><button type="button" data-rc-date-nav="next">Next</button>
@@ -26,12 +24,6 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
       <label class="rc-toolbar-search"><span>Search</span><input data-rc-schedule-search type="search" placeholder={liveEnabled ? 'Booking, resource or status' : 'Search coming next'} disabled={!liveEnabled} /></label>
     </div>
     <div class="rc-toolbar-actions"><a class="rc-button" href="#block-time">Block time</a><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
-  </div>
-  <div class="rc-summary">
-    <div><b>Shared record</b><strong>Google</strong><small>same calendars as main site</small></div>
-    <div><b>Refresh</b><strong>60 sec</strong><small data-rc-refresh-summary>while this tab is visible</small></div>
-    <div><b>Calendar health</b><strong>Live read</strong><small>fails closed on missing data</small></div>
-    <div><b>Timezone</b><strong>MYT</strong><small>Asia/Kuala_Lumpur</small></div>
   </div>
   <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} businessDate={malaysiaToday} /><BookingInspector live={liveEnabled} /></div>
   <BookingCreateForm />
