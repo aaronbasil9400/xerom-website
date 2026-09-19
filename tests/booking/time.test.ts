@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { manualBookingRules } from "@/config/booking";
-import { buildAvailability, generateCandidateSlots, localIso, overlaps, validateBookingWindow } from "@/lib/booking/time";
+import { buildAvailability, generateCandidateSlots, localIso, overlaps, validateBookingOperatingWindow, validateBookingWindow } from "@/lib/booking/time";
+import { addRecoveryFencesToBusy } from "@/lib/booking/resources";
 
 describe("booking time rules", () => {
   it("builds Malaysia timestamps across midnight", () => {
@@ -41,6 +42,12 @@ describe("booking time rules", () => {
     expect(validateBookingWindow("2026-09-10T13:59:00+08:00", 60, now, manualBookingRules)).toMatch(/future/i);
     expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 45, now, manualBookingRules)).toMatch(/30|60|120/);
   });
+
+  it("validates reschedule and extension intervals against overnight opening hours", () => {
+    expect(validateBookingOperatingWindow("2026-09-13T23:30:00+08:00", "2026-09-14T01:00:00+08:00")).toBeNull();
+    expect(validateBookingOperatingWindow("2026-09-13T23:30:00+08:00", "2026-09-14T01:30:00+08:00")).toMatch(/opening hours/i);
+    expect(validateBookingOperatingWindow("2026-09-13T11:30:00+08:00", "2026-09-13T12:30:00+08:00")).toMatch(/opening hours/i);
+  });
 });
 
 describe("resource availability", () => {
@@ -57,5 +64,17 @@ describe("resource availability", () => {
     const result = buildAvailability(slot, { ...groups, "regular-sim": [...groups["regular-sim"]], "pro-sim": [...groups["pro-sim"]], ps5: [...groups.ps5] }, { control: [{ start: slot[0].start, end: slot[0].end }] }, "control", { "regular-sim": 1, "pro-sim": 0, ps5: 0 });
     expect(result[0].available).toBe(false);
     expect(result[0].capacity.ps5).toBe(0);
+  });
+
+  it("maps recovery fences into the same busy-calendar model", () => {
+    const env = { REGULAR_SIM_01_CALENDAR_ID: "r1", BOOKING_CONTROL_CALENDAR_ID: "control" } as CloudflareEnv;
+    const busy = addRecoveryFencesToBusy(env, {}, [
+      { resourceId: "regular-01", start: slot[0].start, end: slot[0].end },
+      { resourceId: "booking-control", start: slot[0].start, end: slot[0].end },
+    ]);
+    const result = buildAvailability(slot, { ...groups, "regular-sim": [...groups["regular-sim"]], "pro-sim": [...groups["pro-sim"]], ps5: [...groups.ps5] }, busy, "control", { "regular-sim": 1, "pro-sim": 0, ps5: 0 });
+    expect(busy.r1).toHaveLength(1);
+    expect(result[0].available).toBe(false);
+    expect(result[0].capacity["regular-sim"]).toBe(0);
   });
 });

@@ -74,6 +74,37 @@ export function overlaps(aStart: string, aEnd: string, bStart: string, bEnd: str
   return Date.parse(aStart) < Date.parse(bEnd) && Date.parse(bStart) < Date.parse(aEnd);
 }
 
+export function validateBookingOperatingWindow(start: string, end: string, enforceSlotAlignment = false): string | null {
+  const startMs = Date.parse(start);
+  const endMs = Date.parse(end);
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return "Choose a valid booking interval.";
+
+  const startParts = malaysiaLocalParts(new Date(startMs));
+  const endParts = malaysiaLocalParts(new Date(endMs));
+  if (startParts.second !== 0 || endParts.second !== 0) return "Choose a time on the minute.";
+  const startLocalMinutes = localCalendarMinutes(startParts);
+  const endLocalMinutes = localCalendarMinutes(endParts);
+  const startDayMinutes = Date.UTC(startParts.year, startParts.month - 1, startParts.day) / 60_000;
+  const windowContexts = [startDayMinutes, startDayMinutes - 24 * 60].map((dayMinutes) => {
+    const day = new Date(dayMinutes * 60_000);
+    const parts = { year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate(), hour: 0, minute: 0, second: 0 };
+    return { dayMinutes, windows: bookingRules.weeklyHours[localWeekdayFromParts(parts)] ?? [] };
+  });
+  const containingWindow = windowContexts.some(({ dayMinutes, windows }) => {
+    const relativeStart = startLocalMinutes - dayMinutes;
+    const relativeEnd = endLocalMinutes - dayMinutes;
+    return windows.some((window) => {
+      const open = minutesFromClock(window.open);
+      const close = minutesFromClock(window.close);
+      return relativeStart >= open
+        && relativeEnd <= close
+        && (!enforceSlotAlignment || (relativeStart - open) % bookingRules.slotIntervalMinutes === 0);
+    });
+  });
+  if (!containingWindow) return enforceSlotAlignment ? "Choose an hourly slot during opening hours." : "Choose a slot during opening hours.";
+  return null;
+}
+
 export function validateBookingWindow(start: string, durationMinutes: number, now = new Date(), policy: BookingWindowPolicy = bookingRules): string | null {
   const startMs = Date.parse(start);
   if (!Number.isFinite(startMs)) return "Invalid start time.";
@@ -82,42 +113,11 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
   if (startMs > now.getTime() + policy.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
   if (!policy.allowedDurationsMinutes.includes(durationMinutes)) return policy.durationErrorMessage ?? "Choose a valid session duration.";
 
-  const startParts = malaysiaLocalParts(new Date(startMs));
-  if (startParts.second !== 0) return "Choose a time on the minute.";
-  const endParts = malaysiaLocalParts(new Date(startMs + durationMinutes * 60_000));
-  const startLocalMinutes = localCalendarMinutes(startParts);
-  const endLocalMinutes = localCalendarMinutes(endParts);
-  const elapsedLocalMinutes = endLocalMinutes - startLocalMinutes;
-  const startDayMinutes = Date.UTC(startParts.year, startParts.month - 1, startParts.day) / 60_000;
-  // An overnight window (for example Sunday 12:00–25:00) owns the
-  // after-midnight slots on the following local date. Check both the start
-  // date and the previous date so a 00:00 Monday booking remains valid.
-  const windowContexts = [startDayMinutes, startDayMinutes - 24 * 60].map((dayMinutes) => {
-    const day = new Date(dayMinutes * 60_000);
-    const parts = { year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate(), hour: 0, minute: 0, second: 0 };
-    return { dayMinutes, windows: bookingRules.weeklyHours[localWeekdayFromParts(parts)] ?? [] };
-  });
-  const containingWindow = windowContexts.some(({ dayMinutes, windows }) => {
-    const relativeStart = startLocalMinutes - dayMinutes;
-    return windows.some((window) => {
-      const open = minutesFromClock(window.open);
-      const close = minutesFromClock(window.close);
-      return relativeStart >= open && relativeStart + elapsedLocalMinutes <= close;
-    });
-  });
-  if (!containingWindow) return "Choose a slot during opening hours.";
-  const alignedToHourlyGrid = windowContexts.some(({ dayMinutes, windows }) => {
-    const relativeStart = startLocalMinutes - dayMinutes;
-    return windows.some((window) => {
-      const open = minutesFromClock(window.open);
-      const close = minutesFromClock(window.close);
-      return relativeStart >= open
-        && relativeStart + elapsedLocalMinutes <= close
-        && (relativeStart - open) % bookingRules.slotIntervalMinutes === 0;
-    });
-  });
-  if (policy.enforceSlotAlignment !== false && !alignedToHourlyGrid) return "Choose an hourly slot.";
-  return null;
+  return validateBookingOperatingWindow(
+    start,
+    new Date(startMs + durationMinutes * 60_000).toISOString(),
+    policy.enforceSlotAlignment !== false,
+  );
 }
 
 export function generateCandidateSlots(date: string, durationMinutes: 60 | 120, now = new Date()): Array<{ start: string; end: string }> {

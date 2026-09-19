@@ -1,6 +1,6 @@
 # Client Race Control setup
 
-Status: working runbook; update after each verified external setup step.  
+Status: working runbook; update after each verified external setup step.
 Scope: configure an owner-only Race Control preview and later a production deployment while preserving the existing Google Calendar booking record.
 
 Operator walkthrough: [RACE_CONTROL_USER_GUIDE.md](RACE_CONTROL_USER_GUIDE.md). Use that guide for the live preview demo; use this document when recreating Cloudflare, Google and branch configuration.

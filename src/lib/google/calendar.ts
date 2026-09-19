@@ -46,8 +46,8 @@ interface GoogleEventRecord {
   summary?: string;
   description?: string;
   status?: string;
-  start?: { dateTime?: string };
-  end?: { dateTime?: string };
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
   visibility?: string;
   transparency?: string;
   extendedProperties?: { private?: Record<string, string> };
@@ -76,27 +76,40 @@ function eventMatchesCreate(existing: GoogleEventRecord, expected: CalendarEvent
 }
 
 export async function insertEventWithToken(token: string, event: CalendarEventInput): Promise<string> {
-  const response = await fetch(`${API}/calendars/${encodeURIComponent(event.calendarId)}/events`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      id: event.eventId,
-      summary: event.summary,
-      description: event.description,
-      start: { dateTime: event.start, timeZone: "Asia/Kuala_Lumpur" },
-      end: { dateTime: event.end, timeZone: "Asia/Kuala_Lumpur" },
-      visibility: "private",
-      transparency: "opaque",
-      extendedProperties: { private: event.privateProperties },
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API}/calendars/${encodeURIComponent(event.calendarId)}/events`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        id: event.eventId,
+        summary: event.summary,
+        description: event.description,
+        start: { dateTime: event.start, timeZone: "Asia/Kuala_Lumpur" },
+        end: { dateTime: event.end, timeZone: "Asia/Kuala_Lumpur" },
+        visibility: "private",
+        transparency: "opaque",
+        extendedProperties: { private: event.privateProperties },
+      }),
+    });
+  } catch {
+    try {
+      const existing = await readEventWithToken(token, event.calendarId, event.eventId);
+      if (existing && eventMatchesCreate(existing, event)) return event.eventId;
+    } catch {
+      // The deterministic read is best-effort; an unreadable outcome remains fenced by the caller.
+    }
+    throw new CalendarMutationUncertainError("Calendar event creation outcome is uncertain.");
+  }
   if (response.status === 409) {
     const existing = await readEventWithToken(token, event.calendarId, event.eventId);
     if (existing && eventMatchesCreate(existing, event)) return event.eventId;
     throw new Error("Calendar event ID conflict did not match this operation.");
   }
+  if (response.status >= 500) throw new CalendarMutationUncertainError(`Calendar event creation outcome is uncertain (${response.status}).`);
   if (!response.ok) throw new Error(`Calendar event creation failed (${response.status}).`);
-  const data = await response.json<{ id: string }>();
+  const data = await response.json<{ id: string }>().catch(() => null);
+  if (!data) throw new CalendarMutationUncertainError("Calendar event creation returned an unreadable success response.");
   if (!data.id) throw new Error("Calendar event creation returned an invalid response.");
   return data.id;
 }
@@ -120,6 +133,13 @@ export interface CalendarEventRecord {
   status: string;
   transparency: string;
   privateProperties: Record<string, string>;
+  allDay: boolean;
+}
+
+function eventBoundary(value: { dateTime?: string; date?: string } | undefined): { value: string; allDay: boolean } | null {
+  if (value?.dateTime) return { value: value.dateTime, allDay: false };
+  if (value?.date) return { value: `${value.date}T00:00:00+08:00`, allDay: true };
+  return null;
 }
 
 export async function listCalendarEvents(env: CloudflareEnv, calendarId: string, timeMin: string, timeMax: string, privateProperty?: string): Promise<CalendarEventRecord[]> {
@@ -141,19 +161,20 @@ export async function listCalendarEventsWithToken(token: string, calendarId: str
     const data = await response.json<{ items?: GoogleEventRecord[]; nextPageToken?: string }>();
     if (!Array.isArray(data.items)) throw new Error("Calendar event listing returned an invalid response.");
     for (const item of data.items) {
-      const start = item.start?.dateTime;
-      const end = item.end?.dateTime;
+      const start = eventBoundary(item.start);
+      const end = eventBoundary(item.end);
       if (!item.id || !start || !end) continue;
       events.push({
         id: item.id,
         etag: item.etag ?? "",
         summary: item.summary ?? "Calendar block",
         description: item.description ?? "",
-        start,
-        end,
+        start: start.value,
+        end: end.value,
         status: item.status ?? "confirmed",
         transparency: item.transparency ?? "opaque",
         privateProperties: item.extendedProperties?.private ?? {},
+        allDay: start.allDay || end.allDay,
       });
     }
     pageToken = data.nextPageToken;
@@ -162,6 +183,7 @@ export async function listCalendarEventsWithToken(token: string, calendarId: str
 }
 
 export class CalendarVersionConflictError extends Error {}
+export class CalendarMutationUncertainError extends Error {}
 
 export interface CalendarEventPatch {
   summary?: string;
@@ -185,15 +207,22 @@ export async function patchCalendarEventWithToken(token: string, calendarId: str
   if (patch.end !== undefined) body.end = { dateTime: patch.end, timeZone: "Asia/Kuala_Lumpur" };
   if (patch.transparency !== undefined) body.transparency = patch.transparency;
   if (patch.privateProperties !== undefined) body.extendedProperties = { private: patch.privateProperties };
-  const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`, {
-    method: "PATCH",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "if-match": etag },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`, {
+      method: "PATCH",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "if-match": etag },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new CalendarMutationUncertainError("Calendar event update outcome is uncertain.");
+  }
   if (response.status === 412) throw new CalendarVersionConflictError("The Calendar event changed outside Race Control.");
   if (response.status === 404 || response.status === 410) throw new Error("Calendar event no longer exists.");
+  if (response.status >= 500) throw new CalendarMutationUncertainError(`Calendar event update outcome is uncertain (${response.status}).`);
   if (!response.ok) throw new Error(`Calendar event update failed (${response.status}).`);
-  const data = await response.json<GoogleEventRecord>();
+  const data = await response.json<GoogleEventRecord>().catch(() => null);
+  if (!data) throw new CalendarMutationUncertainError("Calendar event update returned an unreadable success response.");
   if (!data.id || !data.start?.dateTime || !data.end?.dateTime) throw new Error("Calendar event update returned an invalid response.");
   return {
     id: data.id,
@@ -205,5 +234,6 @@ export async function patchCalendarEventWithToken(token: string, calendarId: str
     status: data.status ?? "confirmed",
     transparency: data.transparency ?? "opaque",
     privateProperties: data.extendedProperties?.private ?? {},
+    allDay: false,
   };
 }

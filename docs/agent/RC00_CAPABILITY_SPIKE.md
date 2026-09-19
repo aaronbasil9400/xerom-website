@@ -1,6 +1,6 @@
 # RC-00 capability spike
 
-Date: 2026-09-16  
+Date: 2026-09-16
 Status: isolated local capability spike; no production binding or external mutation
 
 ## Outcome

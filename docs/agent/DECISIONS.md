@@ -127,3 +127,12 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Use integer sen and the planned lowest-eligible-price algorithm. Synthetic offers exist only in tests; seed configuration contains no active promotion. Controller add-ons remain gated until the owner confirms capacity and billing unit.
 - Missing FreeBusy calendar entries now fail closed. A Google event insert `409` counts as an idempotent replay only after the existing deterministic event matches the interval and private operation properties.
 - The first dashboard surface is an authenticated, `noindex` Operate shell with explicit demo fixtures. It is not evidence that booking mutations, settings publication, or Google connection are complete.
+## 2026-09-19 — Fence and compensate grouped Calendar mutations
+
+- Replace request-wide `blockConcurrencyWhile` network locks with a per-instance mutation queue. Persist safety state before external Calendar writes so an isolate restart cannot silently reopen capacity.
+- For grouped owner actions, patch events conditionally with ETags and compensate already-applied patches in reverse order if a later patch fails.
+- Persist per-resource recovery fences before grouped writes. Clear them only after complete success or verified compensation; retain them when compensation is uncertain.
+- Make both public availability and final coordinator allocation consult active fences. This deliberately prefers temporary unavailability over exposing capacity that may be partially modified.
+- Treat all-day Google Calendar events as Malaysia-local blocking intervals and apply the same opening-hours, horizon, venue-control, lifecycle-state, and conflict checks to owner reschedules/extensions.
+- Keep edge rate limiting as a high-priority, explicitly deferred post-demo launch task per owner instruction; the deferral does not satisfy the public-launch gate.
+- Enable website Worker logs at full sampling and traces at 10%, matching the coordinator, so the production cutover has searchable failure evidence without logging booking payloads or personal data.

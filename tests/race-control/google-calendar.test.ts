@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { insertEventWithToken, listCalendarEventsWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
+import { insertEventWithToken, listCalendarEventsWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarMutationUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -49,6 +49,20 @@ describe("Google Calendar fail-closed adapters", () => {
     await expect(insertEventWithToken("token", event)).rejects.toThrow("did not match");
   });
 
+  it("reconciles a lost insert response through the deterministic event ID", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockRejectedValueOnce(new Error("connection reset"))
+      .mockResolvedValueOnce(Response.json({
+        id: event.eventId,
+        start: { dateTime: event.start },
+        end: { dateTime: event.end },
+        visibility: "private",
+        transparency: "opaque",
+        extendedProperties: { private: event.privateProperties },
+      })));
+    await expect(insertEventWithToken("token", event)).resolves.toBe(event.eventId);
+  });
+
   it("lists paginated events with private booking metadata", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(Response.json({ items: [{ id: "event-1", etag: "etag-1", summary: "XR-FIXTURE", start: { dateTime: event.start }, end: { dateTime: event.end }, status: "confirmed", transparency: "opaque", extendedProperties: { private: { bookingId: "fixture-booking" } } }], nextPageToken: "next" }))
@@ -61,6 +75,19 @@ describe("Google Calendar fail-closed adapters", () => {
     expect(fetchMock.mock.calls[1][0]).toContain("pageToken=next");
   });
 
+  it("keeps all-day events as blocking Malaysia-local intervals", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({
+      items: [{ id: "all-day-closure", summary: "Venue closure", start: { date: "2026-09-16" }, end: { date: "2026-09-17" } }],
+    })));
+    const events = await listCalendarEventsWithToken("token", "fixture-calendar", "2026-09-16T00:00:00+08:00", "2026-09-17T00:00:00+08:00");
+    expect(events[0]).toMatchObject({
+      start: "2026-09-16T00:00:00+08:00",
+      end: "2026-09-17T00:00:00+08:00",
+      allDay: true,
+      transparency: "opaque",
+    });
+  });
+
   it("patches only owned fields with If-Match and exposes external edits as 412", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(Response.json({ id: event.eventId, etag: "etag-2", summary: "Cancelled", start: { dateTime: event.start }, end: { dateTime: event.end }, transparency: "transparent", extendedProperties: { private: { ...event.privateProperties, status: "cancelled" } } }));
     vi.stubGlobal("fetch", fetchMock);
@@ -70,5 +97,8 @@ describe("Google Calendar fail-closed adapters", () => {
 
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 412 })));
     await expect(patchCalendarEventWithToken("token", event.calendarId, event.eventId, { transparency: "opaque" }, "etag-1")).rejects.toBeInstanceOf(CalendarVersionConflictError);
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("connection reset")));
+    await expect(patchCalendarEventWithToken("token", event.calendarId, event.eventId, { transparency: "opaque" }, "etag-1")).rejects.toBeInstanceOf(CalendarMutationUncertainError);
   });
 });

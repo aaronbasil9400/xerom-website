@@ -8,6 +8,8 @@ const headers = { "content-type": "application/json; charset=utf-8", "cache-cont
 
 export const POST: APIRoute = async ({ request }) => {
   if (!verifyOwnerMutationOrigin(request)) return new Response(JSON.stringify({ error: { code: "CSRF_REJECTED", message: "Refresh Race Control and try again.", retryable: false } }), { status: 403, headers });
+  if (!request.headers.get("content-type")?.includes("application/json")) return new Response(JSON.stringify({ error: { code: "CONTENT_TYPE", message: "Send JSON.", retryable: false } }), { status: 415, headers });
+  if (Number(request.headers.get("content-length") ?? 0) > 12_000) return new Response(JSON.stringify({ error: { code: "TOO_LARGE", message: "The block request is too large.", retryable: false } }), { status: 413, headers });
   const parsed = blockTimeRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return new Response(JSON.stringify({ error: { code: "INVALID_BLOCK", message: "Review the block interval and affected resources.", retryable: false } }), { status: 400, headers });
   const env = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;

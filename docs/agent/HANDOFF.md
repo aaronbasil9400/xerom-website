@@ -1,6 +1,24 @@
 # Agent Handoff
 
-Last updated: 2026-09-16
+Last updated: 2026-09-19
+
+## Merge-hardening checkpoint — 2026-09-19 (in progress)
+
+The owner requested that the feature branch be hardened, verified, merged to `main`, and checked against the live website/coordinator/Google Calendar integration. The initial audit found three merge blockers: owner reschedule/extension bypassed operating-window and Booking Control rules; grouped Calendar patches could leave partial state without compensation/fencing; and all-day Calendar events were discarded by the event adapter. Server lifecycle transitions also relied on UI visibility rather than coordinator enforcement.
+
+Implementation now in progress on `codex/race-control-working`:
+
+- Google event listing preserves all-day events as Malaysia-local half-open intervals.
+- Booking time logic exposes reusable full-interval opening-hours validation.
+- Grouped mutations have a tested compensation helper.
+- The coordinator uses a per-instance serialized mutation queue, writes durable per-resource recovery fences before grouped changes, validates lifecycle transitions and reschedule/extension policy server-side, checks resource and Booking Control conflicts, and retains fences when rollback is uncertain.
+- Public availability and final booking allocation consult the same recovery fences.
+- Rate limiting is recorded as a high-priority post-client-demo TODO at the owner’s request; it remains required before public launch.
+- Deployment documentation now names `xerom-race-control-coordinator`, matching the branch config and current Cloudflare binding.
+
+Current verification: `npm run check` passed with zero diagnostics; `npm test` passed 76/76; media verification and production build passed; generated Worker types are current; `git diff --check` passes; both website and coordinator Wrangler dry-runs pass; and the clean-server six-width Playwright suite passed 55 tests with 23 intentional viewport-specific skips. The first Playwright attempt hit a stale 31-minute Astro/Vite process returning HTTP 500 because an optimized SSR module disappeared after config regeneration; that run was stopped, the server was cleanly restarted, a `200` response was verified, and the complete rerun passed. No Calendar write, deployment, production traffic change, Access change, or merge has occurred during this hardening checkpoint yet. Preserve the untracked owner file `race-control-sidebar-collapse.patch`.
+
+Remaining sequence: inspect the final diff; commit and push the feature branch; deploy the coordinator before the website because availability now consumes its recovery-fence contract; verify the branch build; merge into `main`; verify the main build/deployment and read-only live endpoints; then run a clearly labelled real Calendar smoke booking and cleanup if deployment credentials are available.
 
 ## Current state
 

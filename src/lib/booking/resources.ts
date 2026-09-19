@@ -1,4 +1,5 @@
 import { serviceCore, type ServiceId } from "@/config/service-core";
+import type { BusyByCalendar } from "./types";
 
 export function calendarGroups(env: CloudflareEnv): Record<ServiceId, string[]> {
   return Object.fromEntries(Object.entries(serviceCore).map(([id, service]) => [
@@ -26,4 +27,16 @@ export function calendarIdForResource(env: CloudflareEnv, resourceId: string): s
     "pro-01": env.PRO_SIM_01_CALENDAR_ID, "ps5-01": env.PS5_01_CALENDAR_ID, "ps5-02": env.PS5_02_CALENDAR_ID, "booking-control": env.BOOKING_CONTROL_CALENDAR_ID,
   };
   return entries[resourceId] ?? null;
+}
+
+export function addRecoveryFencesToBusy(
+  env: CloudflareEnv,
+  busy: BusyByCalendar,
+  fences: Array<{ resourceId: string; start: string; end: string }>,
+): BusyByCalendar {
+  for (const fence of fences) {
+    const calendarId = calendarIdForResource(env, fence.resourceId);
+    if (calendarId) (busy[calendarId] ??= []).push({ start: fence.start, end: fence.end });
+  }
+  return busy;
 }

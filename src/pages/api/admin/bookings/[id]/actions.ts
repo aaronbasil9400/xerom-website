@@ -8,6 +8,8 @@ const headers = { "content-type": "application/json; charset=utf-8", "cache-cont
 
 export const POST: APIRoute = async ({ request, params }) => {
   if (!verifyOwnerMutationOrigin(request)) return new Response(JSON.stringify({ error: { code: "CSRF_REJECTED", message: "Refresh Race Control and try again.", retryable: false } }), { status: 403, headers });
+  if (!request.headers.get("content-type")?.includes("application/json")) return new Response(JSON.stringify({ error: { code: "CONTENT_TYPE", message: "Send JSON.", retryable: false } }), { status: 415, headers });
+  if (Number(request.headers.get("content-length") ?? 0) > 12_000) return new Response(JSON.stringify({ error: { code: "TOO_LARGE", message: "The action request is too large.", retryable: false } }), { status: 413, headers });
   const env = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
   const coordinator = env.BOOKING_COORDINATOR;
   if (!coordinator) return new Response(JSON.stringify({ error: { code: "COORDINATOR_UNAVAILABLE", message: "Booking coordination is unavailable.", retryable: true } }), { status: 503, headers });

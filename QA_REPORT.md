@@ -1,5 +1,11 @@
 # QA Report
 
+## Merge-hardening verification — 2026-09-19 (in progress)
+
+Initial merge audit against freshly fetched `origin/main`: feature branch was 0 behind / 55 commits ahead. Existing checks passed: Astro diagnostics 0, Vitest 68/68, production build, media manifest, generated Worker type freshness, website dry-run, coordinator dry-run, and six-width Playwright (55 passed with 23 intentional viewport-specific skips). `git diff --check` exposed committed trailing whitespace. Read-only Cloudflare inspection confirmed the latest branch build for `1a4104f` succeeded, production remained on version `f3cefffa`, the active website Durable Object binding already targeted `xerom-race-control-coordinator`, coordinator version `e5f71ac7` was at 100%, and coordinator logs/traces were enabled. Production and branch availability returned live `200`; branch Race Control redirected to Access; the coordinator public entry point returned `404`. No external writes were performed.
+
+The hardening implementation addresses the audit blockers with reusable operating-window validation, all-day event preservation, server lifecycle guards, ETag compensation, durable recovery fences, exact fence-aware public/final availability, ambiguous-Google-response handling, and a serialized per-instance mutation queue. Final local verification passed: Astro diagnostics 0; Vitest 76/76; media verification; production build; generated Worker type check; `git diff --check`; website dry-run; coordinator dry-run; and six-width Playwright with 55 passed / 23 intentional responsive skips. The first browser attempt used a stale 31-minute Astro process and every page returned HTTP 500 for a missing Vite optimized SSR module; after a clean server restart and verified `200`, the full rerun passed. Rate limiting is intentionally deferred until after the client test/demo and is tracked as a high-priority launch TODO.
+
 Last updated: 2026-09-15
 
 ## Current result

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { availabilityQuerySchema } from "@/lib/booking/schema";
 import { buildAvailability, generateCandidateSlots } from "@/lib/booking/time";
-import { allCalendarIds, calendarGroups } from "@/lib/booking/resources";
+import { addRecoveryFencesToBusy, allCalendarIds, calendarGroups } from "@/lib/booking/resources";
 import { queryFreeBusy } from "@/lib/google/calendar";
 import { resolveBookingMode } from "@/lib/booking/mode";
 import type { ServiceId } from "@/config/service-core";
@@ -47,6 +47,21 @@ export const GET: APIRoute = async ({ request }) => {
     const busy = candidates.length
       ? await queryFreeBusy(env, ids, candidates[0].start, candidates.at(-1)!.end)
       : {};
+    if (candidates.length) {
+      if (!env.BOOKING_COORDINATOR) throw new Error("Booking coordination is unavailable.");
+      const id = env.BOOKING_COORDINATOR.idFromName("xerom-global-booking-coordinator");
+      const response = await env.BOOKING_COORDINATOR.get(id).fetch("https://coordinator.internal/recovery-fences", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-xerom-command": "recovery-fences" },
+        body: JSON.stringify({ start: candidates[0].start, end: candidates.at(-1)!.end }),
+      });
+      if (!response.ok) throw new Error("Booking recovery state is unavailable.");
+      const recovery = await response.json<{ fences?: Array<{ resourceId: string; start: string; end: string }> }>();
+      if (!Array.isArray(recovery.fences) || recovery.fences.some((fence) => typeof fence.resourceId !== "string" || !Number.isFinite(Date.parse(fence.start)) || !Number.isFinite(Date.parse(fence.end)))) {
+        throw new Error("Booking recovery state is invalid.");
+      }
+      addRecoveryFencesToBusy(env, busy, recovery.fences);
+    }
     return json({
       date: parsed.data.date,
       durationMinutes: parsed.data.durationMinutes,

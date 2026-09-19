@@ -2,7 +2,7 @@
 
 The production/demo system has two deployables:
 
-1. `xerom-booking-coordinator` — a small Worker that hosts the Durable Object and owns serialized Calendar booking creation.
+1. `xerom-race-control-coordinator` — a small Worker that hosts the Durable Object and owns serialized Calendar booking creation and owner mutations. The legacy `xerom-booking-coordinator` remains rollback-only and is not the active binding.
 2. `xerom-website` — the Astro website deployed as the existing Cloudflare Worker and bound to that Durable Object (the Astro output is also Pages-compatible).
 
 Google Calendar remains the booking record. The Durable Object stores only short-lived coordination/idempotency state.
@@ -27,7 +27,7 @@ The site uses `@astrojs/cloudflare` with compile-time image optimization and no 
 
 ## Current Worker client demo
 
-The client demo uses the existing `xerom-website` Worker and its previously configured Google Calendar and `xerom-booking-coordinator` bindings. The root configuration uses `BOOKING_MODE=live`, so a successful demo booking is a real Calendar reservation and must be deleted from every assigned resource calendar afterward.
+The client demo uses the existing `xerom-website` Worker and the separately deployed `xerom-race-control-coordinator`. The root configuration uses `BOOKING_MODE=live`, so a successful demo booking is a real Calendar reservation and must be cancelled or removed from every assigned resource calendar afterward.
 
 Deploy the current Worker with:
 
@@ -45,15 +45,15 @@ Do not use this Worker for unattended previews or synthetic browser tests. Branc
 Authenticate Wrangler locally, then set Worker secrets:
 
 ```bash
-npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_EMAIL --config coordinator/wrangler.jsonc
-npx wrangler secret put GOOGLE_PRIVATE_KEY --config coordinator/wrangler.jsonc
-npx wrangler secret put REGULAR_SIM_01_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put REGULAR_SIM_02_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put REGULAR_SIM_03_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put PRO_SIM_01_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put PS5_01_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put PS5_02_CALENDAR_ID --config coordinator/wrangler.jsonc
-npx wrangler secret put BOOKING_CONTROL_CALENDAR_ID --config coordinator/wrangler.jsonc
+npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_EMAIL --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put GOOGLE_PRIVATE_KEY --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put REGULAR_SIM_01_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put REGULAR_SIM_02_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put REGULAR_SIM_03_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put PRO_SIM_01_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put PS5_01_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put PS5_02_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put BOOKING_CONTROL_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
 npm run coordinator:deploy
 ```
 
@@ -69,7 +69,7 @@ TURNSTILE_SECRET_KEY=<encrypted secret>
 PUBLIC_TURNSTILE_SITE_KEY=<public environment variable>
 ```
 
-The Durable Object binding must be named `BOOKING_COORDINATOR`, point to class `BookingCoordinator`, and use script `xerom-booking-coordinator`.
+The Durable Object binding must be named `BOOKING_COORDINATOR`, point to class `BookingCoordinator`, and use script `xerom-race-control-coordinator`.
 
 Preview environments should use `BOOKING_MODE=disabled` unless they are connected to dedicated non-production calendars. Never let a preview deployment write to live resource calendars.
 
@@ -86,7 +86,7 @@ The `xerom-website` Worker currently uses Cloudflare's documented always-pass Tu
 
 ## Rate limiting
 
-Create Cloudflare rate-limiting rules for `/api/availability` and `/api/bookings`. Start conservatively, observe real traffic, and allow ordinary group booking retries while blocking sustained automated bursts. The booking endpoint already validates origin, request size, schema, Turnstile, and idempotency; edge rate limiting is the outer abuse-control layer.
+**High-priority deferred launch task:** after the current client test/demo, create Cloudflare rate-limiting rules for `/api/availability` and `/api/bookings`. Start conservatively, observe real traffic, and allow ordinary group booking retries while blocking sustained automated bursts. The booking endpoint already validates origin, request size, schema, Turnstile, and idempotency; edge rate limiting is the outer abuse-control layer. Do not treat the demo deferral as production approval.
 
 ## Domain and SEO
 
@@ -104,7 +104,7 @@ npm run check
 npm test
 npm run test:e2e
 npm run build
-npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc
+npx wrangler deploy --dry-run --config coordinator/wrangler.race-control.jsonc
 npm audit --omit=dev
 ```
 

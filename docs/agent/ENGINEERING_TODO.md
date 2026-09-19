@@ -8,6 +8,8 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 - [x] **Restore the `BOOKING_COORDINATOR` Durable Object binding in the active config.** `wrangler.jsonc` now declares the external `xerom-booking-coordinator` binding, and the root dry-run shows the binding. The stray `wrangler.jsonc copy` was removed.
 - [x] **Enforce business hours and slot alignment server-side.** `validateBookingWindow` checks Malaysia-local opening windows (including overnight carry-over), whole-session containment, and the public hourly grid; the owner-confirmed manual-booking policy intentionally bypasses hourly alignment while retaining future/opening-hours/Calendar checks.
 - [x] **Prevent production from running mock mode.** Production mode still defaults to `disabled`, and only development builds force mock mode. Live remains explicitly opt-in after external prerequisites pass.
+- [ ] **HIGH PRIORITY — configure edge rate limiting after the client test/demo.** Add and verify Cloudflare rate-limiting rules for `/api/availability` and `/api/bookings` before public launch. This is intentionally deferred by the owner until the current booking and Race Control demo is complete; it is not waived.
+- [ ] **Add operator recovery for durable mutation fences.** Grouped Calendar writes now persist recovery fences before mutation, compensate safe partial updates, and keep capacity closed when compensation is uncertain. Add the authenticated reconciliation view/alarm workflow before public launch so staff can inspect and clear only verified operations.
 
 ## Medium priority
 
@@ -16,7 +18,6 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 - [x] **Complete security headers and verify on the deployed origin.** Runtime middleware now applies the security header set for the direct Worker (including HSTS on HTTPS), and `public/_headers` covers Pages/static hosting. The deployed Worker response was checked on 2026-09-13; CSP still intentionally allows the inline Astro JSON-LD/CSS and Turnstile script.
 - [x] **Harden Turnstile verification.** Siteverify now has an eight-second abort timeout and optional expected-hostname/action checks supplied by encrypted Worker configuration.
 - [ ] **Replace the demo Turnstile credentials before public launch.** The current client-demo widget uses Cloudflare's documented always-pass test pair and visibly renders a “For testing only” warning. Create a hostname-scoped widget, update the public site key build variable and encrypted Worker secret, and verify the warning is absent on the canonical hostname. See `CONTENT_TODO.md` for the owner-facing setup item.
-- [ ] **Configure edge rate limiting.** `BOOKING_ARCHITECTURE.md:156` and `CLOUDFLARE_DEPLOYMENT.md:68` require Cloudflare rate limits on `/api/availability` and `/api/bookings`; none is implemented in code. Configure and record evidence.
 - [ ] **Review schema strictness.** Zod objects are non-strict, so unknown fields are silently stripped (client-sent `total`/`admin` are correctly ignored, but typos also pass). Consider `.strict()` on the public booking schema.
 
 ## Low priority / hygiene
