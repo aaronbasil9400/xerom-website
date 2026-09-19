@@ -6,6 +6,8 @@ Initial merge audit against freshly fetched `origin/main`: feature branch was 0 
 
 The hardening implementation addresses the audit blockers with reusable operating-window validation, all-day event preservation, server lifecycle guards, ETag compensation, durable recovery fences, exact fence-aware public/final availability, ambiguous-Google-response handling, and a serialized per-instance mutation queue. Final local verification passed: Astro diagnostics 0; Vitest 76/76; media verification; production build; generated Worker type check; `git diff --check`; website dry-run; coordinator dry-run; and six-width Playwright with 55 passed / 23 intentional responsive skips. The first browser attempt used a stale 31-minute Astro process and every page returned HTTP 500 for a missing Vite optimized SSR module; after a clean server restart and verified `200`, the full rerun passed. Rate limiting is intentionally deferred until after the client test/demo and is tracked as a high-priority launch TODO.
 
+After push of `b6e9ad0`, the branch website build began using the new fail-closed recovery-fence request while the separately deployed coordinator was still on the prior version. The branch `/api/availability` returned the expected HTTP 503 compatibility failure. After owner-approved Wrangler OAuth, coordinator version `1094b087-ac6e-47d1-ac88-92099c497211` deployed at 100% with the recovery-fence contract. Branch availability then returned live HTTP 200 with current Google Calendar capacities; the coordinator public endpoint remained HTTP 404. No Calendar event was created or changed by these smoke checks.
+
 Last updated: 2026-09-15
 
 ## Current result
