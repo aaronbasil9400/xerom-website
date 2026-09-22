@@ -141,14 +141,17 @@ export function buildAvailability(
   busy: BusyByCalendar,
   controlCalendarId: string | undefined,
   requested: Record<ServiceId, number>,
+  bufferMinutes = 0,
 ): AvailabilitySlot[] {
   return candidates.map(({ start, end }) => {
+    const bufferedStart = new Date(Date.parse(start) - bufferMinutes * 60_000).toISOString();
+    const bufferedEnd = new Date(Date.parse(end) + bufferMinutes * 60_000).toISOString();
     const venueBlocked = controlCalendarId
-      ? (busy[controlCalendarId] ?? []).some((interval) => overlaps(start, end, interval.start, interval.end))
+      ? (busy[controlCalendarId] ?? []).some((interval) => overlaps(bufferedStart, bufferedEnd, interval.start, interval.end))
       : false;
     const capacity = Object.fromEntries(Object.entries(calendarGroups).map(([serviceId, ids]) => [
       serviceId,
-      venueBlocked ? 0 : ids.filter((id) => !(busy[id] ?? []).some((interval) => overlaps(start, end, interval.start, interval.end))).length,
+      venueBlocked ? 0 : ids.filter((id) => !(busy[id] ?? []).some((interval) => overlaps(bufferedStart, bufferedEnd, interval.start, interval.end))).length,
     ])) as Record<ServiceId, number>;
     const available = !venueBlocked && (Object.keys(requested) as ServiceId[]).every((id) => capacity[id] >= requested[id]);
     return { start, end, available, capacity };

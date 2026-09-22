@@ -1,11 +1,13 @@
 import type { APIRoute } from "astro";
 import { availabilityQuerySchema } from "@/lib/booking/schema";
-import { buildAvailability, generateCandidateSlots } from "@/lib/booking/time";
-import { addRecoveryFencesToBusy, allCalendarIds, calendarGroups } from "@/lib/booking/resources";
+import { buildAvailability } from "@/lib/booking/time";
+import { runtimeCalendarGroups, runtimeCalendarIdForResource } from "@/lib/booking/resources";
 import { queryFreeBusy } from "@/lib/google/calendar";
 import { resolveBookingMode } from "@/lib/booking/mode";
 import type { ServiceId } from "@/config/service-core";
 import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+import { generateRuntimeCandidateSlots } from "@/lib/booking/runtime-time";
 
 export const prerender = false;
 
@@ -13,14 +15,6 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   status,
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" },
 });
-
-function mockGroups(): Record<ServiceId, string[]> {
-  return {
-    "regular-sim": ["regular-1", "regular-2", "regular-3"],
-    "pro-sim": ["pro-1"],
-    ps5: ["ps5-1", "ps5-2"],
-  };
-}
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
@@ -33,19 +27,25 @@ export const GET: APIRoute = async ({ request }) => {
   };
   if (!Object.values(requested).some(Boolean)) return json({ error: "Choose at least one experience." }, 400);
 
-  const candidates = generateCandidateSlots(parsed.data.date, parsed.data.durationMinutes);
   const env = cloudflareEnv as unknown as CloudflareEnv;
   const mode = resolveBookingMode(import.meta.env.DEV, env.BOOKING_MODE);
   if (mode === "disabled") return json({ error: "Online booking is being configured. Please WhatsApp Xerom." }, 503);
 
   try {
-    if (mode === "mock") {
-      return json({ date: parsed.data.date, durationMinutes: parsed.data.durationMinutes, mode, slots: buildAvailability(candidates, mockGroups(), {}, undefined, requested) });
+    const { config } = await resolveRuntimeConfig(env);
+    if (!config.bookingRules.allowedDurationsMinutes.includes(parsed.data.durationMinutes)) return json({ error: "That duration is not currently available." }, 400);
+    const groups = runtimeCalendarGroups(config);
+    for (const [serviceId, quantity] of Object.entries(requested) as Array<[ServiceId, number]>) {
+      if (quantity > groups[serviceId].length) return json({ error: `Only ${groups[serviceId].length} ${serviceId.replaceAll("-", " ")} resource(s) are configured.` }, 400);
     }
-    const groups = calendarGroups(env);
-    const ids = allCalendarIds(env);
+    const candidates = generateRuntimeCandidateSlots(config, parsed.data.date, parsed.data.durationMinutes);
+    if (mode === "mock") {
+      return json({ date: parsed.data.date, durationMinutes: parsed.data.durationMinutes, mode, slots: buildAvailability(candidates, groups, {}, undefined, requested, config.bookingRules.bufferMinutes), configRevision: config.revisionId });
+    }
+    const ids = [...Object.values(groups).flat(), env.BOOKING_CONTROL_CALENDAR_ID].filter((value): value is string => Boolean(value));
+    const bufferMs = config.bookingRules.bufferMinutes * 60_000;
     const busy = candidates.length
-      ? await queryFreeBusy(env, ids, candidates[0].start, candidates.at(-1)!.end)
+      ? await queryFreeBusy(env, ids, new Date(Date.parse(candidates[0].start) - bufferMs).toISOString(), new Date(Date.parse(candidates.at(-1)!.end) + bufferMs).toISOString())
       : {};
     if (candidates.length) {
       if (!env.BOOKING_COORDINATOR) throw new Error("Booking coordination is unavailable.");
@@ -60,13 +60,17 @@ export const GET: APIRoute = async ({ request }) => {
       if (!Array.isArray(recovery.fences) || recovery.fences.some((fence) => typeof fence.resourceId !== "string" || !Number.isFinite(Date.parse(fence.start)) || !Number.isFinite(Date.parse(fence.end)))) {
         throw new Error("Booking recovery state is invalid.");
       }
-      addRecoveryFencesToBusy(env, busy, recovery.fences);
+      for (const fence of recovery.fences) {
+        const calendarId = fence.resourceId === "booking-control" ? env.BOOKING_CONTROL_CALENDAR_ID : runtimeCalendarIdForResource(config, fence.resourceId);
+        if (calendarId) (busy[calendarId] ??= []).push({ start: fence.start, end: fence.end });
+      }
     }
     return json({
       date: parsed.data.date,
       durationMinutes: parsed.data.durationMinutes,
       mode,
-      slots: buildAvailability(candidates, groups, busy, env.BOOKING_CONTROL_CALENDAR_ID, requested),
+      slots: buildAvailability(candidates, groups, busy, env.BOOKING_CONTROL_CALENDAR_ID, requested, config.bookingRules.bufferMinutes),
+      configRevision: config.revisionId,
     });
   } catch (error) {
     console.error("availability_failed", error instanceof Error ? error.message : "unknown");

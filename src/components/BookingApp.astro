@@ -1,22 +1,37 @@
 ---
 import { services } from "@/config/services";
-import { pricing } from "@/config/pricing";
-import { bookingRules } from "@/config/booking";
-import { business } from "@/config/business";
 import ArrowIcon from "./ArrowIcon.astro";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+import type { ConfigRevision } from "@/lib/config/schema";
+interface Props { runtimeConfig?: ConfigRevision }
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const runtimeConfig = Astro.props.runtimeConfig ?? (await resolveRuntimeConfig(cloudflareEnv)).config;
+const runtimeServices = Object.values(services).map((service) => {
+  const configured = runtimeConfig.services.find((candidate) => candidate.serviceId === service.id)!;
+  const activeRate = runtimeConfig.rates.find((rate) => rate.serviceId === service.id && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)));
+  return { ...service, name: configured.name, description: configured.description, capacity: configured.enabled ? runtimeConfig.resources.filter((resource) => resource.serviceId === service.id && resource.lifecycle === "active").length : 0, hourlyRate: (activeRate?.amountSenPerResourceHour ?? 0) / 100 };
+});
+const runtimeVenue = runtimeConfig.websiteContent.venue;
 ---
 <section
   class="booking-shell"
   data-booking-app
-  data-whatsapp={business.whatsappNumber}
-  data-regular-rate={pricing.services["regular-sim"].hourlyRate}
-  data-pro-rate={pricing.services["pro-sim"].hourlyRate}
-  data-ps5-rate={pricing.services.ps5.hourlyRate}
-  data-controller-rate={pricing.services.ps5.additionalControllerRate}
-  data-regular-capacity={services["regular-sim"].capacity}
-  data-pro-capacity={services["pro-sim"].capacity}
-  data-ps5-capacity={services.ps5.capacity}
+  data-whatsapp={runtimeVenue.whatsappNumber}
+  data-regular-rate={runtimeServices.find((service) => service.id === "regular-sim")!.hourlyRate}
+  data-pro-rate={runtimeServices.find((service) => service.id === "pro-sim")!.hourlyRate}
+  data-ps5-rate={runtimeServices.find((service) => service.id === "ps5")!.hourlyRate}
+  data-controller-rate={runtimeConfig.controllers.additionalPriceSen / 100}
+  data-included-controllers={runtimeConfig.controllers.includedQuantity}
+  data-regular-capacity={runtimeServices.find((service) => service.id === "regular-sim")!.capacity}
+  data-pro-capacity={runtimeServices.find((service) => service.id === "pro-sim")!.capacity}
+  data-ps5-capacity={runtimeServices.find((service) => service.id === "ps5")!.capacity}
+  data-regular-name={runtimeServices.find((service) => service.id === "regular-sim")!.name}
+  data-pro-name={runtimeServices.find((service) => service.id === "pro-sim")!.name}
+  data-ps5-name={runtimeServices.find((service) => service.id === "ps5")!.name}
+  data-notice-minutes={runtimeConfig.bookingRules.customerMinimumNoticeMinutes}
+  data-horizon-minutes={runtimeConfig.bookingRules.horizon.value}
+  data-config-revision={runtimeConfig.revisionId}
 >
   <div class="booking-progress" aria-label="Booking progress">
     <span data-progress="1" aria-current="step">1 <b>Setup</b></span>
@@ -29,9 +44,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <h2>Build your session</h2>
       <p>Choose one setup or mix Regular and Pro rigs for your group.</p>
       <div class="quantity-list">
-        {Object.values(services).map((service) => (
+        {runtimeServices.map((service) => (
           <div class="quantity-row" data-service-row={service.id}>
-            <div><strong>{service.name}</strong><span>RM{pricing.services[service.id].hourlyRate} per {service.unitLabel}, per hour</span></div>
+            <div><strong>{service.name}</strong><span>RM{service.hourlyRate} per {service.unitLabel}, per hour</span></div>
             <div class="stepper" data-stepper data-service-name={service.name}>
               <button type="button" aria-label={`Remove one ${service.name}`} data-minus>−</button>
               <input type="number" name={service.id} value={service.id === "regular-sim" ? "1" : "0"} min="0" max={service.capacity} inputmode="numeric" aria-label={`${service.name} quantity`} />
@@ -44,20 +59,20 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <div class="controller-choice" data-controller-choice hidden>
         <div>
           <strong>PS5 controllers</strong>
-          <span>{pricing.services.ps5.includedControllers} controllers provided. RM{pricing.services.ps5.additionalControllerRate} for each additional controller per booking.</span>
+          <span>{runtimeConfig.controllers.includedQuantity} controllers provided. RM{runtimeConfig.controllers.additionalPriceSen / 100} for each additional controller per booking.</span>
         </div>
         <label class="field">
           <span>Additional controllers</span>
           <select name="additionalControllers">
-            {Array.from({ length: pricing.services.ps5.maxAdditionalControllers + 1 }, (_, quantity) => <option value={quantity}>{quantity}</option>)}
+            {Array.from({ length: runtimeConfig.controllers.maxAdditionalQuantity + 1 }, (_, quantity) => <option value={quantity}>{quantity}</option>)}
           </select>
-          <small>Choose 0–{pricing.services.ps5.maxAdditionalControllers} in addition to the included controllers.</small>
+          <small>Choose 0–{runtimeConfig.controllers.maxAdditionalQuantity} in addition to the included controllers.</small>
         </label>
       </div>
       <fieldset class="duration-choice">
         <legend>Session length</legend>
-        {bookingRules.allowedDurationsMinutes.map((minutes) => (
-          <label><input type="radio" name="duration" value={minutes} checked={minutes === 60} /> <span>{minutes} min</span></label>
+        {runtimeConfig.bookingRules.allowedDurationsMinutes.map((minutes, index) => (
+          <label><input type="radio" name="duration" value={minutes} checked={minutes === 60 || (!runtimeConfig.bookingRules.allowedDurationsMinutes.includes(60) && index === 0)} /> <span>{minutes} min</span></label>
         ))}
       </fieldset>
       <p class="form-error" role="alert" data-error="setup"></p>
@@ -68,7 +83,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <div class="availability-heading">
         <div>
           <h2>Choose a time</h2>
-          <p>Bookings need one hour of notice and open up to three days ahead.</p>
+          <p>Availability follows the current notice period, booking horizon and published opening hours.</p>
         </div>
         <div class="availability-toolbar">
           <label class="field"><span>Date</span><input type="date" name="date" required /></label>
@@ -103,7 +118,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     <h2>Booking confirmed</h2>
     <p class="booking-id" data-booking-id></p>
     <div data-confirmation></div>
-    <div class="hero-actions"><a class="button button-primary" data-whatsapp-link href="#">WhatsApp Xerom</a><a class="button button-secondary" href={business.mapsUrl}>Get directions</a></div>
+    <div class="hero-actions"><a class="button button-primary" data-whatsapp-link href="#">WhatsApp Xerom</a><a class="button button-secondary" href={runtimeVenue.mapsUrl}>Get directions</a></div>
     <p class="whatsapp-status" aria-live="polite" data-whatsapp-status></p>
     <p>Need to change your booking? Message Xerom on WhatsApp and quote the booking ID.</p>
   </section>
@@ -127,7 +142,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   const phoneErrorMessage = "Enter a valid Malaysian mobile number, e.g. 012-345 6789.";
   if (dateInput) {
     dateInput.min = toMalaysiaDate(new Date());
-    dateInput.max = toMalaysiaDate(new Date(Date.now() + 72 * 60 * 60 * 1000));
+    dateInput.max = toMalaysiaDate(new Date(Date.now() + Number(app?.dataset.horizonMinutes ?? 4320) * 60 * 1000));
     dateInput.value = dateInput.min;
   }
 
@@ -224,9 +239,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   type SlotCapacity = Record<ServiceId, number>;
   type AvailabilityResponseSlot = { start: string; available: boolean; capacity: SlotCapacity };
   const serviceDisplay: Record<ServiceId, { short: string; name: string; shape: string; quantityKey: keyof ReturnType<typeof quantities>; capacityKey: keyof DOMStringMap }> = {
-    "regular-sim": { short: "R", name: "Regular Rig", shape: "rig", quantityKey: "regular", capacityKey: "regularCapacity" },
-    "pro-sim": { short: "P", name: "Pro Rig", shape: "pro", quantityKey: "pro", capacityKey: "proCapacity" },
-    ps5: { short: "PS", name: "PS5 Lounge", shape: "ps5", quantityKey: "ps5", capacityKey: "ps5Capacity" },
+    "regular-sim": { short: "R", name: app?.dataset.regularName ?? "Regular Rig", shape: "rig", quantityKey: "regular", capacityKey: "regularCapacity" },
+    "pro-sim": { short: "P", name: app?.dataset.proName ?? "Pro Rig", shape: "pro", quantityKey: "pro", capacityKey: "proCapacity" },
+    ps5: { short: "PS", name: app?.dataset.ps5Name ?? "PS5 Lounge", shape: "ps5", quantityKey: "ps5", capacityKey: "ps5Capacity" },
   };
 
   function selectedServices(): ServiceId[] {
@@ -303,9 +318,10 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     try {
       trackConversion("availability_checked");
       const response = await fetch(`/api/availability?${params}`);
-      const data = await response.json() as { error?: string; slots?: AvailabilityResponseSlot[] };
+      const data = await response.json() as { error?: string; slots?: AvailabilityResponseSlot[]; configRevision?: string };
       if (requestNumber !== availabilityRequest) return;
       if (!response.ok) throw new Error(data.error ?? "Availability could not be loaded.");
+      if (!data.configRevision || data.configRevision !== app?.dataset.configRevision) throw new Error("Booking settings changed. Reload this page to review the latest prices and availability.");
       const available = data.slots?.filter((slot) => slot.available) ?? [];
       status.textContent = data.slots?.length ? (available.length ? `${available.length} start times available` : "No times fit this session. Try another date or setup.") : "No start times fall within opening hours for this session.";
       renderAvailabilityLegend();
@@ -335,7 +351,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     review.appendChild(title); review.appendChild(selectionLine); review.appendChild(timingLine);
     if (q.ps5 > 0) {
       const controllerLine = document.createElement("span");
-      const included = q.ps5 * 2;
+      const included = q.ps5 * Number(app?.dataset.includedControllers ?? 0);
       controllerLine.textContent = `Controllers: ${included} included + ${controllers} additional = ${included + controllers} total`;
       review.appendChild(controllerLine);
     }
@@ -363,6 +379,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
         notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value || undefined,
       },
       idempotencyKey: attemptKey,
+      configRevision: app?.dataset.configRevision,
       turnstileToken: (form.elements.namedItem("cf-turnstile-response") as HTMLInputElement | null)?.value,
     };
     try {
@@ -378,7 +395,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       success.querySelector<HTMLElement>("[data-confirmation]")!.textContent = `${localDate(data.start!)} · ${localTime(data.start!)} · ${formatDuration(confirmedDuration)} · ${summary} · RM${data.total}`;
       const controllerItem = confirmedItems.find((item) => item.serviceId === "ps5");
       const controllerLine = controllerItem && controllerItem.quantity > 0
-        ? `\nControllers: ${controllerItem.quantity * 2} included + ${controllerItem.additionalControllers ?? 0} additional`
+        ? `\nControllers: ${controllerItem.quantity * Number(app?.dataset.includedControllers ?? 0)} included + ${controllerItem.additionalControllers ?? 0} additional`
         : "";
       const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nName: ${payload.customer.name}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\nDuration: ${formatDuration(confirmedDuration)}\nResources: ${summary}${controllerLine}\n\nI'd like to confirm the booking. Thanks!`;
       const whatsappUrl = `https://wa.me/${app?.dataset.whatsapp}?text=${encodeURIComponent(message)}`;

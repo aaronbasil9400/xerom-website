@@ -156,6 +156,7 @@ test("today auto-loads approved single-row availability indicators", async ({ pa
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
+        configRevision: "seed-draft-v2",
         slots: [
           { start: `${requestedDate}T12:00:00+08:00`, available: true, capacity: { "regular-sim": 3, "pro-sim": 1, ps5: 2 } },
           { start: `${requestedDate}T12:30:00+08:00`, available: false, capacity: { "regular-sim": 2, "pro-sim": 0, ps5: 1 } },
@@ -189,7 +190,7 @@ test("availability propagates every resource and duration and invalidates stale 
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ slots: [
+      body: JSON.stringify({ configRevision: "seed-draft-v2", slots: [
         { start: `${params.date}T20:00:00+08:00`, available: true, capacity: { "regular-sim": 3, "pro-sim": 1, ps5: 2 } },
         { start: `${params.date}T20:30:00+08:00`, available: false, capacity: { "regular-sim": 2, "pro-sim": 0, ps5: 1 } },
       ] }),

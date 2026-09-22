@@ -58,7 +58,7 @@ function minutes(time: string): number {
 function resolveBusinessDate(config: ConfigRevision, startEpoch: number, endEpoch: number): string {
   const localDate = localDateFromEpoch(startEpoch);
   for (const candidate of [localDate, addLocalDays(localDate, -1)]) {
-    const intervals = config.hours.weekly[dayNames[weekday(candidate)]];
+    const intervals = config.hours.exceptions.find((exception) => exception.businessDate === candidate)?.intervals ?? config.hours.weekly[dayNames[weekday(candidate)]];
     if (intervals.some((interval) => startEpoch >= localEpoch(candidate, interval.open) && endEpoch <= localEpoch(candidate, interval.close, interval.closeDayOffset))) return candidate;
   }
   throw new Error("The requested interval is outside configured opening hours.");
@@ -89,7 +89,8 @@ function percentageAmount(base: number, basisPoints: number): number {
 
 export function calculateRuntimeQuote(config: ConfigRevision, request: QuoteRequest): CalculatedQuote {
   if (!config.bookingRules.allowedDurationsMinutes.includes(request.durationMinutes)) throw new Error("Duration is not allowed by the active configuration.");
-  if (request.items.some((item) => (item.additionalControllers ?? 0) > 0)) throw new Error("Controller add-ons remain disabled until the owner confirms their capacity and billing unit.");
+  const controllerQuantity = request.items.filter((item) => item.serviceId === "ps5").reduce((total, item) => total + (item.additionalControllers ?? 0), 0);
+  if (controllerQuantity > config.controllers.maxAdditionalQuantity) throw new Error("Too many additional controllers were requested.");
   const startEpoch = Date.parse(request.start);
   const endEpoch = startEpoch + request.durationMinutes * 60_000;
   if (!Number.isFinite(startEpoch)) throw new Error("Start time is invalid.");
@@ -120,8 +121,8 @@ export function calculateRuntimeQuote(config: ConfigRevision, request: QuoteRequ
       selectedAmountSenPerResource: selected.amount,
       selectedPromotionId: selected.candidateId === "base" ? null : selected.candidateId,
       savingsSen: (base - selected.amount) * item.quantity,
-      addOnAmountSen: 0,
-      lineTotalSen: selected.amount * item.quantity,
+      addOnAmountSen: item.serviceId === "ps5" ? (item.additionalControllers ?? 0) * config.controllers.additionalPriceSen : 0,
+      lineTotalSen: selected.amount * item.quantity + (item.serviceId === "ps5" ? (item.additionalControllers ?? 0) * config.controllers.additionalPriceSen : 0),
       explanations,
     };
   });

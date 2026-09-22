@@ -1,17 +1,22 @@
 import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
-import { validateBookingOperatingWindow, validateBookingWindow, overlaps } from "../../src/lib/booking/time";
-import { manualBookingRules } from "../../src/config/booking";
-import { pricing } from "../../src/config/pricing";
-import { calendarGroups, allCalendarIds, resourceIdForCalendar, calendarIdForResource } from "../../src/lib/booking/resources";
+import { overlaps } from "../../src/lib/booking/time";
+import { allCalendarIds, resourceIdForCalendar, calendarIdForResource, runtimeCalendarGroups, runtimeResourceIdForCalendar, runtimeCalendarIdForResource } from "../../src/lib/booking/resources";
 import { CalendarMutationUncertainError, queryFreeBusy, insertEvent, deleteEvent, listCalendarEvents, patchCalendarEvent, type CalendarEventPatch, type CalendarEventRecord } from "../../src/lib/google/calendar";
-import { calculateTotal } from "../../src/lib/booking/pricing";
 import { createBookingId, hashPayload } from "../../src/lib/booking/id";
 import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
 import { blockTimeRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
 import { applyGroupedMutation, GroupedMutationError, lifecycleTransitionAllowed, type GroupedMutationStep } from "./grouped-mutation";
 import { SerializedExecutor } from "./serialized-executor";
+import { operationCommandSchema } from "../../src/lib/race-control/contracts";
+import { R2ConfigRepository, ConfigConflictError, ConfigUnavailableError } from "../../src/lib/config/repository";
+import { reviewConfigDraft } from "../../src/lib/race-control/config-review";
+import { createSeedConfig } from "../../src/lib/config/seed";
+import { resolveRuntimeConfig } from "../../src/lib/config/runtime";
+import { validateRuntimeBookingWindow } from "../../src/lib/booking/runtime-time";
+import { calculateRuntimeQuote } from "../../src/lib/race-control/pricing";
+import { ConfigPublicationRejectedError, executeConfigPublication, recoverActivatedConfigPublication } from "../../src/lib/race-control/config-publication";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
@@ -19,6 +24,7 @@ type MutationStatus = "running" | "complete" | "failed" | "needs_review";
 type ActionAttempt = { hash: string; status: MutationStatus; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 type BlockAttempt = { hash: string; status: MutationStatus; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 type RecoveryFence = { operationId: string; resourceId: string; start: string; end: string; reason: string; createdAt: string };
+type ConfigAttempt = { hash: string; status: MutationStatus; response?: unknown; revisionId?: string; publishedAt?: string };
 
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
@@ -30,12 +36,11 @@ export class BookingCoordinator extends DurableObject<Env> {
     if (request.headers.get("x-xerom-command") === "recovery-fences") return this.handleRecoveryFences(request);
     if (request.headers.get("x-xerom-command") === "booking-action") return this.handleBookingAction(request);
     if (request.headers.get("x-xerom-command") === "block-time") return this.handleBlockTime(request);
+    if (request.headers.get("x-xerom-command") === "activate-config") return this.handleActivateConfig(request);
     const parsed = bookingRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
     const booking = parsed.data;
     const bookingSource = request.headers.get("x-xerom-source") === "race-control-owner" ? "race-control-owner" : "xerom.my";
-    const windowError = validateBookingWindow(booking.start, booking.durationMinutes, new Date(), bookingSource === "race-control-owner" ? manualBookingRules : undefined);
-    if (windowError) return reply({ error: windowError }, 400);
     return this.mutations.run(async () => {
       const hash = await hashPayload(booking);
       const key = `attempt:${booking.idempotencyKey}`;
@@ -48,9 +53,23 @@ export class BookingCoordinator extends DurableObject<Env> {
       await this.ctx.storage.put(key, { hash, status: "pending" } satisfies Attempt);
 
       const env = this.env;
-      const groups = calendarGroups(env);
+      const { config, compiledFallback } = await resolveRuntimeConfig(env);
+      const ownerBooking = bookingSource === "race-control-owner";
+      if (!ownerBooking && ((!booking.configRevision && !compiledFallback) || (booking.configRevision && booking.configRevision !== config.revisionId))) {
+        await this.ctx.storage.delete(key);
+        return reply({ error: "Booking settings changed while you were choosing. Reload the booking page and review the latest prices and availability." }, 409);
+      }
+      const windowError = validateRuntimeBookingWindow(config, booking.start, booking.durationMinutes, new Date(), ownerBooking);
+      if (windowError) { await this.ctx.storage.delete(key); return reply({ error: windowError }, 400); }
+      const groups = runtimeCalendarGroups(config);
       const end = new Date(Date.parse(booking.start) + booking.durationMinutes * 60_000).toISOString();
       const requested = Object.fromEntries((Object.keys(serviceCore) as ServiceId[]).map((id) => [id, booking.items.find((item) => item.serviceId === id)?.quantity ?? 0])) as Record<ServiceId, number>;
+      if (Object.values(requested).reduce((total, quantity) => total + quantity, 0) > config.bookingRules.totalGroupLimit
+        || (Object.keys(requested) as ServiceId[]).some((serviceId) => requested[serviceId] > groups[serviceId].length || requested[serviceId] > config.bookingRules.perServiceGroupLimits[serviceId])
+        || (!config.bookingRules.mixedServiceAllowed && Object.values(requested).filter((quantity) => quantity > 0).length > 1)) {
+        await this.ctx.storage.delete(key);
+        return reply({ error: "The requested resource quantities are not allowed by current settings." }, 409);
+      }
       const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
       const customerName = sanitizeCalendarText(booking.customer.name);
       const customerPhone = sanitizeCalendarText(booking.customer.phone);
@@ -58,14 +77,17 @@ export class BookingCoordinator extends DurableObject<Env> {
       const customerNotes = booking.customer.notes ? sanitizeCalendarText(booking.customer.notes) : "";
 
       try {
-        const ids = allCalendarIds(env);
-        const busy = await queryFreeBusy(env, ids, booking.start, end);
-        const fencedResources = await this.activeFenceResourceIds(booking.start, end);
+        const ids = [...Object.values(groups).flat(), env.BOOKING_CONTROL_CALENDAR_ID].filter((value): value is string => Boolean(value));
+        const bufferMs = config.bookingRules.bufferMinutes * 60_000;
+        const bufferedStart = new Date(Date.parse(booking.start) - bufferMs).toISOString();
+        const bufferedEnd = new Date(Date.parse(end) + bufferMs).toISOString();
+        const busy = await queryFreeBusy(env, ids, bufferedStart, bufferedEnd);
+        const fencedResources = await this.activeFenceResourceIds(bufferedStart, bufferedEnd);
         if (fencedResources.has("booking-control")) {
           await this.ctx.storage.delete(key);
           return reply({ error: "That time is temporarily unavailable while a previous operation is reconciled." }, 409);
         }
-        if (env.BOOKING_CONTROL_CALENDAR_ID && (busy[env.BOOKING_CONTROL_CALENDAR_ID] ?? []).some((interval) => overlaps(booking.start, end, interval.start, interval.end))) {
+        if (env.BOOKING_CONTROL_CALENDAR_ID && (busy[env.BOOKING_CONTROL_CALENDAR_ID] ?? []).some((interval) => overlaps(bufferedStart, bufferedEnd, interval.start, interval.end))) {
           await this.ctx.storage.delete(key);
           return reply({ error: "That time is not available. Please choose another slot." }, 409);
         }
@@ -73,8 +95,8 @@ export class BookingCoordinator extends DurableObject<Env> {
         const allocations = new Map<ServiceId, string[]>();
         for (const serviceId of Object.keys(groups) as ServiceId[]) {
           const available = groups[serviceId].filter((calendarId) => {
-            const resourceId = resourceIdForCalendar(env, calendarId);
-            return !resourceId || (!fencedResources.has(resourceId) && !(busy[calendarId] ?? []).some((interval) => overlaps(booking.start, end, interval.start, interval.end)));
+            const resourceId = runtimeResourceIdForCalendar(config, calendarId);
+            return !resourceId || (!fencedResources.has(resourceId) && !(busy[calendarId] ?? []).some((interval) => overlaps(bufferedStart, bufferedEnd, interval.start, interval.end)));
           });
           if (available.length < requested[serviceId]) {
             await this.ctx.storage.delete(key);
@@ -84,28 +106,29 @@ export class BookingCoordinator extends DurableObject<Env> {
         }
 
         const bookingId = createBookingId();
-        const price = calculateTotal(booking.items, booking.durationMinutes);
+        const price = calculateRuntimeQuote(config, { items: booking.items.filter((item) => item.quantity > 0), start: booking.start, durationMinutes: booking.durationMinutes, channel: ownerBooking ? "owner" : "public" });
         for (const [serviceId, calendarIds] of allocations) {
           const selectedItem = booking.items.find((item) => item.serviceId === serviceId);
-          const includedControllers = serviceId === "ps5" ? pricing.services.ps5.includedControllers * requested[serviceId] : 0;
+          const configuredService = config.services.find((service) => service.serviceId === serviceId)!;
+          const includedControllers = serviceId === "ps5" ? config.controllers.includedQuantity * requested[serviceId] : 0;
           const additionalControllers = serviceId === "ps5" ? selectedItem?.additionalControllers ?? 0 : 0;
           for (const calendarId of calendarIds) {
             const eventId = (await hashPayload({ attempt: booking.idempotencyKey, calendarId })).slice(0, 28);
             const event = {
               calendarId,
               eventId,
-              summary: `${bookingId} | ${serviceCore[serviceId].shortName.toUpperCase()} | ${customerName} | ${booking.durationMinutes}m`,
+              summary: `${bookingId} | ${configuredService.shortName.toUpperCase()} | ${customerName} | ${booking.durationMinutes}m`,
               description: [
                 `Customer: ${customerName}`,
                 `Phone: ${customerPhone}`,
                 customerEmail ? `Email: ${customerEmail}` : "",
-                `Service: ${serviceCore[serviceId].name}`,
+                `Service: ${configuredService.name}`,
                 `Duration: ${booking.durationMinutes} minutes`,
                 serviceId === "ps5" ? `Included controllers: ${includedControllers}` : "",
                 serviceId === "ps5" ? `Additional controllers: ${additionalControllers}` : "",
                 serviceId === "ps5" ? `Total controllers: ${includedControllers + additionalControllers}` : "",
                 `Booking ID: ${bookingId}`,
-                `Total booking price: RM${price.total}`,
+                `Total booking price: RM${(price.totalSen / 100).toFixed(2)}`,
                 customerNotes ? `Notes: ${customerNotes}` : "",
               ].filter(Boolean).join("\n"),
               start: booking.start,
@@ -115,17 +138,18 @@ export class BookingCoordinator extends DurableObject<Env> {
                 attemptHash: hash.slice(0, 40),
                 source: bookingSource,
                 serviceType: serviceId,
-                resourceId: resourceIdForCalendar(env, calendarId) ?? calendarId,
+                resourceId: runtimeResourceIdForCalendar(config, calendarId) ?? calendarId,
                 groupVersion: "0",
                 durationMinutes: String(booking.durationMinutes),
                 quantity: String(requested[serviceId]),
                 status: "confirmed",
                 createdAt: new Date().toISOString(),
-                 pricingVersion: price.version,
+                 pricingVersion: price.pricingEngineVersion,
+                 configRevision: price.configRevision,
                  customerName,
                  customerPhone,
                  ...(customerEmail ? { customerEmail } : {}),
-                 priceTotal: String(price.total),
+                  priceTotalSen: String(price.totalSen),
                  ...(serviceId === "ps5" ? {
                   includedControllers: String(includedControllers),
                   additionalControllers: String(additionalControllers),
@@ -146,7 +170,7 @@ export class BookingCoordinator extends DurableObject<Env> {
           durationMinutes: booking.durationMinutes,
           items: booking.items.filter((item) => item.quantity > 0),
           customerName: booking.customer.name,
-          total: price.total,
+          total: price.totalSen / 100,
           currency: "MYR",
         };
         await this.ctx.storage.put(key, { hash, status: "complete", response: confirmation, createdEvents } satisfies Attempt);
@@ -160,6 +184,91 @@ export class BookingCoordinator extends DurableObject<Env> {
         return reply({ error: rollbackFailed ? "Booking could not be completed and needs staff review. Please contact Xerom." : "Booking could not be completed. Please try again." }, 503);
       }
     });
+  }
+
+  private async handleActivateConfig(request: Request): Promise<Response> {
+    const parsed = operationCommandSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success || parsed.data.type !== "activate-config") return reply({ error: "Invalid configuration publication command." }, 400);
+    const command = parsed.data;
+    const actorId = request.headers.get("x-xerom-actor-id")?.slice(0, 256);
+    if (!actorId) return reply({ error: "Owner identity is required." }, 403);
+    return this.mutations.run(async () => {
+      const key = `config-attempt:${command.opId}`;
+      const prior = await this.ctx.storage.get<ConfigAttempt>(key);
+      let intendedRevisionId = prior?.revisionId;
+      let intendedPublishedAt = prior?.publishedAt;
+      if (prior) {
+        if (prior.hash !== command.payloadHash) return reply({ error: "This publication operation was already used with different details." }, 409);
+        if (prior.status === "complete") return reply({ ...(prior.response as object), replayed: true }, 200);
+      }
+      await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId: prior?.revisionId, publishedAt: prior?.publishedAt } satisfies ConfigAttempt);
+      try {
+        if (!this.env.RACE_CONTROL_CONFIG_BUCKET || !this.env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY) throw new ConfigUnavailableError("Configuration publication is not configured.");
+        const repository = new R2ConfigRepository(this.env.RACE_CONTROL_CONFIG_BUCKET);
+        const recovered = prior?.revisionId ? await recoverActivatedConfigPublication(repository, prior.revisionId) : null;
+        if (prior?.revisionId && recovered) {
+          const published = await repository.readRevision(prior.revisionId);
+          if (!published) throw new ConfigUnavailableError("The activated configuration revision is unavailable.");
+          await this.rollPublishedDraft(repository, published, command.draftEtag);
+          const response = recovered;
+          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId: prior.revisionId, publishedAt: prior.publishedAt } satisfies ConfigAttempt);
+          return reply(response, 200);
+        }
+        const publishedAt = intendedPublishedAt ?? new Date().toISOString();
+        const seed = createSeedConfig({ resources: {
+          "regular-01": this.env.REGULAR_SIM_01_CALENDAR_ID,
+          "regular-02": this.env.REGULAR_SIM_02_CALENDAR_ID,
+          "regular-03": this.env.REGULAR_SIM_03_CALENDAR_ID,
+          "pro-01": this.env.PRO_SIM_01_CALENDAR_ID,
+          "ps5-01": this.env.PS5_01_CALENDAR_ID,
+          "ps5-02": this.env.PS5_02_CALENDAR_ID,
+        } }, publishedAt);
+        const { revision, pointer } = await executeConfigPublication({
+          repository,
+          command,
+          actorId,
+          reviewSecret: this.env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY,
+          seedConfig: seed,
+          publishedAt,
+          review: (current, proposed, now) => reviewConfigDraft(this.env, current, proposed, now),
+          onIntent: async (revisionId, intentPublishedAt) => {
+            intendedRevisionId = revisionId;
+            intendedPublishedAt = intentPublishedAt;
+            await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId, publishedAt: intentPublishedAt } satisfies ConfigAttempt);
+          },
+        });
+        const revisionId = revision.revisionId;
+        await this.rollPublishedDraft(repository, revision, command.draftEtag);
+        const response = { revisionId, activatedAt: pointer.activatedAt };
+        await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId, publishedAt } satisfies ConfigAttempt);
+        return reply(response, 201);
+      } catch (error) {
+        if (error instanceof ConfigPublicationRejectedError) {
+          const response = { error: error.message, ...(error.conflicts ? { conflicts: error.conflicts } : {}) };
+          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "failed", response, revisionId: intendedRevisionId, publishedAt: intendedPublishedAt } satisfies ConfigAttempt);
+          return reply(response, 409);
+        }
+        const uncertain = error instanceof ConfigConflictError || error instanceof ConfigUnavailableError;
+        await this.ctx.storage.put(key, { hash: command.payloadHash, status: uncertain ? "needs_review" : "failed", revisionId: intendedRevisionId, publishedAt: intendedPublishedAt } satisfies ConfigAttempt);
+        console.error(JSON.stringify({ message: "config_activation_failed", operationId: command.opId, error: error instanceof Error ? error.message : "unknown" }));
+        return reply({ error: uncertain ? "Configuration publication needs review before retrying." : "Configuration publication failed." }, 503);
+      }
+    });
+  }
+
+  private async rollPublishedDraft(repository: R2ConfigRepository, published: Parameters<R2ConfigRepository["saveDraft"]>[0], reviewedDraftEtag: string): Promise<void> {
+    try {
+      const currentDraft = await repository.readDraft();
+      if (currentDraft?.value.parentRevision === published.revisionId && currentDraft.value.publishedAt === null) return;
+      if (!currentDraft || currentDraft.etag !== reviewedDraftEtag) {
+        console.error(JSON.stringify({ message: "published_config_draft_rollover_conflict", revisionId: published.revisionId }));
+        return;
+      }
+      const draftRevisionId = `draft-${published.revisionId.replace(/^rev-/, "").slice(0, 42)}`;
+      await repository.saveDraft({ ...published, revisionId: draftRevisionId, parentRevision: published.revisionId, publishedAt: null }, reviewedDraftEtag);
+    } catch (error) {
+      console.error(JSON.stringify({ message: "published_config_draft_rollover_failed", revisionId: published.revisionId, error: error instanceof Error ? error.message : "unknown" }));
+    }
   }
 
   private async handleBookingAction(request: Request): Promise<Response> {
@@ -179,7 +288,9 @@ export class BookingCoordinator extends DurableObject<Env> {
       }
       const env = this.env;
       try {
-        const events = (await Promise.all(allCalendarIds(env).filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID).map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, "1970-01-01T00:00:00Z", "2100-01-01T00:00:00Z", `bookingId=${action.expected.bookingId}`) })))).flatMap(({ calendarId, events }) => events.map((event) => ({ calendarId, event, resourceId: resourceIdForCalendar(env, calendarId) ?? event.privateProperties.resourceId ?? calendarId })));
+        const { config } = await resolveRuntimeConfig(env);
+        const searchableCalendarIds = [...new Set([...allCalendarIds(env), ...config.resources.flatMap((resource) => resource.calendarRef ? [resource.calendarRef] : [])])].filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID);
+        const events = (await Promise.all(searchableCalendarIds.map(async (calendarId) => ({ calendarId, events: await listCalendarEvents(env, calendarId, "1970-01-01T00:00:00Z", "2100-01-01T00:00:00Z", `bookingId=${action.expected.bookingId}`) })))).flatMap(({ calendarId, events }) => events.map((event) => ({ calendarId, event, resourceId: runtimeResourceIdForCalendar(config, calendarId) ?? resourceIdForCalendar(env, calendarId) ?? event.privateProperties.resourceId ?? calendarId })));
         if (events.length === 0) return reply({ error: "Booking could not be found in the private calendars." }, 404);
         const versions = new Set(events.map(({ event }) => Number(event.privateProperties.groupVersion ?? "0")));
         const version = versions.size === 1 ? [...versions][0] : -1;
@@ -206,12 +317,14 @@ export class BookingCoordinator extends DurableObject<Env> {
           const requestedResources = action.resourceIds.slice().sort();
           if (JSON.stringify(currentResourceIds) !== JSON.stringify(requestedResources)) return reply({ error: "Changing resources requires a fresh owner quote and review." }, 409);
           const durationMinutes = (Date.parse(currentEnd) - Date.parse(currentStart)) / 60_000;
-          const windowError = validateBookingWindow(action.start, durationMinutes, new Date(), { ...manualBookingRules, allowedDurationsMinutes: [durationMinutes] });
+          const windowError = validateRuntimeBookingWindow(config, action.start, durationMinutes, new Date(), true);
           if (windowError) return reply({ error: windowError }, 409);
           const newEnd = new Date(Date.parse(action.start) + durationMinutes * 60_000).toISOString();
           const targetCalendarIds = events.map(({ calendarId }) => calendarId);
-          const busy = await this.listBlockingEvents(targetCalendarIds, action.start, newEnd, events);
-          if (env.BOOKING_CONTROL_CALENDAR_ID) busy.push(...await this.listBlockingEvents([env.BOOKING_CONTROL_CALENDAR_ID], action.start, newEnd));
+          const bufferedStart = new Date(Date.parse(action.start) - config.bookingRules.bufferMinutes * 60_000).toISOString();
+          const bufferedEnd = new Date(Date.parse(newEnd) + config.bookingRules.bufferMinutes * 60_000).toISOString();
+          const busy = await this.listBlockingEvents(targetCalendarIds, bufferedStart, bufferedEnd, events);
+          if (env.BOOKING_CONTROL_CALENDAR_ID) busy.push(...await this.listBlockingEvents([env.BOOKING_CONTROL_CALENDAR_ID], bufferedStart, bufferedEnd));
           if (busy.length > 0) return reply({ error: "The new time overlaps another Calendar block or venue closure." }, 409);
           fenceStart = Date.parse(action.start) < Date.parse(currentStart) ? action.start : currentStart;
           fenceEnd = Date.parse(newEnd) > Date.parse(currentEnd) ? newEnd : currentEnd;
@@ -225,11 +338,14 @@ export class BookingCoordinator extends DurableObject<Env> {
         } else if (action.action === "extend") {
           if (Date.parse(currentEnd) <= Date.now()) return reply({ error: "An ended booking cannot be extended." }, 409);
           const additionalEnd = new Date(Date.parse(currentEnd) + action.durationMinutes * 60_000).toISOString();
-          const windowError = validateBookingOperatingWindow(currentStart, additionalEnd, false);
+          const totalDurationMinutes = (Date.parse(additionalEnd) - Date.parse(currentStart)) / 60_000;
+          const windowError = validateRuntimeBookingWindow(config, currentStart, totalDurationMinutes, new Date(Date.parse(currentStart) - 1), true);
           if (windowError) return reply({ error: windowError }, 409);
           const targetCalendarIds = events.map(({ calendarId }) => calendarId);
-          const busy = await this.listBlockingEvents(targetCalendarIds, currentEnd, additionalEnd, events);
-          if (env.BOOKING_CONTROL_CALENDAR_ID) busy.push(...await this.listBlockingEvents([env.BOOKING_CONTROL_CALENDAR_ID], currentEnd, additionalEnd));
+          const bufferedStart = new Date(Date.parse(currentEnd) - config.bookingRules.bufferMinutes * 60_000).toISOString();
+          const bufferedEnd = new Date(Date.parse(additionalEnd) + config.bookingRules.bufferMinutes * 60_000).toISOString();
+          const busy = await this.listBlockingEvents(targetCalendarIds, bufferedStart, bufferedEnd, events);
+          if (env.BOOKING_CONTROL_CALENDAR_ID) busy.push(...await this.listBlockingEvents([env.BOOKING_CONTROL_CALENDAR_ID], bufferedStart, bufferedEnd));
           if (busy.length > 0) return reply({ error: "The extension overlaps another Calendar block or venue closure." }, 409);
           fenceEnd = additionalEnd;
           steps = events.map(({ calendarId, event }) => ({
@@ -297,7 +413,8 @@ export class BookingCoordinator extends DurableObject<Env> {
         return reply({ error: "This block needs staff review before retrying." }, 503);
       }
       const env = this.env;
-      const calendarIds = block.resourceIds.map((resourceId) => calendarIdForResource(env, resourceId));
+      const { config } = await resolveRuntimeConfig(env);
+      const calendarIds = block.resourceIds.map((resourceId) => resourceId === "booking-control" ? env.BOOKING_CONTROL_CALENDAR_ID ?? null : runtimeCalendarIdForResource(config, resourceId) ?? calendarIdForResource(env, resourceId));
       if (calendarIds.some((calendarId): calendarId is null => calendarId === null)) return reply({ error: "A requested resource is not configured." }, 409);
       const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
       try {

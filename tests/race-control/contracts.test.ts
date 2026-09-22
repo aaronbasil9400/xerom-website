@@ -50,7 +50,7 @@ describe("Race Control shared contracts", () => {
 
   it("uses discriminated booking actions and operation commands", () => {
     expect(bookingActionSchema.safeParse({ action: "cancel", expected: { bookingId: "booking_123", version: 2 }, reason: "Owner-confirmed cancellation" }).success).toBe(true);
-    expect(operationCommandSchema.safeParse({ type: "activate-config", opId: "operation_123", idempotencyKey: "attempt_123", expectedRevision: "rev-1", reviewToken: "review-token-12345", payloadHash: "a".repeat(64) }).success).toBe(true);
+    expect(operationCommandSchema.safeParse({ type: "activate-config", opId: "operation_123", idempotencyKey: "attempt_123", expectedRevision: "rev-1", draftEtag: "draft-etag-1", reviewToken: "review-token-12345", payloadHash: "a".repeat(64) }).success).toBe(true);
     expect(blockTimeRequestSchema.safeParse({ blockType: "maintenance", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", reason: "Fixture maintenance", idempotencyKey: "attempt_123" }).success).toBe(true);
     expect(blockTimeRequestSchema.safeParse({ blockType: "venue-closure", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", reason: "Fixture closure", idempotencyKey: "attempt_123" }).success).toBe(false);
   });

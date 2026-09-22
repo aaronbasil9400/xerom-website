@@ -48,7 +48,7 @@ export const bookingActionSchema = z.discriminatedUnion("action", [
 export const operationCommandSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("create-booking"), opId: opaqueId, idempotencyKey: opaqueId, quoteId: opaqueId, source: z.enum(["public", "owner", "walk-in"]), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("booking-action"), opId: opaqueId, idempotencyKey: opaqueId, action: bookingActionSchema, payloadHash: z.string().length(64) }).strict(),
-  z.object({ type: z.literal("activate-config"), opId: opaqueId, idempotencyKey: opaqueId, expectedRevision: z.string().min(1), reviewToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
+  z.object({ type: z.literal("activate-config"), opId: opaqueId, idempotencyKey: opaqueId, expectedRevision: z.string().min(1), draftEtag: z.string().min(1), reviewToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("provision-resource"), opId: opaqueId, idempotencyKey: opaqueId, resourceId: z.string().min(1), confirmationToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("delete-resource-calendar"), opId: opaqueId, idempotencyKey: opaqueId, resourceId: z.string().min(1), confirmationToken: z.string().min(16), payloadHash: z.string().length(64) }).strict(),
   z.object({ type: z.literal("block-time"), opId: opaqueId, idempotencyKey: opaqueId, blockType: z.enum(["maintenance", "venue-closure"]), resourceIds: z.array(z.string().min(1)).min(1).max(64), start: isoInstant, end: isoInstant, reason: z.string().trim().min(1).max(500), payloadHash: z.string().length(64) }).strict(),

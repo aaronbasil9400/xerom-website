@@ -1,13 +1,20 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { business, contactLinks } from "@/config/business";
-import { openingHours } from "@/config/hours";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+const { config } = await resolveRuntimeConfig(cloudflareEnv);
+const venue = config.websiteContent.venue;
+const dayLabels = { monday: "Monday", tuesday: "Tuesday", wednesday: "Wednesday", thursday: "Thursday", friday: "Friday", saturday: "Saturday", sunday: "Sunday" } as const;
+const clock = (value: string) => new Intl.DateTimeFormat("en-MY", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" }).format(new Date(`2026-01-01T${value}:00+08:00`));
+const hours = Object.entries(config.hours.weekly).map(([day, intervals]) => ({ day: dayLabels[day as keyof typeof dayLabels], value: intervals.length ? intervals.map((interval) => `${clock(interval.open)}–${clock(interval.close)}`).join(", ") : "Closed" }));
+const phoneHref = `tel:${venue.phoneInternational}`;
+const whatsappHref = `https://wa.me/${venue.whatsappNumber.replace(/\D/g, "")}`;
 ---
-<BaseLayout title="Visit Xerom | Bandar Bukit Tinggi, Klang" description="Find Xerom SimRacing & Cafe in Bandar Bukit Tinggi, Klang, or contact the team by WhatsApp and phone.">
+<BaseLayout runtimeConfig={config} title="Visit Xerom | Bandar Bukit Tinggi, Klang" description="Find Xerom SimRacing & Cafe in Bandar Bukit Tinggi, Klang, or contact the team by WhatsApp and phone.">
   <header class="section-shell page-hero"><h1 class="display">Meet at <span class="red">Xerom</span></h1><p class="lede">Sim racing, PS5 lounge gaming and cafe time in Bandar Bukit Tinggi, Klang.</p></header>
   <section class="section-shell visit-grid">
-    <div><h2>Find us</h2><address>{business.address.street}<br />{business.address.locality}<br />{business.address.postalCode} {business.address.city}, {business.address.region}<br />{business.address.country}</address><a class="button button-primary" href={contactLinks.directions}>Get directions</a></div>
-    <div><h2>Contact</h2><p><a href={contactLinks.phone}>{business.phoneDisplay}</a><br /><a href={contactLinks.whatsapp}>WhatsApp Xerom</a><br /><a href={contactLinks.instagram}>@{business.instagramHandle}</a></p></div>
-    <div><h2>Hours</h2><dl class="hours-list">{openingHours.map((group) => (<div><dt>{group.days}</dt><dd>{group.hours}</dd></div>))}</dl></div>
+    <div><h2>Find us</h2><address>{venue.addressLines.map((line) => <>{line}<br /></>)}</address><a class="button button-primary" href={venue.mapsUrl}>Get directions</a></div>
+    <div><h2>Contact</h2><p><a href={phoneHref}>{venue.phoneDisplay}</a><br /><a href={whatsappHref}>WhatsApp Xerom</a><br /><a href={venue.instagramUrl}>@{venue.instagramHandle}</a></p></div>
+    <div><h2>Hours</h2><dl class="hours-list">{hours.map((entry) => (<div><dt>{entry.day}</dt><dd>{entry.value}</dd></div>))}</dl></div>
   </section>
 </BaseLayout>

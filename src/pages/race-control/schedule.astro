@@ -3,9 +3,11 @@ import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
 import Agenda from '../../components/race-control/Agenda.astro';
 import BookingInspector from '../../components/race-control/BookingInspector.astro';
 import BookingCreateForm from '../../components/race-control/BookingCreateForm.astro';
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
 import BlockTimeForm from '../../components/race-control/BlockTimeForm.astro';
-import { env as cloudflareEnv } from 'cloudflare:workers';
 
+const { config } = await resolveRuntimeConfig(cloudflareEnv);
 const malaysiaToday = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Kuala_Lumpur', year: 'numeric', month: '2-digit', day: '2-digit',
 }).format(new Date());
@@ -26,6 +28,6 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     <div class="rc-toolbar-actions"><a class="rc-button" href="#block-time">Block time</a><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>
   </div>
   <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} businessDate={malaysiaToday} /><BookingInspector live={liveEnabled} /></div>
-  <BookingCreateForm />
+  <BookingCreateForm config={config} />
   <BlockTimeForm />
 </RaceControlLayout>

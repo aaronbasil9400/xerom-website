@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ConfigConflictError, R2ConfigRepository, type ConfigObjectStore } from "@/lib/config/repository";
+import { ConfigConflictError, ConfigNotActivatedError, ConfigUnavailableError, R2ConfigRepository, type ConfigObjectStore } from "@/lib/config/repository";
 import { createSeedConfig } from "@/lib/config/seed";
 
 class MemoryObjectStore implements ConfigObjectStore {
   private values = new Map<string, { value: string; etag: string }>();
   private version = 0;
+  remove(key: string) { this.values.delete(key); }
 
   async get(key: string) {
     const item = this.values.get(key);
@@ -34,6 +35,19 @@ const refs = { resources: {
 } } as const;
 
 describe("R2 config repository contract", () => {
+  it("distinguishes an empty bootstrap bucket from a broken active revision", async () => {
+    const store = new MemoryObjectStore();
+    const repository = new R2ConfigRepository(store);
+    await expect(repository.readActive()).rejects.toBeInstanceOf(ConfigNotActivatedError);
+    const revision = { ...createSeedConfig(refs), revisionId: "revision-1", publishedAt: "2026-09-16T13:00:00+08:00" };
+    await repository.writeImmutableRevision(revision);
+    await repository.activate({ schemaVersion: 2, revisionId: revision.revisionId, activatedAt: "2026-09-16T13:00:01+08:00", operationId: "operation-123" }, null);
+    store.remove(`revisions/${revision.revisionId}.json`);
+    const failure = repository.readActive().catch((error) => error);
+    await expect(failure).resolves.toBeInstanceOf(ConfigUnavailableError);
+    await expect(failure).resolves.not.toBeInstanceOf(ConfigNotActivatedError);
+  });
+
   it("rejects a stale draft write", async () => {
     const repository = new R2ConfigRepository(new MemoryObjectStore());
     const draft = createSeedConfig(refs);
@@ -52,5 +66,21 @@ describe("R2 config repository contract", () => {
     expect(active.value.revisionId).toBe("revision-1");
     const loaded = await repository.readActive();
     expect(loaded.config.revisionId).toBe("revision-1");
+  });
+
+  it("recovers an identical immutable write and allows only one conditional pointer winner", async () => {
+    const repository = new R2ConfigRepository(new MemoryObjectStore());
+    const first = { ...createSeedConfig(refs), revisionId: "revision-1", publishedAt: "2026-09-16T13:00:00+08:00" };
+    const second = { ...first, revisionId: "revision-2", parentRevision: "revision-1", publishedAt: "2026-09-16T14:00:00+08:00" };
+    await repository.writeImmutableRevision(first);
+    await expect(repository.ensureImmutableRevision(first)).resolves.toMatchObject({ value: { revisionId: "revision-1" } });
+    const active = await repository.activate({ schemaVersion: 2, revisionId: "revision-1", activatedAt: "2026-09-16T13:00:01+08:00", operationId: "operation-1" }, null);
+    await repository.writeImmutableRevision(second);
+    const results = await Promise.allSettled([
+      repository.activate({ schemaVersion: 2, revisionId: "revision-2", activatedAt: "2026-09-16T14:00:01+08:00", operationId: "operation-2" }, active.etag),
+      repository.activate({ schemaVersion: 2, revisionId: "revision-2", activatedAt: "2026-09-16T14:00:02+08:00", operationId: "operation-3" }, active.etag),
+    ]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    expect(results.filter((result) => result.status === "rejected" && result.reason instanceof ConfigConflictError)).toHaveLength(1);
   });
 });

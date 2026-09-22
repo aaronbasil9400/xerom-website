@@ -26,7 +26,9 @@ describe("runtime pricing", () => {
     expect(quote.lines[0].selectedPromotionId).toBe("friday-fixture");
   });
 
-  it("keeps controller add-ons gated pending owner confirmation", () => {
-    expect(() => calculateRuntimeQuote(seed, { items: [{ serviceId: "ps5", quantity: 1, additionalControllers: 1 }], start: "2026-09-18T20:00:00+08:00", durationMinutes: 60, channel: "public" })).toThrow("remain disabled");
+  it("charges confirmed controller add-ons once per booking", () => {
+    const quote = calculateRuntimeQuote(seed, { items: [{ serviceId: "ps5", quantity: 1, additionalControllers: 2 }], start: "2026-09-18T20:00:00+08:00", durationMinutes: 60, channel: "public" });
+    expect(quote.lines[0]).toMatchObject({ addOnAmountSen: 600, lineTotalSen: 2_400 });
+    expect(() => calculateRuntimeQuote(seed, { items: [{ serviceId: "ps5", quantity: 1, additionalControllers: 7 }], start: "2026-09-18T20:00:00+08:00", durationMinutes: 60, channel: "public" })).toThrow("Too many");
   });
 });

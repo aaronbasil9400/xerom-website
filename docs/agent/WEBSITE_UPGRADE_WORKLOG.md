@@ -28,8 +28,8 @@ Started: 2026-09-22
 | 7 Customer Details | COMPLETE | Optional email, Calendar metadata, final serialized validation, confirmation details and WhatsApp auto-open/fallback; unit/E2E verified. |
 | 8 Race Control Schedule | IN PROGRESS | Contact/controller projection, WhatsApp customer and email on manual booking implemented; protected live inspector verification pending. |
 | 9 Race Control Bookings | COMPLETE | Phone/resource/duration combined filters and normalized RFC 4180 CSV; unit/E2E verified. |
-| 10 Business Settings | BLOCKED | Editors and secure seed/draft code implemented; R2 activation, Calendar provisioning, impact scan and publication are owner/integration gates. |
-| 11 Publishing | BLOCKED | 16:9 uploader, client/server validation, private media API and active-hero read implemented; R2 activation, approved media and publication remain gated. |
+| 10 Business Settings | IN PROGRESS | Editors, private drafts, complete impact review and serialized publication/rollback are implemented and locally verified; automatic Calendar provisioning and authenticated live owner verification remain. |
+| 11 Publishing | IN PROGRESS | 16:9 uploader, private media, reviewed config activation and rollback-as-new-draft are implemented; first live publication, approved replacement media and external verification remain separately gated. |
 | 12 Reliability/Security | IN PROGRESS | Serialization/fences and exactly-one-winner test pass; optional rate-limit adapters are coded but production bindings remain unconfigured. |
 | 13 Responsive/E2E QA | COMPLETE (local) | Six widths: 69 passed, 33 intentional viewport skips; typecheck, 92 unit tests, build and dry run pass. External integrations remain separately gated. |
 
@@ -40,13 +40,13 @@ Started: 2026-09-22
 - PS5 controllers: 2 included, 0–6 additional, RM3 each per booking.
 - Email: optional; store/display/export only. No delivery backend.
 - Persistence: Calendar bookings + private R2 configuration/media + Durable Object coordination. No D1 or external database.
-- R2 account activation: not authorized; code-only until a later explicit approval.
+- R2: private buckets and bindings are active; no configuration revision or public pointer has been published.
 
 ## Deferred / owner gates
 
 - TODO: Implement booking confirmation email backend.
 - Final membership destination remains unresolved; use an explicit placeholder route/action.
-- Production R2 activation/billing terms, production Turnstile, final hero asset and remaining `CONTENT_TODO.md` facts remain gated.
+- First configuration publication, production Turnstile, final hero asset and remaining `CONTENT_TODO.md` facts remain gated.
 
 ## Activity log
 
@@ -105,3 +105,13 @@ Started: 2026-09-22
 - Extracted the coordinator mutation queue and proved two simultaneous attempts for the final resource return exactly one success and one conflict. Added overlap coverage for every supported duration.
 - Final local verification: `npm run check` passed; `npm test` passed 92/92; `npm run build` passed; media manifest 21/21; coordinator Wrangler dry run passed; `git diff --check` passed; full six-width Playwright passed 69 with 33 intentional skips.
 - Impeccable detector ran once. It reported existing shared CSS type/color advisories and pre-existing side-tab declarations that are overridden by the shipped 1px active navigation rule; no new blocking category was introduced.
+
+### 2026-09-23 — Reviewed publication, rollback and runtime cutover safety
+
+- Added coordinator-serialized publication: reload draft/ETag/hash, verify the short-lived review token and base revision, repeat the complete Calendar impact scan, persist intent, write an immutable R2 revision, conditionally activate and verify the pointer.
+- Added deterministic same-attempt replay and post-activation lost-response recovery. Fresh review tokens produce fresh operation/revision IDs even when configuration content is identical.
+- Added rollback preparation as a new private draft. It preserves current Calendar mappings and requires normal save/review/publication; no old pointer is restored directly.
+- Replaced public live reads of compiled prices, hours, resources, controllers, venue content and booking rules with one active revision per rendered response. Booking availability and confirmation reject a changed displayed revision.
+- Added focused tests for token tampering/expiry, stale ETag/hash/base revision, serialized scan conflicts, immutable replay, pre-activation retry, pointer-swap races, and post-activation response loss.
+- Final local verification: `npm run check` clean; 119/119 unit/contract tests; production and staging builds passed; both Wrangler dry runs passed; six-width Playwright completed with 70 passed and 38 intentional viewport-specific skips.
+- No publication endpoint was called, no `active.json` or immutable production revision was created, and no Google Calendar event was created or changed.

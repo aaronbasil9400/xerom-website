@@ -1,6 +1,7 @@
 import { configPointerSchema, configRevisionSchema, type ConfigPointer, type ConfigRevision } from "./schema";
 
 export class ConfigUnavailableError extends Error {}
+export class ConfigNotActivatedError extends ConfigUnavailableError {}
 export class ConfigConflictError extends Error {
   constructor(message: string, readonly currentEtag: string | null) {
     super(message);
@@ -26,7 +27,7 @@ export class R2ConfigRepository {
 
   async readActive(): Promise<{ pointer: VersionedConfig<ConfigPointer>; config: ConfigRevision }> {
     const pointerObject = await this.bucket.get("active.json");
-    if (!pointerObject) throw new ConfigUnavailableError("Active configuration pointer is unavailable.");
+    if (!pointerObject) throw new ConfigNotActivatedError("Active configuration has not been activated.");
     const pointer = configPointerSchema.parse(await pointerObject.json());
     const revisionObject = await this.bucket.get(`revisions/${pointer.revisionId}.json`);
     if (!revisionObject) throw new ConfigUnavailableError("Active configuration revision is unavailable.");
@@ -37,6 +38,11 @@ export class R2ConfigRepository {
     const object = await this.bucket.get("draft.json");
     if (!object) return null;
     return { value: configRevisionSchema.parse(await object.json()), etag: object.etag };
+  }
+
+  async readRevision(revisionId: string): Promise<ConfigRevision | null> {
+    const object = await this.bucket.get(`revisions/${revisionId}.json`);
+    return object ? configRevisionSchema.parse(await object.json()) : null;
   }
 
   async saveDraft(config: ConfigRevision, expectedEtag: string | null): Promise<VersionedConfig<ConfigRevision>> {
@@ -60,6 +66,17 @@ export class R2ConfigRepository {
     return { value: parsed, etag: result.etag };
   }
 
+  async ensureImmutableRevision(config: ConfigRevision): Promise<VersionedConfig<ConfigRevision>> {
+    try { return await this.writeImmutableRevision(config); } catch (error) {
+      if (!(error instanceof ConfigConflictError)) throw error;
+      const object = await this.bucket.get(`revisions/${config.revisionId}.json`);
+      if (!object) throw error;
+      const existing = configRevisionSchema.parse(await object.json());
+      if (JSON.stringify(existing) !== JSON.stringify(config)) throw error;
+      return { value: existing, etag: object.etag };
+    }
+  }
+
   async activate(pointer: ConfigPointer, expectedEtag: string | null): Promise<VersionedConfig<ConfigPointer>> {
     const parsed = configPointerSchema.parse(pointer);
     const revision = await this.bucket.head(`revisions/${parsed.revisionId}.json`);
@@ -76,6 +93,6 @@ export class R2ConfigRepository {
 }
 
 export function getConfigRepository(env: CloudflareEnv): R2ConfigRepository {
-  if (!env.RACE_CONTROL_CONFIG_BUCKET) throw new ConfigUnavailableError("Runtime configuration storage is not bound.");
+  if (!env.RACE_CONTROL_CONFIG_BUCKET) throw new ConfigNotActivatedError("Runtime configuration storage is not bound.");
   return new R2ConfigRepository(env.RACE_CONTROL_CONFIG_BUCKET);
 }

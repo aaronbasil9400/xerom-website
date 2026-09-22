@@ -1,5 +1,13 @@
 # Decision Log
 
+## 2026-09-23 — Serialized configuration publication and rollback
+
+- Bind each publication attempt to the saved draft ETag, normalized draft hash, active base revision and a five-minute signed review token. Derive a stable operation ID from that reviewed attempt, not from configuration content alone, so a lost response replays while a later publication of identical content remains a new revision.
+- Persist publication intent in the venue coordinator before writing the immutable R2 revision. Recheck the complete Calendar impact inside coordinator serialization, then conditionally replace and verify `active.json`. A pointer race fails closed; an already-activated intended revision is recovered without another revision or pointer write.
+- Treat an empty/unbound config bucket as the pre-cutover compiled bootstrap. Once `active.json` exists, a missing referenced revision is an outage and must fail closed rather than silently restoring compiled business rules.
+- Rollback prepares a new private draft from the previous revision. Preserve the current private resource registry, retire resources introduced later, and leave missing historical mappings in draft state so normal review blocks unsafe resurrection. Rollback never rewinds `active.json` directly.
+- Public booking pages carry the configuration revision they displayed. Availability and final serialized booking creation reject a changed revision, preventing a publication from silently changing prices, capacities or rules underneath an open checkout.
+
 ## 2026-09-22 — Configuration review scans fail closed
 
 - Scan all server-known resource calendars plus Booking Control when hours, resources, allowed durations, or booking buffers change.

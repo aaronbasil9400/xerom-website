@@ -1,7 +1,11 @@
 ---
-import { bookingRules } from "@/config/booking";
-import { pricing } from "@/config/pricing";
-import { serviceCore } from "@/config/service-core";
+import type { ConfigRevision, ServiceId } from "@/lib/config/schema";
+interface Props { config: ConfigRevision }
+const { config } = Astro.props;
+const capacity = (serviceId: ServiceId) => config.services.find((service) => service.serviceId === serviceId)?.enabled
+  ? config.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active" && resource.calendarRef).length
+  : 0;
+const serviceName = (serviceId: ServiceId) => config.services.find((service) => service.serviceId === serviceId)!.name;
 ---
 
 <section id="new-booking" class="rc-panel rc-booking-form">
@@ -9,11 +13,11 @@ import { serviceCore } from "@/config/service-core";
   <form data-rc-booking-form>
     <div class="rc-form-grid">
       <label>Start time<input name="start" type="datetime-local" required /><small>Any minute within opening hours; no one-hour notice floor.</small></label>
-      <label>Duration<select name="duration">{bookingRules.allowedDurationsMinutes.map((minutes) => <option value={minutes} selected={minutes === 60}>{minutes} minutes</option>)}</select></label>
-      <label>Regular rigs<input name="regular" type="number" min="0" max={serviceCore["regular-sim"].capacity} value="1" required /></label>
-      <label>Pro rigs<input name="pro" type="number" min="0" max={serviceCore["pro-sim"].capacity} value="0" required /></label>
-      <label>PS5 lounges<input name="ps5" type="number" min="0" max={serviceCore.ps5.capacity} value="0" required /></label>
-      <label>Additional PS5 controllers<input name="additionalControllers" type="number" min="0" max={pricing.services.ps5.maxAdditionalControllers} value="0" /><small>{pricing.services.ps5.includedControllers} per lounge included; RM{pricing.services.ps5.additionalControllerRate} each per booking.</small></label>
+      <label>Duration<select name="duration">{config.bookingRules.allowedDurationsMinutes.map((minutes) => <option value={minutes} selected={minutes === 60}>{minutes} minutes</option>)}</select></label>
+      <label>{serviceName("regular-sim")} quantity<input name="regular" type="number" min="0" max={capacity("regular-sim")} value={capacity("regular-sim") ? "1" : "0"} required /></label>
+      <label>{serviceName("pro-sim")} quantity<input name="pro" type="number" min="0" max={capacity("pro-sim")} value="0" required /></label>
+      <label>{serviceName("ps5")} quantity<input name="ps5" type="number" min="0" max={capacity("ps5")} value="0" required /></label>
+      <label>Additional PS5 controllers<input name="additionalControllers" type="number" min="0" max={config.controllers.maxAdditionalQuantity} value="0" /><small>{config.controllers.includedQuantity} per lounge included; RM{(config.controllers.additionalPriceSen / 100).toFixed(2)} each per booking.</small></label>
       <label>Customer name<input name="name" minlength="2" maxlength="80" required /></label>
       <label>Mobile / WhatsApp<input name="phone" inputmode="tel" required /></label>
       <label>Email address (optional)<input name="email" type="email" autocomplete="email" maxlength="254" /></label>

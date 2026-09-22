@@ -274,6 +274,22 @@ The review endpoint has not been run with live R2 or Google data and intentional
 
 The scan is read-only. No booking, Calendar event, R2 active pointer or configuration revision was created. Authenticated live review remains to be exercised by the owner; publication/rollback remains a separate unimplemented mutation path.
 
+## Serialized configuration publication checkpoint (2026-09-23)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Review binding | Pass locally | Signed review token, draft ETag/hash and active base revision are revalidated inside coordinator serialization; tampering, expiry and stale-state tests pass |
+| Fresh Calendar scan | Pass locally | Publication invokes the same complete fail-closed impact scan after entering the venue mutation queue; a newly discovered conflict prevents intent/revision/pointer writes |
+| Immutable activation | Pass locally | Durable intent precedes immutable revision creation; `active.json` uses an expected ETag and is read back after replacement |
+| Replay/recovery | Pass locally | Tests cover failure before revision creation, identical immutable-write recovery, pointer-swap loss and lost response after activation without duplicate publication |
+| Rollback | Pass locally | Previous settings become a new private draft; current Calendar mappings are preserved, missing historical mappings remain unprovisioned, and normal review/publication is mandatory |
+| Runtime consistency | Pass locally | Public SSR surfaces share one revision per response; availability and final booking creation reject an open page carrying a stale revision |
+| Type/unit/build | Pass | `npm run check`: clean; `npm test -- --run`: 119/119; production and staging builds passed |
+| Browser regression | Pass | Playwright at 375, 390, 430, 768, 1024 and 1440 CSS px: 70 passed, 38 intentional viewport-specific skips |
+| Deploy packaging | Pass | Website and coordinator Wrangler dry runs include the private R2 bindings and complete successfully |
+
+No owner publish/rollback request was sent. No production `active.json`, immutable config revision, media object, booking or Calendar mutation was created. Authenticated live review is still pending; first publication requires separate approval.
+
 ## Bounded owner booking search checkpoint (2026-09-16)
 
 | Check | Result | Evidence |

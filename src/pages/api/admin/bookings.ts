@@ -3,8 +3,8 @@ import { env as cloudflareEnv } from "cloudflare:workers";
 import { bookingRequestSchema } from "@/lib/booking/schema";
 import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
 import { bookingRecordsToCsv, searchRaceControlBookings } from "@/lib/race-control/bookings";
-import { bookingRules } from "@/config/booking";
 import { serviceCore, type ServiceId } from "@/config/service-core";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
 
 export const prerender = false;
 const headers = { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" };
@@ -19,9 +19,10 @@ export const GET: APIRoute = async ({ request }) => {
   const durationText = params.get("duration") ?? "";
   const format = params.get("format") ?? "json";
   try {
+    const { config } = await resolveRuntimeConfig(cloudflareEnv as typeof cloudflareEnv & CloudflareEnv);
     if (service && !(service in serviceCore)) return new Response(JSON.stringify({ error: { code: "INVALID_FILTER", message: "Choose a valid resource type.", retryable: false } }), { status: 400, headers });
     const durationMinutes = durationText ? Number(durationText) : undefined;
-    if (durationMinutes !== undefined && !bookingRules.allowedDurationsMinutes.some((allowed) => allowed === durationMinutes)) return new Response(JSON.stringify({ error: { code: "INVALID_FILTER", message: "Choose a valid booking duration.", retryable: false } }), { status: 400, headers });
+    if (durationMinutes !== undefined && !config.bookingRules.allowedDurationsMinutes.some((allowed) => allowed === durationMinutes)) return new Response(JSON.stringify({ error: { code: "INVALID_FILTER", message: "Choose a valid booking duration.", retryable: false } }), { status: 400, headers });
     if (format !== "json" && format !== "csv") return new Response(JSON.stringify({ error: { code: "INVALID_FORMAT", message: "Choose JSON or CSV.", retryable: false } }), { status: 400, headers });
     const data = await searchRaceControlBookings(cloudflareEnv as typeof cloudflareEnv & CloudflareEnv, from, to, { query, phone, serviceId: service ? service as ServiceId : undefined, durationMinutes });
     if (format === "csv") {

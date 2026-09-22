@@ -6,22 +6,35 @@ import "@fontsource/barlow-condensed/700.css";
 import "@fontsource/barlow-condensed/900.css";
 import "@fontsource/racing-sans-one/400.css";
 import "../styles/global.css";
-import { business, contactLinks } from "@/config/business";
+import { business } from "@/config/business";
 import ArrowIcon from "@/components/ArrowIcon.astro";
 import xeromLogo from "@/assets/brand/xerom-logo.svg";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+import type { ConfigRevision } from "@/lib/config/schema";
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
+  runtimeConfig?: ConfigRevision;
 }
 
 const {
   title = "Xerom SimRacing & Cafe | Race Together in Klang",
   description = "Sim racing, PS5 lounge gaming and cafe time for groups in Bandar Bukit Tinggi, Klang.",
   image = "/og-placeholder.jpg",
+  runtimeConfig,
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const config = runtimeConfig ?? (await resolveRuntimeConfig(cloudflareEnv)).config;
+const venue = config.websiteContent.venue;
+const runtimeLinks = {
+  whatsapp: `https://wa.me/${venue.whatsappNumber.replace(/\D/g, "")}`,
+  phone: `tel:${venue.phoneInternational}`,
+  directions: venue.mapsUrl,
+  instagram: venue.instagramUrl,
+};
 ---
 
 <!doctype html>
@@ -46,16 +59,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <script is:inline type="application/ld+json" set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": ["LocalBusiness", "EntertainmentBusiness"],
-      name: business.name,
+      name: config.venue.name,
       url: Astro.site?.toString(),
-      telephone: business.phoneInternational,
-      sameAs: [business.instagramUrl],
+      telephone: venue.phoneInternational,
+      sameAs: [venue.instagramUrl],
       address: {
         "@type": "PostalAddress",
-        streetAddress: business.address.street,
-        addressLocality: business.address.city,
-        addressRegion: business.address.region,
-        postalCode: business.address.postalCode,
+        streetAddress: venue.addressLines.join(", "),
+        addressLocality: "Klang",
+        addressRegion: "Selangor",
         addressCountry: "MY",
       },
       geo: {
@@ -112,10 +124,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <p>Sim Racing · PS5 · Cafe</p>
       </div>
       <div class="footer-links">
-        <a href={contactLinks.whatsapp}>WhatsApp</a>
-        <a href={contactLinks.phone}>Call</a>
-        <a href={contactLinks.directions}>Directions</a>
-        <a href={contactLinks.instagram}>Instagram</a>
+        <a href={runtimeLinks.whatsapp}>WhatsApp</a>
+        <a href={runtimeLinks.phone}>Call</a>
+        <a href={runtimeLinks.directions}>Directions</a>
+        <a href={runtimeLinks.instagram}>Instagram</a>
         <a href="/pricing">Pricing</a>
         <a href="/visit">Visit</a>
       </div>

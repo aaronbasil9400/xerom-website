@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { env as cloudflareEnv } from "cloudflare:workers";
-import { ConfigConflictError, ConfigUnavailableError, getConfigRepository } from "@/lib/config/repository";
+import { ConfigConflictError, ConfigNotActivatedError, ConfigUnavailableError, getConfigRepository } from "@/lib/config/repository";
 import { configRevisionSchema } from "@/lib/config/schema";
 import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
 import { createSeedConfig } from "@/lib/config/seed";
@@ -29,9 +29,10 @@ function ownerProjection(config: ConfigRevision) {
 
 export const GET: APIRoute = async () => {
   try {
-    const draft = await getConfigRepository(cloudflareEnv).readDraft();
+    const repository = getConfigRepository(cloudflareEnv);
+    const [draft, active] = await Promise.all([repository.readDraft(), repository.readActive().catch((error) => error instanceof ConfigNotActivatedError ? null : Promise.reject(error))]);
     const config = draft?.value ?? seedConfig();
-    return Response.json({ data: ownerProjection(config), etag: draft?.etag ?? null, draftHash: await draftHash(config), seeded: !draft }, { headers });
+    return Response.json({ data: ownerProjection(config), etag: draft?.etag ?? null, draftHash: await draftHash(config), seeded: !draft, activeRevision: active?.config.revisionId ?? null, rollbackAvailable: Boolean(active?.config.parentRevision) }, { headers });
   } catch (error) {
     if (error instanceof ConfigUnavailableError) { const config = seedConfig(); return Response.json({ data: ownerProjection(config), etag: null, draftHash: await draftHash(config), seeded: true, setupRequired: true }, { headers }); }
     return Response.json({ error: { code: "CONFIG_UNAVAILABLE", message: "Draft configuration could not be read.", retryable: true } }, { status: 503, headers });

@@ -1,7 +1,4 @@
 import { z } from "zod";
-import { bookingRules } from "@/config/booking";
-import { pricing } from "@/config/pricing";
-import { serviceCore } from "@/config/service-core";
 import { normalizeMalaysianMobile } from "./phone";
 
 export const serviceIdSchema = z.enum(["regular-sim", "pro-sim", "ps5"]);
@@ -18,15 +15,8 @@ export const lineItemSchema = z.object({
   quantity: z.number().int().min(0).max(64),
   additionalControllers: z.number().int().min(0).max(64).optional(),
 }).superRefine((item, context) => {
-  const service = serviceCore[item.serviceId];
-  if (item.quantity > service.capacity) {
-    context.addIssue({ code: "custom", path: ["quantity"], message: `Maximum ${service.capacity} ${service.name}${service.capacity === 1 ? "" : "s"} available.` });
-  }
   if (item.serviceId !== "ps5" && item.additionalControllers) {
     context.addIssue({ code: "custom", message: "Additional controllers apply only to PS5." });
-  }
-  if (item.serviceId === "ps5" && (item.additionalControllers ?? 0) > pricing.services.ps5.maxAdditionalControllers) {
-    context.addIssue({ code: "custom", path: ["additionalControllers"], message: `Maximum ${pricing.services.ps5.maxAdditionalControllers} additional controllers available.` });
   }
   if (item.serviceId === "ps5" && item.quantity === 0 && (item.additionalControllers ?? 0) > 0) {
     context.addIssue({ code: "custom", path: ["additionalControllers"], message: "Select a PS5 Lounge before adding controllers." });
@@ -46,6 +36,7 @@ export const bookingRequestSchema = z.object({
     notes: z.string().trim().max(300).optional(),
   }),
   idempotencyKey: z.uuid(),
+  configRevision: z.string().min(1).max(128).optional(),
 }).superRefine((request, context) => {
   const active = request.items.filter((item) => item.quantity > 0);
   if (active.length === 0) context.addIssue({ code: "custom", path: ["items"], message: "Choose at least one experience." });
@@ -54,7 +45,7 @@ export const bookingRequestSchema = z.object({
   }
 });
 
-export const publicBookingRequestSchema = bookingRequestSchema;
+export const publicBookingRequestSchema = bookingRequestSchema.refine((request) => Boolean(request.configRevision), { path: ["configRevision"], message: "Reload booking settings before confirming." });
 
 export const availabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -62,14 +53,4 @@ export const availabilityQuerySchema = z.object({
   regular: z.coerce.number().int().min(0).max(64).default(0),
   pro: z.coerce.number().int().min(0).max(64).default(0),
   ps5: z.coerce.number().int().min(0).max(64).default(0),
-}).superRefine((query, context) => {
-  const quantities = { "regular-sim": query.regular, "pro-sim": query.pro, ps5: query.ps5 } as const;
-  for (const serviceId of Object.keys(quantities) as Array<keyof typeof quantities>) {
-    if (quantities[serviceId] > serviceCore[serviceId].capacity) {
-      context.addIssue({ code: "custom", path: [serviceId === "regular-sim" ? "regular" : serviceId === "pro-sim" ? "pro" : "ps5"], message: `Maximum ${serviceCore[serviceId].capacity} available.` });
-    }
-  }
-  if (!bookingRules.allowedDurationsMinutes.includes(query.durationMinutes)) {
-    context.addIssue({ code: "custom", path: ["durationMinutes"], message: bookingRules.durationErrorMessage });
-  }
 });

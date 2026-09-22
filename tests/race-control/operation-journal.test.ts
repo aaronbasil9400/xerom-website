@@ -14,6 +14,7 @@ const command = (payloadHash = "a".repeat(64)) => ({
   opId: "operation_123",
   idempotencyKey: "idempotency_123",
   expectedRevision: "revision-1",
+  draftEtag: "draft-etag-1",
   reviewToken: "review-token-12345",
   payloadHash,
 });

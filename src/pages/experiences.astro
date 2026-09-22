@@ -2,13 +2,18 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ExperienceCard from "@/components/ExperienceCard.astro";
 import { services } from "@/config/services";
-import { pricing, formatMoney } from "@/config/pricing";
+import { formatMoney } from "@/config/pricing";
 import { media } from "@/config/media";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+const { config } = await resolveRuntimeConfig(cloudflareEnv);
+const runtimeServices = Object.values(services).map((service) => ({ ...service, ...config.services.find((candidate) => candidate.serviceId === service.id) }));
+const activeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (config.rates.find((rate) => rate.serviceId === serviceId && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)))?.amountSenPerResourceHour ?? 0) / 100;
 ---
-<BaseLayout title="Sim Racing, PS5 & Cafe | Xerom Klang" description="Compare Xerom’s Regular Sim rigs, Pro Sim rig, PS5 lounges and cafe atmosphere in Bandar Bukit Tinggi, Klang.">
+<BaseLayout runtimeConfig={config} title="Sim Racing, PS5 & Cafe | Xerom Klang" description="Compare Xerom’s Regular Sim rigs, Pro Sim rig, PS5 lounges and cafe atmosphere in Bandar Bukit Tinggi, Klang.">
   <header class="section-shell page-hero"><h1 class="display">Race. Play. <span class="red">Refuel.</span></h1><p class="lede">One place for friendly laps, focused driving, lounge gaming and more time together.</p></header>
   <section class="section-shell section-space"><div class="experience-grid">
-    {Object.values(services).map((service) => <ExperienceCard title={service.name} copy={service.description} image={service.image} alt={service.imageAlt} price={`${formatMoney(pricing.services[service.id].hourlyRate)}/hour`} href={`/book?service=${service.id}`} />)}
+    {runtimeServices.filter((service) => service.enabled).map((service) => <ExperienceCard title={service.name} copy={service.description} image={service.image} alt={service.imageAlt} price={`${formatMoney(activeRate(service.id))}/hour`} href={`/book?service=${service.id}`} />)}
     <ExperienceCard title="Cafe" copy="A social pause between sessions, with drinks available from the cafe." image={media.cafe} alt="Three colourful drinks from the Xerom cafe" href="#cafe" />
   </div></section>
   <section class="section-shell section-space split-section" id="cafe"><div><h2 class="section-title">Stay for the <span class="red">whole night</span></h2><p class="lede">The cafe is part of the social rhythm of Xerom: a place to regroup between races and lounge sessions. Verified menu details will be added when supplied.</p></div><div class="notice">The cafe photograph is owner supplied. Menu items and current cafe pricing still require confirmation.</div></section>

@@ -1,16 +1,20 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { services } from "@/config/services";
-import { pricing, formatMoney } from "@/config/pricing";
+import { formatMoney } from "@/config/pricing";
 import ArrowIcon from "@/components/ArrowIcon.astro";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
+const { config } = await resolveRuntimeConfig(cloudflareEnv);
+const configuredServices = Object.values(services).map((service) => ({ ...service, ...config.services.find((candidate) => candidate.serviceId === service.id) }));
+const activeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (config.rates.find((rate) => rate.serviceId === serviceId && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)))?.amountSenPerResourceHour ?? 0) / 100;
 ---
-<BaseLayout title="Pricing | Xerom SimRacing & Cafe" description="Current hourly pricing for Regular Sim, Pro Sim and PS5 lounge sessions at Xerom in Klang.">
+<BaseLayout runtimeConfig={config} title="Pricing | Xerom SimRacing & Cafe" description="Current hourly pricing for Regular Sim, Pro Sim and PS5 lounge sessions at Xerom in Klang.">
   <header class="section-shell page-hero"><h1 class="display">Clear pace. <span class="red">Clear price.</span></h1><p class="lede">Book one or two hours. Your total is calculated from current configuration when you confirm.</p></header>
   <section class="section-shell pricing-table" aria-label="Current prices">
-    {Object.values(services).map((service) => {
-      const rate = pricing.services[service.id];
-      return <article class="price-row"><div><h2>{service.name}</h2><p>{service.description}</p></div><div class="price-stack"><s>{formatMoney(rate.compareAtHourlyRate)}/hr</s><strong>{formatMoney(rate.hourlyRate)}/hr</strong></div><a class="button button-primary" href={`/book?service=${service.id}`}>Book <ArrowIcon /></a></article>;
+    {configuredServices.filter((service) => service.enabled).map((service) => {
+      return <article class="price-row"><div><h2>{service.name}</h2><p>{service.description}</p></div><div class="price-stack"><strong>{formatMoney(activeRate(service.id))}/hr</strong></div><a class="button button-primary" href={`/book?service=${service.id}`}>Book <ArrowIcon /></a></article>;
     })}
-    <p class="pricing-note">PS5 lounge pricing includes two controllers. Additional controllers are RM{pricing.services.ps5.additionalControllerRate} each; availability limits require owner confirmation.</p>
+    <p class="pricing-note">PS5 lounge pricing includes {config.controllers.includedQuantity} controllers. Additional controllers are {formatMoney(config.controllers.additionalPriceSen / 100)} each per booking.</p>
   </section>
 </BaseLayout>

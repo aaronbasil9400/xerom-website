@@ -67,9 +67,10 @@ For a remote client, screen-share the owner session. Do not send Calendar IDs, s
 - **Access redirect/302:** the route is protected. Complete the owner One-time PIN flow; a non-allowlisted identity is expected to be denied.
 - **Demo fixture banner:** the preview is missing its live server-side bindings or the request is running locally. Local development intentionally uses fixtures.
 - **Live Calendar unavailable:** retry once. If it persists, stop; no availability is being claimed and settings publication is not available.
-- **Settings say Not published:** this is expected while the R2/runtime-publication gate is closed.
+- **Settings publication:** save the private draft, run **Review changes**, read every reported Calendar conflict, then use **Publish reviewed draft** within five minutes. Publication asks for confirmation and rechecks Calendar inside the coordinator before changing the public site. Never retry by manually editing `active.json`.
+- **Rollback:** **Prepare rollback** only replaces the private draft with the prior published settings. The public site remains unchanged until that draft is saved, reviewed and published as a new revision.
 - **A booking is not visible:** confirm the date range/business date, refresh, and search by the grouped booking ID. Never create a second reservation just to probe a missing record.
 
 ## Current release boundary
 
-The preview uses a separately deployed coordinator Worker and the existing private Calendars. The production website/coordinator remain unchanged. R2 activation, runtime settings/content publication, Calendar OAuth provisioning, the remaining front-desk action UI, recovery/failure-injection validation, production Turnstile/rate limits and production cutover are still open; see [HANDOFF.md](HANDOFF.md) and [CLIENT_RACE_CONTROL_SETUP.md](CLIENT_RACE_CONTROL_SETUP.md).
+The current deployed preview uses a separately deployed coordinator Worker and the existing private Calendars. The production website/coordinator remain unchanged. Reviewed publication/rollback code is locally complete but not deployed or exercised against production R2; Calendar OAuth provisioning, the remaining front-desk action UI, production Turnstile/rate limits and production cutover are still open. See [HANDOFF.md](HANDOFF.md) and [CLIENT_RACE_CONTROL_SETUP.md](CLIENT_RACE_CONTROL_SETUP.md).

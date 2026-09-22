@@ -1,6 +1,14 @@
 # Agent Handoff
 
-Last updated: 2026-09-22
+Last updated: 2026-09-23
+
+## Configuration publication checkpoint — 2026-09-23
+
+The local branch now implements the full reviewed publication boundary. Owner publication reloads and hashes the saved draft, verifies its five-minute token/base revision, repeats the complete Calendar scan inside the shared Durable Object queue, records durable intent, writes an immutable R2 revision and conditionally verifies `active.json`. Same-attempt retries recover before or after activation without duplicate revisions. Rollback creates a new draft from the prior revision while preserving the current private resource registry; it must pass the same review and publication path.
+
+Public homepage, pricing, experiences, visit, booking setup, availability, final coordinator validation and Calendar price metadata now consume the same active configuration. An open booking page sends its displayed revision; availability or final creation rejects a changed revision rather than silently applying new prices/rules. Empty R2 remains an explicit compiled bootstrap, while a pointer to a missing revision fails closed.
+
+Local evidence: Astro check clean; 119/119 unit/contract tests; production and staging builds; website/coordinator Wrangler dry runs; six-width Playwright 70 passed with 38 intentional viewport-specific skips. No publish/rollback API was invoked, no R2 active pointer/revision was created, and no Calendar state was mutated. Coordinator must deploy before the website because the website emits the updated activation command and booking revision contract. First authenticated review and any actual publication remain separate owner-controlled actions.
 
 ## R2 activation checkpoint — 2026-09-22
 

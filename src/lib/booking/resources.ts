@@ -1,5 +1,6 @@
 import { serviceCore, type ServiceId } from "@/config/service-core";
 import type { BusyByCalendar } from "./types";
+import type { ConfigRevision } from "@/lib/config/schema";
 
 export function calendarGroups(env: CloudflareEnv): Record<ServiceId, string[]> {
   return Object.fromEntries(Object.entries(serviceCore).map(([id, service]) => [
@@ -10,6 +11,20 @@ export function calendarGroups(env: CloudflareEnv): Record<ServiceId, string[]> 
 
 export function allCalendarIds(env: CloudflareEnv): string[] {
   return [...Object.values(calendarGroups(env)).flat(), env.BOOKING_CONTROL_CALENDAR_ID].filter((value): value is string => Boolean(value));
+}
+
+export function runtimeCalendarGroups(config: ConfigRevision): Record<ServiceId, string[]> {
+  return Object.fromEntries(Object.keys(serviceCore).map((serviceId) => [serviceId, config.services.find((service) => service.serviceId === serviceId)?.enabled
+    ? config.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active" && resource.calendarRef).map((resource) => resource.calendarRef!)
+    : []])) as Record<ServiceId, string[]>;
+}
+
+export function runtimeResourceIdForCalendar(config: ConfigRevision, calendarId: string): string | null {
+  return config.resources.find((resource) => resource.calendarRef === calendarId)?.resourceId ?? null;
+}
+
+export function runtimeCalendarIdForResource(config: ConfigRevision, resourceId: string): string | null {
+  return config.resources.find((resource) => resource.resourceId === resourceId)?.calendarRef ?? null;
 }
 
 export function resourceIdForCalendar(env: CloudflareEnv, calendarId: string): string | null {

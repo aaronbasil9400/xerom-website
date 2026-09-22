@@ -3,27 +3,32 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import ExperienceDock from "@/components/home/ExperienceDock.astro";
 import SessionCard from "@/components/home/SessionCard.astro";
 import { services } from "@/config/services";
-import { formatMoney, pricing } from "@/config/pricing";
+import { formatMoney } from "@/config/pricing";
 import { media } from "@/config/media";
-import { openingHours } from "@/config/hours";
-import { business, contactLinks } from "@/config/business";
 import { Image } from "astro:assets";
 import ArrowIcon from "@/components/ArrowIcon.astro";
 import "@/styles/home.css";
 import { env as cloudflareEnv } from "cloudflare:workers";
-import { getConfigRepository } from "@/lib/config/repository";
+import { resolveRuntimeConfig } from "@/lib/config/runtime";
 
 let publishedHeroAssetId: string | null = null;
+const { config: runtimeConfig } = await resolveRuntimeConfig(cloudflareEnv);
 try {
-  const { config } = await getConfigRepository(cloudflareEnv).readActive();
-  const candidate = config.websiteContent.homepage.heroAssetId;
+  const candidate = runtimeConfig.websiteContent.homepage.heroAssetId;
   if (candidate?.startsWith("hero-")) publishedHeroAssetId = candidate;
 } catch {
   // Compiled placeholder remains the explicit fallback until R2 is activated and a draft is published.
 }
+const runtimeService = Object.fromEntries(runtimeConfig.services.map((service) => [service.serviceId, service]));
+const runtimeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (runtimeConfig.rates.find((rate) => rate.serviceId === serviceId && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)))?.amountSenPerResourceHour ?? 0) / 100;
+const dayLabels = { monday: "Mon", tuesday: "Tue", wednesday: "Wed", thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun" } as const;
+const clock = (value: string) => new Intl.DateTimeFormat("en-MY", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" }).format(new Date(`2026-01-01T${value}:00+08:00`));
+const runtimeHours = Object.entries(runtimeConfig.hours.weekly).map(([day, intervals]) => ({ days: dayLabels[day as keyof typeof dayLabels], hours: intervals.length ? intervals.map((interval) => `${clock(interval.open)}–${clock(interval.close)}`).join(", ") : "Closed" }));
+const activeCount = (serviceId: "regular-sim" | "pro-sim" | "ps5") => runtimeConfig.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active").length;
+const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/);
 ---
 
-<BaseLayout>
+<BaseLayout runtimeConfig={runtimeConfig}>
   <div class="homepage">
     <div class="home-flow">
       <section class="home-hero" aria-labelledby="hero-title" data-home-hero>
@@ -36,14 +41,14 @@ try {
         </div>
         <div class="home-hero-copy">
           <p class="home-eyebrow">Sim Racing · PS5 · Cafe</p>
-          <h1 id="hero-title" aria-label="Race Together"><span>Race</span>{" "}<span class="red">Together</span></h1>
+          <h1 id="hero-title"><span>{headlineWords.slice(0, -1).join(" ")}</span>{" "}<span class="red">{headlineWords.at(-1)}</span></h1>
           <p class="home-hero-tagline">Drive. Compete. Chill. Repeat.</p>
-          <p class="home-hero-description">Sim racing, PS5 lounge gaming and cafe time for groups in Bandar Bukit Tinggi, Klang.</p>
+          <p class="home-hero-description">{runtimeConfig.websiteContent.homepage.intro}</p>
           <div class="home-hero-actions">
             <a class="button button-primary" href="/book">Book a session <ArrowIcon /></a>
             <a class="button button-secondary" href="#sessions">See pricing</a>
           </div>
-          <a class="home-location-cue" href={contactLinks.directions}>Bandar Bukit Tinggi, Klang</a>
+          <a class="home-location-cue" href={runtimeConfig.websiteContent.venue.mapsUrl}>Bandar Bukit Tinggi, Klang</a>
         </div>
         {!publishedHeroAssetId && <p class="hero-placeholder-label">Illustrative hero · final owner photo pending</p>}
       </section>
@@ -59,13 +64,13 @@ try {
           </div>
           <div class="hours-chip" aria-label="Opening hours">
             <strong>Opening hours</strong>
-            {openingHours.map((group) => <span><b>{group.days}</b> {group.hours}</span>)}
+            {runtimeHours.map((group) => <span><b>{group.days}</b> {group.hours}</span>)}
           </div>
         </div>
         <div class="home-session-grid">
-          <SessionCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={media.proRigSmall} alt={services["pro-sim"].imageAlt} price={formatMoney(pricing.services["pro-sim"].hourlyRate)} href="/book?service=pro-sim" featured />
-          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={media.regularRigSmall} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
-          <SessionCard title={services.ps5.name} copy={services.ps5.description} image={media.ps5LoungeSmall} alt={services.ps5.imageAlt} price={formatMoney(pricing.services.ps5.hourlyRate)} href="/book?service=ps5" />
+          <SessionCard title={runtimeService["pro-sim"].name} copy={runtimeService["pro-sim"].description} image={media.proRigSmall} alt={services["pro-sim"].imageAlt} price={formatMoney(runtimeRate("pro-sim"))} href="/book?service=pro-sim" featured />
+          <SessionCard title={runtimeService["regular-sim"].name} copy={runtimeService["regular-sim"].description} image={media.regularRigSmall} alt={services["regular-sim"].imageAlt} price={formatMoney(runtimeRate("regular-sim"))} href="/book?service=regular-sim" />
+          <SessionCard title={runtimeService.ps5.name} copy={runtimeService.ps5.description} image={media.ps5LoungeSmall} alt={services.ps5.imageAlt} price={formatMoney(runtimeRate("ps5"))} href="/book?service=ps5" />
           <SessionCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafeSmall} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
         </div>
       </section>
@@ -79,9 +84,9 @@ try {
         <h2 class="section-title" id="setup-title">Choose your <span class="red">setup</span></h2>
         <p class="lede">Step into the dedicated Pro Rig, start with the accessible Regular Rig, or settle into a PS5 lounge. Choose a session from 30 minutes to two hours.</p>
         <ul class="feature-list">
-          <li><span>One Pro rig for a more focused drive</span></li>
-          <li><span>Three Regular rigs for casual group racing</span></li>
-          <li><span>Two PS5 lounges with two controllers included</span></li>
+          <li><span>{activeCount("pro-sim")} Pro rig{activeCount("pro-sim") === 1 ? "" : "s"} configured</span></li>
+          <li><span>{activeCount("regular-sim")} Regular rig{activeCount("regular-sim") === 1 ? "" : "s"} configured</span></li>
+          <li><span>{activeCount("ps5")} PS5 lounge{activeCount("ps5") === 1 ? "" : "s"} with {runtimeConfig.controllers.includedQuantity} controllers included per lounge</span></li>
         </ul>
         <a class="button button-secondary" href="/experiences">Compare experiences</a>
       </div>
@@ -92,14 +97,14 @@ try {
         <article class="home-info-card">
           <h2>Opening hours</h2>
           <dl class="home-hours-list">
-            {openingHours.map((group) => <div><dt>{group.days}</dt><dd>{group.hours}</dd></div>)}
+            {runtimeHours.map((group) => <div><dt>{group.days}</dt><dd>{group.hours}</dd></div>)}
           </dl>
         </article>
         <article class="home-info-card home-location-card">
           <p class="home-kicker">Find us in Klang</p>
           <h2>Bandar Bukit Tinggi</h2>
-          <address>{business.address.locality}, {business.address.city}, {business.address.region}</address>
-          <a class="button button-secondary" href={contactLinks.directions}>Get directions <ArrowIcon /></a>
+          <address>{runtimeConfig.websiteContent.venue.addressLines.join(", ")}</address>
+          <a class="button button-secondary" href={runtimeConfig.websiteContent.venue.mapsUrl}>Get directions <ArrowIcon /></a>
         </article>
       </div>
     </section>

@@ -54,10 +54,11 @@ npx wrangler secret put PRO_SIM_01_CALENDAR_ID --config coordinator/wrangler.rac
 npx wrangler secret put PS5_01_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
 npx wrangler secret put PS5_02_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
 npx wrangler secret put BOOKING_CONTROL_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put RACE_CONTROL_TOKEN_ENCRYPTION_KEY --config coordinator/wrangler.race-control.jsonc
 npm run coordinator:deploy
 ```
 
-Never place secrets in `wrangler.jsonc`. Cloudflare requires this Durable Object to be deployed as a Worker and then bound to the public Worker using the `script_name` recorded in the root `wrangler.jsonc`.
+Use the same randomly generated review-token secret for the coordinator and public Worker; never print or commit it. The coordinator also binds the private `xerom-race-control-config` bucket so fresh Calendar revalidation, immutable revision creation and conditional pointer activation occur inside venue serialization. Never place secrets in `wrangler.jsonc`. Cloudflare requires this Durable Object to be deployed as a Worker and then bound to the public Worker using the `script_name` recorded in the root `wrangler.jsonc`.
 
 ## Configure the public Worker
 
@@ -84,9 +85,9 @@ npx wrangler r2 bucket create xerom-race-control-media --location apac
 npx wrangler r2 bucket list
 ```
 
-`wrangler.jsonc` binds them as `RACE_CONTROL_CONFIG_BUCKET` and `RACE_CONTROL_MEDIA_BUCKET`. Deploy only after both bucket names exist. An empty config bucket is safe: public runtime reads retain compiled values until a reviewed revision is conditionally activated. Media uploads remain private drafts; `/api/media/:assetId` serves only the hero referenced by the active config revision.
+`wrangler.jsonc` binds both buckets; `coordinator/wrangler.race-control.jsonc` binds only the private configuration bucket. Deploy only after both bucket names exist. An empty config bucket is safe: public runtime reads retain compiled values until a reviewed revision is conditionally activated. Media uploads remain private drafts; `/api/media/:assetId` serves only the hero referenced by the active config revision.
 
-Do not manually seed `active.json`. Publication must write the immutable `revisions/<revisionId>.json` object first, then conditionally activate `active.json` through the repository contract. Until the future-booking impact scan and publish endpoint are complete, R2 enables durable drafts and private media uploads but does not cut public booking configuration over to owner-edited values.
+Do not manually seed `active.json`. Publication reloads the saved draft, verifies the expiring review token, repeats the complete Calendar impact scan inside coordinator serialization, writes immutable `revisions/<revisionId>.json`, then conditionally activates and verifies `active.json`. Lost responses retry with the same deterministic operation and revision IDs. Rollback prepares the previous immutable revision as a new draft and must pass the same review/publication path; it never rewinds the pointer directly.
 
 Preview environments should use `BOOKING_MODE=disabled` unless they are connected to dedicated non-production calendars. Never let a preview deployment write to live resource calendars.
 
