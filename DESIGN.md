@@ -244,7 +244,7 @@ The brand glyph is the deliberate exception to the stroked icon family. `public/
 
 ### Navigation
 
-The sticky header is a translucent Canvas Black broadcast bar with a fine Warm White mixed border and 16px backdrop blur. The owner-supplied deterministic SVG trace at `src/assets/brand/xerom-logo.svg` anchors the left at a fluid 7.8rem–11rem width; the footer uses the same asset at 8.5rem. Compressed uppercase service links and a Klang location cue occupy the desktop center, and the primary booking action closes the right. Below 900px, the navigation links move into a two-line menu while a compact always-visible Book pill remains in the header. The opened menu is keyboard-contained, Escape-dismissable, and moves focus into its first link.
+The sticky header is a translucent Canvas Black broadcast bar with a fine Warm White mixed border and 16px backdrop blur. The owner-supplied deterministic SVG trace at `src/assets/brand/xerom-logo.svg` anchors the left at a fluid 7.8rem–11rem width; the footer uses the same asset at 8.5rem. Compressed uppercase service links and a Klang location cue occupy the desktop center. The white membership action uses the clipped racing-plate silhouette and the primary booking action closes the right. Below 900px, the navigation links move into a two-line menu while a compact always-visible Book pill remains in the header. The opened menu is keyboard-contained, Escape-dismissable, and moves focus into its first link.
 
 ### Race / Play / Refuel Route
 
