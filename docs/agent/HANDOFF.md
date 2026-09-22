@@ -2,6 +2,12 @@
 
 Last updated: 2026-09-22
 
+## R2 activation checkpoint — 2026-09-22
+
+The owner approved R2 implementation. Source now binds two private buckets: `xerom-race-control-config` and `xerom-race-control-media`. No public bucket URL, custom domain or CORS is permitted. Existing repository/upload/public-read code remains fail-safe: an empty config bucket preserves compiled public values, uploaded media stays private, and only an active revision may expose its selected hero through the Worker route.
+
+Cloudflare still returns API error `10042` and requires R2 enablement through the Dashboard. No bucket could be created and the binding-bearing Worker must not be deployed until both bucket names exist. After Dashboard activation, run the documented APAC bucket-create commands, verify both buckets, then build/deploy and test authenticated draft/media persistence. Settings publication remains blocked by the incomplete future-booking impact scan; do not manually create `active.json`.
+
 ## Website upgrade kickoff — 2026-09-22 (in progress)
 
 The owner supplied a new website upgrade brief and execution prompt. The architecture audit and required Checkpoint 1 report are complete. Google Calendar remains the booking record; the recommended persistence shape remains private R2 config/media plus the coordinator, with no conventional database. The owner specified RM3 per additional PS5 controller per booking and requested code-only R2 work with account activation separately gated.

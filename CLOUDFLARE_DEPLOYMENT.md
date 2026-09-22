@@ -71,6 +71,22 @@ PUBLIC_TURNSTILE_SITE_KEY=<public environment variable>
 
 The Durable Object binding must be named `BOOKING_COORDINATOR`, point to class `BookingCoordinator`, and use script `xerom-race-control-coordinator`.
 
+### Private R2 configuration and media
+
+R2 uses two private buckets. Objects are reachable only through authenticated admin routes or the website's active-asset allowlist; do not enable `r2.dev`, a custom bucket domain, or browser CORS.
+
+First enable R2 for the Cloudflare account in the Dashboard. This account-level step may present billing terms and cannot be completed through Wrangler. Then create the buckets in the Asia-Pacific region:
+
+```bash
+npx wrangler r2 bucket create xerom-race-control-config --location apac
+npx wrangler r2 bucket create xerom-race-control-media --location apac
+npx wrangler r2 bucket list
+```
+
+`wrangler.jsonc` binds them as `RACE_CONTROL_CONFIG_BUCKET` and `RACE_CONTROL_MEDIA_BUCKET`. Deploy only after both bucket names exist. An empty config bucket is safe: public runtime reads retain compiled values until a reviewed revision is conditionally activated. Media uploads remain private drafts; `/api/media/:assetId` serves only the hero referenced by the active config revision.
+
+Do not manually seed `active.json`. Publication must write the immutable `revisions/<revisionId>.json` object first, then conditionally activate `active.json` through the repository contract. Until the future-booking impact scan and publish endpoint are complete, R2 enables durable drafts and private media uploads but does not cut public booking configuration over to owner-edited values.
+
 Preview environments should use `BOOKING_MODE=disabled` unless they are connected to dedicated non-production calendars. Never let a preview deployment write to live resource calendars.
 
 ## Turnstile

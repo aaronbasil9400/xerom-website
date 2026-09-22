@@ -1,5 +1,12 @@
 # QA Report
 
+## Private R2 binding checkpoint — 2026-09-22
+
+- Configured private Worker bindings for `xerom-race-control-config` and `xerom-race-control-media`; no `r2.dev`, custom domain or CORS exposure.
+- Verified the rebuilt Astro Worker config contains both bindings and Wrangler dry-run accepts the generated deployment configuration.
+- `npm run check` passes with no diagnostics; `npm test` passes 104/104; `npm run build:staging` passes.
+- Cloudflare account activation remains blocked by API error `10042`: `Please enable R2 through the Cloudflare Dashboard.` No bucket or object was created and the binding-bearing Worker was not deployed.
+
 ## Booking UI and coordinator compatibility — 2026-09-22
 
 - Invoked the Impeccable layout process and replaced the desktop two-column time list with a compact 4/3/1-column availability board at desktop/tablet/phone widths.

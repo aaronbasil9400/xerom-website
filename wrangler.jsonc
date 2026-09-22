@@ -16,6 +16,16 @@
       }
     ]
   },
+  "r2_buckets": [
+    {
+      "binding": "RACE_CONTROL_CONFIG_BUCKET",
+      "bucket_name": "xerom-race-control-config"
+    },
+    {
+      "binding": "RACE_CONTROL_MEDIA_BUCKET",
+      "bucket_name": "xerom-race-control-media"
+    }
+  ],
   "observability": {
     "enabled": true,
     "logs": { "enabled": true, "head_sampling_rate": 1 },

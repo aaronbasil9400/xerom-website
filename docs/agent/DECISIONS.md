@@ -1,5 +1,11 @@
 # Decision Log
 
+## 2026-09-22 — Private R2 activation approved
+
+- Use separate private `xerom-race-control-config` and `xerom-race-control-media` buckets, both accessed only through Worker bindings.
+- Do not enable `r2.dev`, a public custom domain, or browser CORS. Public media remains constrained by the active-config asset allowlist.
+- Keep compiled public configuration as the fallback while R2 is empty or unavailable. R2 activation alone does not enable settings publication; impact review and conditional activation remain required.
+
 ## 2026-09-22 — Compact availability and synchronized booking contract
 
 - Render time selection as four columns on wide desktop, three on tablet, and one on phones while retaining all selected resource signals on one horizontal line inside each slot.
