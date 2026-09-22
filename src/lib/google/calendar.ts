@@ -292,9 +292,12 @@ export async function findCalendarsByMarkerWithToken(token: string, marker: stri
   return matches;
 }
 
-/** Confirms the booking identity can write to a calendar by creating and removing a private probe event. */
-export async function verifyCalendarWriteWithToken(token: string, calendarId: string): Promise<void> {
-  const probeId = "xerom-provision-probe";
+/**
+ * Confirms the booking identity can write to a calendar by creating and removing a private probe event.
+ * The caller supplies `probeEventId`, which must be base32hex (lowercase a-v and 0-9) as Google requires.
+ */
+export async function verifyCalendarWriteWithToken(token: string, calendarId: string, probeEventId: string): Promise<void> {
+  const probeId = probeEventId;
   const start = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000);
   const end = new Date(start.getTime() + 15 * 60 * 1000);
   const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events`, {

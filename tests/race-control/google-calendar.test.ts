@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { insertEventWithToken, listCalendarEventsWithToken, listCalendarReviewInventoryWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, createSecondaryCalendarWithToken, findCalendarsByMarkerWithToken, verifyCalendarWriteWithToken, shareCalendarWithOwnerWithToken, CalendarMutationUncertainError, CalendarProvisioningUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
+import { hashPayload } from "@/lib/booking/id";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -129,22 +130,31 @@ describe("Google Calendar fail-closed adapters", () => {
     expect(fetchMock.mock.calls[1][0]).toContain("pageToken=next");
   });
 
-  it("verifies calendar writes with a private probe that is removed again", async () => {
+  it("verifies calendar writes with a base32hex probe that is removed again", async () => {
+    const probeId = "a1b2c3d4e5f60718293a4b5c6d7e8f90";
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(Response.json({ id: "xerom-provision-probe" }))
+      .mockResolvedValueOnce(Response.json({ id: probeId }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetchMock);
-    await expect(verifyCalendarWriteWithToken("token", "cal-1")).resolves.toBeUndefined();
+    await expect(verifyCalendarWriteWithToken("token", "cal-1", probeId)).resolves.toBeUndefined();
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "POST" });
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).id).toBe(probeId);
+    expect(fetchMock.mock.calls[1][0]).toContain(probeId);
     expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: "DELETE" });
 
     vi.stubGlobal("fetch", vi.fn()
       .mockResolvedValueOnce(new Response(null, { status: 409 }))
       .mockResolvedValueOnce(new Response(null, { status: 404 })));
-    await expect(verifyCalendarWriteWithToken("token", "cal-1")).resolves.toBeUndefined();
+    await expect(verifyCalendarWriteWithToken("token", "cal-1", probeId)).resolves.toBeUndefined();
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 403 })));
-    await expect(verifyCalendarWriteWithToken("token", "cal-1")).rejects.toThrow("write verification failed");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 400 })));
+    await expect(verifyCalendarWriteWithToken("token", "cal-1", probeId)).rejects.toThrow("write verification failed");
+  });
+
+  it("derives a Google-legal probe id from an arbitrary resource id", async () => {
+    const digest = (await hashPayload({ provisionProbe: "regular-04" })).slice(0, 32);
+    expect(digest).toMatch(/^[0-9a-f]{32}$/);
+    expect(digest).not.toMatch(/[g-wyz]/);
   });
 
   it("treats an already-shared venue account as success", async () => {

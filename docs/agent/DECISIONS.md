@@ -8,6 +8,7 @@
 - The booking identity verifies read/write with a private probe event that is removed immediately, and provisioning writes `calendarRef` server-side only. Calendar identifiers never reach the browser.
 - If `VENUE_GOOGLE_ACCOUNT_EMAIL` is set, the venue's own Google account is granted owner access so staff can manage the calendar in Google. Absent that secret, provisioning still succeeds and the owner shares the calendar manually.
 - Provisioning only links the draft. Publication still requires save, review, and a reviewed activation. Ownership remains service-account-based for now; venue-owner OAuth provisioning is a later upgrade.
+- Client-supplied Google event IDs must satisfy Google's base32hex rule (lowercase `a-v`, digits `0-9`). Deterministic application IDs are derived as hex digests; the write-verification probe follows the same rule.
 
 ## 2026-09-23 — Bound configuration review inventory
 

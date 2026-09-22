@@ -8,6 +8,8 @@ Resource increases were unpublishable because the readiness gate requires every 
 
 Deployed as `xerom-website` version `c1a6698a-7ee5-45a4-8e7d-46b2a4069319`. Verification: Astro check clean; 123/123 unit/contract tests; staging build passed. No calendar was created yet and no configuration was published.
 
+First live attempt surfaced a defect: the write-verification probe used the event ID `xerom-provision-probe`, which violates Google's base32hex ID rule (`a-v`, `0-9`), so verification always failed with a 400. The probe ID is now a deterministic 32-character hex digest of the resource ID. Deployed as `xerom-website` version `7ebb2220-e3cc-49ab-87a2-11bf5fce128f` (124/124 tests). Because the calendar is created before verification, a resource that failed this way already has its calendar; retrying reconciles it by marker and links it. Calendar ownership remains service-account-based.
+
 Optional improvement: set the `VENUE_GOOGLE_ACCOUNT_EMAIL` Worker secret to the venue Google account so new calendars are auto-shared for staff management. Without it, provisioning works but the owner shares the calendar manually. Next step is the owner's authenticated run: increase a quantity, provision, save, review, publish.
 
 ## Review-blocked publication fix — 2026-09-23

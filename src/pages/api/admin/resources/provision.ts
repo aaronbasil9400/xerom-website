@@ -6,6 +6,7 @@ import { configRevisionSchema, type ConfigRevision } from "@/lib/config/schema";
 import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
 import { getGoogleAccessToken } from "@/lib/google/auth";
 import { createSecondaryCalendarWithToken, findCalendarsByMarkerWithToken, shareCalendarWithOwnerWithToken, verifyCalendarWriteWithToken, CalendarProvisioningUncertainError } from "@/lib/google/calendar";
+import { hashPayload } from "@/lib/booking/id";
 
 export const prerender = false;
 const headers = { "cache-control": "private, no-store" };
@@ -82,7 +83,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     try {
-      await verifyCalendarWriteWithToken(token, calendarRef);
+      // Google event IDs must be base32hex (lowercase a-v, 0-9); a hex digest satisfies that and stays deterministic for retries.
+      const probeEventId = (await hashPayload({ provisionProbe: resourceId })).slice(0, 32);
+      await verifyCalendarWriteWithToken(token, calendarRef, probeEventId);
     } catch (error) {
       console.error(JSON.stringify({ message: "resource_provisioning_verify_failed", resourceId, error: error instanceof Error ? error.message : "unknown" }));
       return fail("PROVISIONING_UNVERIFIED", "The new calendar could not be verified for writes. Retry to recheck it.", 503, true);

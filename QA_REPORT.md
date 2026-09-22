@@ -289,6 +289,10 @@ The scan is read-only. No booking, Calendar event, R2 active pointer or configur
 
 No calendar was created during verification; the Google calls were exercised only through mocked adapters. Provisioning has not yet been run against live Google from an authenticated owner session.
 
+### Defect: write verification always failed (2026-09-23)
+
+First live attempt returned "The new calendar could not be verified for writes." Cause: the probe event ID `xerom-provision-probe` contains `x` and hyphens, but Google requires base32hex (`a-v`, `0-9`), so every probe insert returned 400. Booking event IDs were unaffected because they already use hex digests. Fix: the probe ID is now a deterministic 32-character hex digest of the resource ID, passed into `verifyCalendarWriteWithToken`. Tests updated (124/124). Deployed as `xerom-website` version `7ebb2220-e3cc-49ab-87a2-11bf5fce128f`, superseding `c1a6698a`.
+
 ## Publication-blocking review incident (2026-09-23)
 
 Symptom: the owner could not publish. Production logs showed `POST /api/admin/config/review` returned 503 twice (and 200 twice), `PUT /api/admin/config/draft` returned 503 twice, and the coordinator received **zero** `activate-config` commands — so publication never started and the Publish button never enabled.
