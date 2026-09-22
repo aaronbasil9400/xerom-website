@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { insertEventWithToken, listCalendarEventsWithToken, listCalendarReviewInventoryWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarMutationUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
+import { insertEventWithToken, listCalendarEventsWithToken, listCalendarReviewInventoryWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, createSecondaryCalendarWithToken, findCalendarsByMarkerWithToken, verifyCalendarWriteWithToken, shareCalendarWithOwnerWithToken, CalendarMutationUncertainError, CalendarProvisioningUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -105,6 +105,53 @@ describe("Google Calendar fail-closed adapters", () => {
     expect(events.map((candidate) => candidate.id)).toEqual(["finite-instance", "open-instance", "one-off", "open"]);
     expect(events.find((candidate) => candidate.id === "open")?.recurrence).toEqual(["RRULE:FREQ=WEEKLY"]);
     expect(events.find((candidate) => candidate.id === "open-instance")?.recurrence).toEqual([]);
+  });
+
+  it("creates a private calendar with an operation marker and treats an uncertain outcome explicitly", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({ id: "cal-1", summary: "Xerom · Regular Rig 04" })));
+    await expect(createSecondaryCalendarWithToken("token", "Xerom · Regular Rig 04", "xerom-resource:regular-04")).resolves.toEqual({ id: "cal-1", summary: "Xerom · Regular Rig 04" });
+    expect(JSON.parse(String(vi.mocked(fetch).mock.calls[0][1]?.body))).toMatchObject({ timeZone: "Asia/Kuala_Lumpur" });
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 503 })));
+    await expect(createSecondaryCalendarWithToken("token", "Xerom · Regular Rig 05", "xerom-resource:regular-05")).rejects.toBeInstanceOf(CalendarProvisioningUncertainError);
+  });
+
+  it("reconciles a provisioned calendar by its operation marker across pages", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({ items: [
+        { id: "other", summary: "Unrelated", description: "no marker here" },
+        { id: "cal-1", summary: "Xerom · Regular Rig 04", description: "marker\nxerom-resource:regular-04" },
+      ], nextPageToken: "next" }))
+      .mockResolvedValueOnce(Response.json({ items: [{ id: "cal-2", summary: "Xerom · Regular Rig 04 (dup)", description: "xerom-resource:regular-04" }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const matches = await findCalendarsByMarkerWithToken("token", "xerom-resource:regular-04");
+    expect(matches.map((match) => match.id)).toEqual(["cal-1", "cal-2"]);
+    expect(fetchMock.mock.calls[1][0]).toContain("pageToken=next");
+  });
+
+  it("verifies calendar writes with a private probe that is removed again", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({ id: "xerom-provision-probe" }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(verifyCalendarWriteWithToken("token", "cal-1")).resolves.toBeUndefined();
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "POST" });
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: "DELETE" });
+
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(new Response(null, { status: 409 }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 })));
+    await expect(verifyCalendarWriteWithToken("token", "cal-1")).resolves.toBeUndefined();
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 403 })));
+    await expect(verifyCalendarWriteWithToken("token", "cal-1")).rejects.toThrow("write verification failed");
+  });
+
+  it("treats an already-shared venue account as success", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 409 })));
+    await expect(shareCalendarWithOwnerWithToken("token", "cal-1", "venue@example.com")).resolves.toBeUndefined();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(null, { status: 403 })));
+    await expect(shareCalendarWithOwnerWithToken("token", "cal-1", "venue@example.com")).rejects.toThrow("sharing failed");
   });
 
   it("patches only owned fields with If-Match and exposes external edits as 412", async () => {

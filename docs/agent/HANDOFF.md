@@ -2,6 +2,14 @@
 
 Last updated: 2026-09-23
 
+## Private calendar provisioning — 2026-09-23
+
+Resource increases were unpublishable because the readiness gate requires every non-retired resource to have an active private Calendar, and nothing could bind one. Race Control now provisions it: `POST /api/admin/resources/provision` creates one private secondary calendar per resource in the service-account identity, verifies read/write with a removed probe event, reconciles lost responses through a stable `xerom-resource:<resourceId>` marker instead of blind retries, and links `calendarRef` in the draft without ever returning it to the browser. The Resources editor lists every resource and offers **Create private calendar** for unlinked rows.
+
+Deployed as `xerom-website` version `c1a6698a-7ee5-45a4-8e7d-46b2a4069319`. Verification: Astro check clean; 123/123 unit/contract tests; staging build passed. No calendar was created yet and no configuration was published.
+
+Optional improvement: set the `VENUE_GOOGLE_ACCOUNT_EMAIL` Worker secret to the venue Google account so new calendars are auto-shared for staff management. Without it, provisioning works but the owner shares the calendar manually. Next step is the owner's authenticated run: increase a quantity, provision, save, review, publish.
+
 ## Review-blocked publication fix — 2026-09-23
 
 The owner could not publish. Production evidence: `/api/admin/config/review` returned 503 twice, `/api/admin/config/draft` 503 twice, and the coordinator received **zero** `activate-config` calls, so the Publish button never enabled.

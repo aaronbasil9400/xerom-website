@@ -242,6 +242,90 @@ export async function listCalendarReviewInventoryWithToken(token: string, calend
 
 export class CalendarVersionConflictError extends Error {}
 export class CalendarMutationUncertainError extends Error {}
+export class CalendarProvisioningUncertainError extends Error {}
+
+export interface ProvisionedCalendar {
+  id: string;
+  summary: string;
+}
+
+/**
+ * Creates a private secondary calendar owned by the booking identity. The operation marker is stored in
+ * the calendar description so a lost response can be reconciled by listing instead of blindly retrying.
+ */
+export async function createSecondaryCalendarWithToken(token: string, summary: string, marker: string): Promise<ProvisionedCalendar> {
+  let response: Response;
+  try {
+    response = await fetch(`${API}/calendars`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        summary,
+        description: `Xerom Race Control resource calendar. Do not edit the marker below.\n${marker}`,
+        timeZone: "Asia/Kuala_Lumpur",
+      }),
+    });
+  } catch {
+    throw new CalendarProvisioningUncertainError("Calendar creation outcome is uncertain.");
+  }
+  if (response.status >= 500) throw new CalendarProvisioningUncertainError(`Calendar creation outcome is uncertain (${response.status}).`);
+  if (!response.ok) throw new Error(`Calendar creation failed (${response.status}).`);
+  const data = await response.json<{ id?: string; summary?: string }>().catch(() => null);
+  if (!data?.id) throw new CalendarProvisioningUncertainError("Calendar creation returned an unreadable success response.");
+  return { id: data.id, summary: data.summary ?? summary };
+}
+
+/** Lists the booking identity's calendars whose description carries the given operation marker. */
+export async function findCalendarsByMarkerWithToken(token: string, marker: string): Promise<Array<{ id: string; summary: string }>> {
+  const matches: Array<{ id: string; summary: string }> = [];
+  let pageToken: string | undefined;
+  do {
+    const params = new URLSearchParams({ maxResults: "250", showHidden: "true", showDeleted: "false" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const response = await fetch(`${API}/users/me/calendarList?${params}`, { headers: { authorization: `Bearer ${token}` } });
+    if (!response.ok) throw new Error(`Calendar listing failed (${response.status}).`);
+    const data = await response.json<{ items?: Array<{ id?: string; summary?: string; description?: string }>; nextPageToken?: string }>().catch(() => null);
+    if (!data || !Array.isArray(data.items)) throw new Error("Calendar listing returned an invalid response.");
+    for (const item of data.items) if (item.id && item.description?.includes(marker)) matches.push({ id: item.id, summary: item.summary ?? "" });
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+  return matches;
+}
+
+/** Confirms the booking identity can write to a calendar by creating and removing a private probe event. */
+export async function verifyCalendarWriteWithToken(token: string, calendarId: string): Promise<void> {
+  const probeId = "xerom-provision-probe";
+  const start = new Date(Date.now() + 400 * 24 * 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 15 * 60 * 1000);
+  const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      id: probeId,
+      summary: "Xerom provisioning probe",
+      start: { dateTime: start.toISOString(), timeZone: "Asia/Kuala_Lumpur" },
+      end: { dateTime: end.toISOString(), timeZone: "Asia/Kuala_Lumpur" },
+      visibility: "private",
+      transparency: "transparent",
+    }),
+  });
+  if (!response.ok && response.status !== 409) throw new Error(`Calendar write verification failed (${response.status}).`);
+  const cleanup = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(probeId)}`, {
+    method: "DELETE",
+    headers: { authorization: `Bearer ${token}` },
+  });
+  if (!cleanup.ok && cleanup.status !== 404 && cleanup.status !== 410) throw new Error(`Calendar write verification cleanup failed (${cleanup.status}).`);
+}
+
+/** Grants the venue's own Google account full control of a provisioned calendar. */
+export async function shareCalendarWithOwnerWithToken(token: string, calendarId: string, email: string): Promise<void> {
+  const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/acl`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ role: "owner", scope: { type: "user", value: email } }),
+  });
+  if (!response.ok && response.status !== 409) throw new Error(`Calendar sharing failed (${response.status}).`);
+}
 
 export interface CalendarEventPatch {
   summary?: string;

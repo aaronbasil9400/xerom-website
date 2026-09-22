@@ -34,6 +34,7 @@ interface CloudflareEnv {
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUDIENCE?: string;
   OWNER_EMAILS?: string;
+  VENUE_GOOGLE_ACCOUNT_EMAIL?: string;
   GOOGLE_OWNER_OAUTH_CLIENT_ID?: string;
   GOOGLE_OWNER_OAUTH_CLIENT_SECRET?: string;
   GOOGLE_OWNER_OAUTH_REDIRECT_URI?: string;

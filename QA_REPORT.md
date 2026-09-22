@@ -274,6 +274,21 @@ The review endpoint has not been run with live R2 or Google data and intentional
 
 The scan is read-only. No booking, Calendar event, R2 active pointer or configuration revision was created. Authenticated live review remains to be exercised by the owner; publication/rollback remains a separate unimplemented mutation path.
 
+## Private calendar provisioning checkpoint (2026-09-23)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Provisioning route | Implemented | `POST /api/admin/resources/provision` with owner auth, CSRF, bounded body and expected-ETag guard |
+| Idempotent creation | Pass locally | Deterministic `xerom-resource:<resourceId>` description marker; reconcile-by-listing instead of blind retry; multiple matches fail closed |
+| Write verification | Pass locally | Private probe event created and removed; 409 treated as existing, 403 fails closed |
+| Identifier privacy | Pass locally | Owner projection returns `calendarRef: null` with `calendarManaged`; IDs never reach the browser |
+| Optional venue sharing | Pass locally | `VENUE_GOOGLE_ACCOUNT_EMAIL` grants owner ACL; already-shared 409 treated as success; sharing failure is non-fatal |
+| Tests | Pass | 123/123 unit/contract, including create/uncertain/marker-reconcile/probe/share coverage |
+| Type/build | Pass | `npm run check` clean; staging build passed |
+| Deploy | Pass | `xerom-website` version `c1a6698a-7ee5-45a4-8e7d-46b2a4069319` |
+
+No calendar was created during verification; the Google calls were exercised only through mocked adapters. Provisioning has not yet been run against live Google from an authenticated owner session.
+
 ## Publication-blocking review incident (2026-09-23)
 
 Symptom: the owner could not publish. Production logs showed `POST /api/admin/config/review` returned 503 twice (and 200 twice), `PUT /api/admin/config/draft` returned 503 twice, and the coordinator received **zero** `activate-config` commands — so publication never started and the Publish button never enabled.

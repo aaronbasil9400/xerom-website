@@ -44,6 +44,15 @@ The form reports success only after the coordinator verifies all required Calend
 
 Check-in, completion, no-show and cancellation are available from the inspector for active grouped bookings. Reschedule and extension remain review-driven until quote inputs are available; do not improvise those changes directly in Google Calendar during the demo.
 
+## Add capacity (more rigs or lounges)
+
+1. Open **Business Settings → Resources** and increase the quantity for the service, then **Save draft**. New rows appear under **Private resource calendars** marked *No private calendar*.
+2. Select **Create private calendar** on each new row and confirm. Race Control creates one private Google Calendar in the connected Xerom Google account, verifies it can read and write, and links it to that resource. Calendar IDs never appear in the browser.
+3. If the venue Google account was not configured for automatic sharing, share the new calendar with the Xerom Google account yourself so staff can see it.
+4. **Save draft**, **Review changes**, then **Publish reviewed draft**. Publication stays blocked while any resource lacks a private calendar.
+
+Creating a calendar does not publish settings or make a resource bookable on its own. Provisioning is idempotent: retrying recovers the same calendar instead of creating a duplicate, and an ambiguous match stops for owner review.
+
 ## Block maintenance or a venue closure
 
 Use **Block time** on Schedule. Select **Maintenance** for specific resources or **Venue closure** for the Booking Control calendar, enter an exact start/end and a factual reason, then review before creating. The coordinator checks every affected Calendar and best-effort rolls back partial creation. A block does not automatically cancel customers; resolve conflicts through the owner review flow.

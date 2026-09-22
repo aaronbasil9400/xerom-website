@@ -1,5 +1,14 @@
 # Decision Log
 
+## 2026-09-23 — Owner-confirmed private calendar provisioning
+
+- Increasing a resource quantity can no longer be published by hand: the readiness gate requires every non-retired resource to carry an active private Calendar. Race Control now provisions that Calendar itself instead of asking the owner to paste a Calendar ID.
+- `POST /api/admin/resources/provision` creates one private secondary calendar per resource, owned by the existing booking service account, gated behind owner auth, CSRF, bounded input, an explicit confirmation prompt, and the draft's expected ETag.
+- Calendar creation is not transactional. Each calendar carries a stable `xerom-resource:<resourceId>` marker in its description so a lost or failed response is reconciled by listing the booking identity's calendars rather than retried blindly. Multiple marker matches fail closed for review.
+- The booking identity verifies read/write with a private probe event that is removed immediately, and provisioning writes `calendarRef` server-side only. Calendar identifiers never reach the browser.
+- If `VENUE_GOOGLE_ACCOUNT_EMAIL` is set, the venue's own Google account is granted owner access so staff can manage the calendar in Google. Absent that secret, provisioning still succeeds and the owner shares the calendar manually.
+- Provisioning only links the draft. Publication still requires save, review, and a reviewed activation. Ownership remains service-account-based for now; venue-owner OAuth provisioning is a later upgrade.
+
 ## 2026-09-23 — Bound configuration review inventory
 
 - The review inventory now lists only events that end after the review instant (`singleEvents=true`, `timeMin=now`, no `timeMax`) instead of walking each calendar's entire history. Unbounded listings risked Worker CPU/memory exhaustion and Google quota errors, which surfaced as intermittent 503s and blocked publication.

@@ -14,6 +14,7 @@ const services = [{ id: "regular-sim", name: "Regular Rig" }, { id: "pro-sim", n
         {services.map((service) => <fieldset data-resource-service={service.id}><legend>{service.name}</legend><label class="rc-check"><input type="checkbox" data-resource-enabled={service.id} /> Enabled for customers</label><label>Number of {service.name === "PS5 Lounge" ? "PS5 Lounges" : `${service.name}s`}<input type="number" min="0" max="64" data-resource-quantity={service.id} required /></label><p data-resource-impact={service.id}></p></fieldset>)}
       </div>
       <fieldset><legend>PS5 controllers</legend><div class="rc-form-grid"><label>Included controllers per lounge<input type="number" min="0" max="16" data-controller="includedQuantity" required /></label><label>Maximum additional controllers<input type="number" min="0" max="16" data-controller="maxAdditionalQuantity" required /></label><label>Additional controller price (RM)<input type="number" min="0" max="10000" step="0.01" data-controller="additionalPrice" required /></label></div></fieldset>
+      <fieldset><legend>Private resource calendars</legend><div class="rc-resource-registry" data-resource-registry><p class="rc-helper">Save the draft to load the resource registry.</p></div><p class="rc-helper">Each bookable resource needs its own private Google Calendar. Save the draft first, then create any missing calendars here. Creating a calendar does not publish settings or make the resource bookable; those still require review and publication. Calendar identifiers stay server-side.</p></fieldset>
       <p class="rc-helper">New resources save as provisioning drafts. They cannot publish or accept bookings until a private Calendar has been provisioned and verified.</p>
     </div>}
     {setting === "hours" && <div class="rc-settings-fields" data-settings-fields hidden>
@@ -81,6 +82,7 @@ const services = [{ id: "regular-sim", name: "Regular Rig" }, { id: "pro-sim", n
       }
       const included = input('[data-controller="includedQuantity"]'); const maximum = input('[data-controller="maxAdditionalQuantity"]'); const price = input('[data-controller="additionalPrice"]');
       if (included) included.value = String(config.controllers.includedQuantity); if (maximum) maximum.value = String(config.controllers.maxAdditionalQuantity); if (price) price.value = (config.controllers.additionalPriceSen / 100).toFixed(2);
+      renderRegistry();
     } else if (setting === "hours") {
       for (const [day, intervals] of Object.entries(config.hours.weekly)) {
         const closed = input(`[data-hours-closed="${day}"]`); const open = input(`[data-hours-open="${day}"]`); const close = input(`[data-hours-close="${day}"]`); const interval = intervals[0];
@@ -123,6 +125,42 @@ const services = [{ id: "regular-sim", name: "Regular Rig" }, { id: "pro-sim", n
       editor?.querySelectorAll<HTMLInputElement>("[data-booking-rule]").forEach((field) => { (config!.bookingRules as unknown as Record<string,number>)[field.dataset.bookingRule!] = Number(field.value); }); const horizon = input("[data-booking-horizon]"); if (horizon) config.bookingRules.horizon.value = Number(horizon.value); config.bookingRules.allowedDurationsMinutes = [...editor!.querySelectorAll<HTMLInputElement>("[data-booking-duration]:checked")].map((field) => Number(field.value));
     }
     config.publishedAt = null;
+  };
+  const renderRegistry = () => {
+    const container = editor?.querySelector<HTMLElement>("[data-resource-registry]");
+    if (!container || !config) return;
+    container.replaceChildren();
+    const resources = config.resources.filter((resource) => resource.lifecycle !== "retired");
+    if (resources.length === 0) { const empty = document.createElement("p"); empty.className = "rc-helper"; empty.textContent = "No active or draft resources. Increase a quantity and save the draft first."; container.appendChild(empty); return; }
+    for (const resource of resources) {
+      const row = document.createElement("div");
+      row.className = "rc-registry-row";
+      const label = document.createElement("span");
+      label.textContent = `${resource.displayName} · ${resource.calendarManaged ? "Private calendar linked" : "No private calendar"}`;
+      row.appendChild(label);
+      if (!resource.calendarManaged) {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "rc-button"; button.textContent = "Create private calendar";
+        button.addEventListener("click", () => void provisionResource(resource.resourceId, resource.displayName, button));
+        row.appendChild(button);
+      } else {
+        const badge = document.createElement("span"); badge.className = "rc-draft-pill"; badge.textContent = "Linked"; row.appendChild(badge);
+      }
+      container.appendChild(row);
+    }
+  };
+  const provisionResource = async (resourceId: string, displayName: string, button: HTMLButtonElement) => {
+    if (!etag) { setOutput("Save the draft before creating a private calendar.", true); return; }
+    if (!window.confirm(`Create a private Google Calendar for “${displayName}”? It is created in the connected Xerom Google account and linked to this resource. Settings are not published until you review and publish.`)) return;
+    button.disabled = true; setOutput(`Creating the private calendar for ${displayName}…`);
+    try {
+      const response = await fetch("/api/admin/resources/provision", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ resourceId, expectedEtag: etag }) });
+      const payload = await response.json() as { data?: Config; etag?: string; draftHash?: string; sharedWithOwner?: boolean; error?: { message?: string } };
+      if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Calendar provisioning did not complete.");
+      config = payload.data; etag = payload.etag ?? null; serverDraftHash = payload.draftHash ?? ""; invalidateReview(); populate();
+      setOutput(`Private calendar linked to ${displayName}. Save the draft, review, then publish.${payload.sharedWithOwner ? "" : " Share it with the Xerom Google account in Google Calendar to manage it there."}`);
+    } catch (error) { setOutput(error instanceof Error ? error.message : "Calendar provisioning did not complete.", true); }
+    finally { button.disabled = false; }
   };
   async function loadDraft() {
     if (!form) return;
