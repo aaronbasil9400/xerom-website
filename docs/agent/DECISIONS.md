@@ -1,5 +1,12 @@
 # Decision Log
 
+## 2026-09-22 — Compact availability and synchronized booking contract
+
+- Render time selection as four columns on wide desktop, three on tablet, and one on phones while retaining all selected resource signals on one horizontal line inside each slot.
+- Invalidate a chosen time whenever date, duration, or resource quantities change so stale Calendar availability cannot be submitted.
+- Keep public and coordinator command schemas synchronized for 30/60/90/120-minute sessions, optional email, and PS5 additional-controller metadata.
+- Deploy coordinator contract changes before the website that emits them. Google Calendar remains authoritative and the Durable Object remains final allocation authority.
+
 ## 2026-09-09 — Product and booking baseline
 
 - Use Astro + TypeScript on Cloudflare Pages.

@@ -1,5 +1,14 @@
 # QA Report
 
+## Booking UI and coordinator compatibility — 2026-09-22
+
+- Invoked the Impeccable layout process and replaced the desktop two-column time list with a compact 4/3/1-column availability board at desktop/tablet/phone widths.
+- Fixed the deployed website/coordinator schema mismatch that rejected 90-minute bookings and optional email as `Invalid booking command.` Coordinator version `53e09b35-3a7b-41aa-ab87-c2e2b8afefea` and website version `e9dde038-aaa3-4e60-94b2-73fec8a07c5a` now share commit `5394e55` contracts.
+- Added stale-selection invalidation for date, duration, and resource changes. Unavailable slots cannot enable continuation.
+- `npm run check` passes with no diagnostics; `npm test` passes 104/104; public-site Playwright passes 33 with 27 intentional project skips across all six widths.
+- Live read-only availability matrix passed 16/16 combinations: Regular, Pro, PS5, and mixed resources across 30/60/90/120 minutes. Every response was HTTP 200, exposed all resource capacities, and returned intervals matching the requested duration.
+- No booking POST was sent and no Google Calendar event was created or changed during this verification.
+
 ## Website upgrade implementation checkpoint — 2026-09-22
 
 Environment: local Astro/Cloudflare development, mock public booking API, no R2 binding, no deployment and no Calendar mutation.

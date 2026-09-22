@@ -264,6 +264,8 @@ The three-step booking flow uses an Action Racing Red current-progress cell, bor
 
 Availability slots keep all selected service signals on one horizontal scan line. Regular Rig uses a labelled circle, Pro Rig a labelled diamond, and PS5 Lounge a labelled square; filled Action Red means available while a gray hatched outline means unavailable. The full-name legend appears above the slots, unavailable times also use struck time text and explicit state copy, and mobile moves only the state copy—not the resource signals—to a second grid row. The layout must never create page-level horizontal scrolling.
 
+The time step uses a compact availability board rather than a long two-column list: four slot columns at desktop widths, three at tablet widths, and one full-width column on phones. Date and refresh controls share the heading row where space permits. Every resource or duration change invalidates the previously selected start time; date or duration changes also clear stale results before the next Calendar query.
+
 ### Race Control / Owner Operate Shell
 
 Race Control is the private owner front-desk surface and keeps the Broadcast language in a denser, utility-first composition. This guidance describes the verified shell only: the current implementation is a demo fixture with draft controls and no live Calendar or publishing mutation. Future connected screens must preserve the visual distinction while deriving operational truth from the approved contracts and architecture.
