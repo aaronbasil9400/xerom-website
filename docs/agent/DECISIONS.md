@@ -5,6 +5,7 @@
 - Use separate private `xerom-race-control-config` and `xerom-race-control-media` buckets, both accessed only through Worker bindings.
 - Do not enable `r2.dev`, a public custom domain, or browser CORS. Public media remains constrained by the active-config asset allowlist.
 - Keep compiled public configuration as the fallback while R2 is empty or unavailable. R2 activation alone does not enable settings publication; impact review and conditional activation remain required.
+- R2 was activated the same day. Both APAC buckets and Worker bindings are live; initial reversible storage probes were removed, leaving both buckets empty.
 
 ## 2026-09-22 — Compact availability and synchronized booking contract
 

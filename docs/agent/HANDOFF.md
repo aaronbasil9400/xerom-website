@@ -6,7 +6,7 @@ Last updated: 2026-09-22
 
 The owner approved R2 implementation. Source now binds two private buckets: `xerom-race-control-config` and `xerom-race-control-media`. No public bucket URL, custom domain or CORS is permitted. Existing repository/upload/public-read code remains fail-safe: an empty config bucket preserves compiled public values, uploaded media stays private, and only an active revision may expose its selected hero through the Worker route.
 
-Cloudflare still returns API error `10042` and requires R2 enablement through the Dashboard. No bucket could be created and the binding-bearing Worker must not be deployed until both bucket names exist. After Dashboard activation, run the documented APAC bucket-create commands, verify both buckets, then build/deploy and test authenticated draft/media persistence. Settings publication remains blocked by the incomplete future-booking impact scan; do not manually create `active.json`.
+R2 is now enabled. Both APAC Standard-class buckets were created and website Worker version `e7a0627b-1bb1-4db4-ad6f-5dc846d506c5` was deployed with the bindings. Remote put/get/delete probes passed in both buckets and were removed; both buckets remain empty. `r2.dev` is disabled and neither bucket has a custom domain. Public homepage/pricing fallback and invalid-media denial passed after deployment. Authenticated owner draft/media persistence still needs an Access-authenticated browser session; settings publication remains blocked by the incomplete future-booking impact scan. Do not manually create `active.json`.
 
 ## Website upgrade kickoff — 2026-09-22 (in progress)
 

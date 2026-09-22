@@ -5,7 +5,10 @@
 - Configured private Worker bindings for `xerom-race-control-config` and `xerom-race-control-media`; no `r2.dev`, custom domain or CORS exposure.
 - Verified the rebuilt Astro Worker config contains both bindings and Wrangler dry-run accepts the generated deployment configuration.
 - `npm run check` passes with no diagnostics; `npm test` passes 104/104; `npm run build:staging` passes.
-- Cloudflare account activation remains blocked by API error `10042`: `Please enable R2 through the Cloudflare Dashboard.` No bucket or object was created and the binding-bearing Worker was not deployed.
+- R2 was enabled and both Standard-class buckets were created with the APAC location hint. Remote put/get/delete probes passed in both buckets; cleanup was verified and both buckets remain empty.
+- `r2.dev` reports `enabled: false` for both buckets, each custom-domain list is empty, and no browser CORS was configured.
+- Website Worker version `e7a0627b-1bb1-4db4-ad6f-5dc846d506c5` deployed with both bindings. `/`, `/pricing`, and invalid-media fallback checks returned 200, 200, and 404 respectively; compiled pricing and hero fallback remain active.
+- No `active.json`, draft, revision, media asset, booking, or Calendar event was created. Owner draft/media writes still require authenticated Race Control; publication remains blocked by the future-booking impact scan.
 
 ## Booking UI and coordinator compatibility — 2026-09-22
 

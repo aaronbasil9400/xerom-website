@@ -58,7 +58,7 @@ Scope answers are recorded in PRODUCT.md; do not ask them again. The implementat
 ## Explicitly deferred engineering
 
 - [ ] TODO: Implement booking confirmation email backend. The current upgrade captures, validates and stores optional email only; no email provider or delivery path is approved.
-- [ ] Owner approved R2 implementation on 2026-09-22. Private config/media bindings are configured in source, but Cloudflare still returns API error `10042`; enable R2 in the Dashboard, then create `xerom-race-control-config` and `xerom-race-control-media` before deployment. Do not enable public bucket access.
+- [x] R2 enabled on 2026-09-22. Private APAC buckets `xerom-race-control-config` and `xerom-race-control-media` are bound to the deployed Worker. `r2.dev` is disabled, no custom domains exist, and no browser CORS is configured.
 - [ ] Configure the five documented Cloudflare Rate Limiting namespaces/bindings before public launch; code currently fails open when an optional binding is absent.
 
 Holiday editing and conflict review are approved features; actual holiday dates/hours still require owner input. Current confirmed booking durations are 30/60/90/120 minutes.
