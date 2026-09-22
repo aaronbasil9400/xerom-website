@@ -19,6 +19,16 @@ describe("booking validation", () => {
     expect(bookingRequestSchema.safeParse({ ...valid, customer: { ...valid.customer, email: "driver@example.com" } }).success).toBe(true);
     expect(bookingRequestSchema.safeParse({ ...valid, customer: { ...valid.customer, email: "driver@" } }).success).toBe(false);
   });
+  it("accepts the 90-minute PS5 command sent to the coordinator", () => {
+    const command = {
+      ...valid,
+      durationMinutes: 90,
+      items: [{ serviceId: "ps5", quantity: 1, additionalControllers: 2 }],
+      customer: { ...valid.customer, email: "driver@example.com" },
+    };
+    expect(publicBookingRequestSchema.safeParse(command).success).toBe(true);
+    expect(bookingRequestSchema.safeParse(command).success).toBe(true);
+  });
   it("rejects no selected resources", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [{ serviceId: "regular-sim", quantity: 0 }] }).success).toBe(false));
   it("rejects duplicate service lines", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [valid.items[0], valid.items[0]] }).success).toBe(false));
   it("rejects controller add-ons on sim rigs", () => expect(bookingRequestSchema.safeParse({ ...valid, items: [{ serviceId: "regular-sim", quantity: 1, additionalControllers: 1 }] }).success).toBe(false));

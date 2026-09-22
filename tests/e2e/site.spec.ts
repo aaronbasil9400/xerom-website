@@ -180,6 +180,58 @@ test("today auto-loads approved single-row availability indicators", async ({ pa
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 });
 
+test("availability propagates every resource and duration and invalidates stale times", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-1440", "Single booking-state matrix check");
+  const requests: Array<Record<string, string>> = [];
+  await page.route("**/api/availability?**", async (route) => {
+    const params = Object.fromEntries(new URL(route.request().url()).searchParams);
+    requests.push(params);
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ slots: [
+        { start: `${params.date}T20:00:00+08:00`, available: true, capacity: { "regular-sim": 3, "pro-sim": 1, ps5: 2 } },
+        { start: `${params.date}T20:30:00+08:00`, available: false, capacity: { "regular-sim": 2, "pro-sim": 0, ps5: 1 } },
+      ] }),
+    });
+  });
+  await page.goto("/book?service=ps5");
+  await page.getByLabel("Additional controllers").selectOption("6");
+  await page.getByText("90 min", { exact: true }).click();
+  await page.getByRole("button", { name: /choose a time/i }).click();
+  await expect(page.locator(".availability-slot")).toHaveCount(2);
+  expect(requests.at(-1)).toMatchObject({ regular: "0", pro: "0", ps5: "1", durationMinutes: "90" });
+  await expect(page.locator("[data-availability-legend]")).toContainText("PS PS5 Lounge");
+  await expect(page.locator("[data-availability-legend]")).not.toContainText("Regular Rig");
+  await expect(page.locator("[data-availability-legend]")).not.toContainText("Pro Rig");
+
+  const available = page.locator(".availability-slot").first();
+  const unavailable = page.locator(".availability-slot").nth(1);
+  await unavailable.click({ force: true });
+  await expect(page.getByRole("button", { name: /enter details/i })).toBeDisabled();
+  await available.click();
+  await expect(page.getByRole("button", { name: /enter details/i })).toBeEnabled();
+
+  await page.getByLabel("Date").evaluate((input: HTMLInputElement) => {
+    const next = new Date(`${input.value}T00:00:00`);
+    next.setDate(next.getDate() + 1);
+    input.value = next.toISOString().slice(0, 10);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(page.getByRole("button", { name: /enter details/i })).toBeDisabled();
+  await expect(page.locator(".availability-slot")).toHaveCount(0);
+  await expect(page.locator("[data-slot-status]")).toContainText("updated selection");
+
+  await page.getByRole("button", { name: /back/i }).click();
+  await page.locator('[data-service-row="regular-sim"]').getByRole("button", { name: /add one regular rig/i }).click();
+  await page.locator('[data-service-row="pro-sim"]').getByRole("button", { name: /add one pro rig/i }).click();
+  await page.getByText("120 min", { exact: true }).click();
+  await page.getByRole("button", { name: /choose a time/i }).click();
+  expect(requests.at(-1)).toMatchObject({ regular: "1", pro: "1", ps5: "1", durationMinutes: "120" });
+  await expect(page.locator(".availability-slot").first()).toHaveAccessibleName(/Regular Rig.*Pro Rig.*PS5 Lounge/i);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+});
+
 test("core routes render without console errors or broken images", async ({ page }) => {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];

@@ -86,4 +86,30 @@ describe("resource availability", () => {
     expect(result[0].capacity["regular-sim"]).toBe(2);
     expect(result[0].available).toBe(false);
   });
+
+  it.each([
+    ["regular only", { "regular-sim": 3, "pro-sim": 0, ps5: 0 }, true],
+    ["pro only", { "regular-sim": 0, "pro-sim": 1, ps5: 0 }, true],
+    ["PS5 only", { "regular-sim": 0, "pro-sim": 0, ps5: 2 }, true],
+    ["all resource types", { "regular-sim": 2, "pro-sim": 1, ps5: 2 }, true],
+    ["too many regular rigs", { "regular-sim": 3, "pro-sim": 0, ps5: 0 }, false],
+    ["too many pro rigs", { "regular-sim": 0, "pro-sim": 1, ps5: 0 }, false],
+    ["too many PS5 lounges", { "regular-sim": 0, "pro-sim": 0, ps5: 2 }, false],
+  ] as const)("evaluates capacity for %s", (_label, requested, expected) => {
+    const busy = expected ? {} : {
+      ...(requested["regular-sim"] ? { r1: [{ start: slot[0].start, end: slot[0].end }] } : {}),
+      ...(requested["pro-sim"] ? { p1: [{ start: slot[0].start, end: slot[0].end }] } : {}),
+      ...(requested.ps5 ? { g1: [{ start: slot[0].start, end: slot[0].end }] } : {}),
+    };
+    const result = buildAvailability(slot, { "regular-sim": [...groups["regular-sim"]], "pro-sim": [...groups["pro-sim"]], ps5: [...groups.ps5] }, busy, undefined, { ...requested });
+    expect(result[0].available).toBe(expected);
+  });
+
+  it.each([30, 60, 90, 120] as const)("keeps %i-minute candidates inside the overnight closing boundary", (durationMinutes) => {
+    const now = new Date("2026-09-11T00:00:00Z");
+    const slots = generateCandidateSlots("2026-09-13", durationMinutes, now);
+    expect(slots.length).toBeGreaterThan(0);
+    expect(slots.at(-1)?.end).toBe("2026-09-14T01:00:00+08:00");
+    expect(slots.every(({ start, end }) => Date.parse(end) - Date.parse(start) === durationMinutes * 60_000)).toBe(true);
+  });
 });

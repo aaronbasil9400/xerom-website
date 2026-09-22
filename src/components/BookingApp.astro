@@ -64,11 +64,17 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <div class="booking-actions"><button class="button button-primary" type="button" data-next="2">Choose a time <ArrowIcon /></button></div>
     </section>
 
-    <section class="booking-step" data-step="2" hidden>
-      <h2>Choose a time</h2>
-      <p>Bookings need one hour of notice and open up to three days ahead.</p>
-      <label class="field"><span>Date</span><input type="date" name="date" required /></label>
-      <button class="button button-secondary" type="button" data-check>Check availability</button>
+    <section class="booking-step booking-step-time" data-step="2" hidden>
+      <div class="availability-heading">
+        <div>
+          <h2>Choose a time</h2>
+          <p>Bookings need one hour of notice and open up to three days ahead.</p>
+        </div>
+        <div class="availability-toolbar">
+          <label class="field"><span>Date</span><input type="date" name="date" required /></label>
+          <button class="button button-secondary" type="button" data-check>Check availability</button>
+        </div>
+      </div>
       <div class="slot-status" aria-live="polite" data-slot-status></div>
       <div class="availability-legend" aria-label="Availability legend" data-availability-legend></div>
       <div class="slot-grid" data-slots></div>
@@ -160,6 +166,17 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   }
   function localTime(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", hour: "numeric", minute: "2-digit" }).format(new Date(iso)); }
   function localDate(iso: string) { return new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", weekday: "short", day: "numeric", month: "short", year: "numeric" }).format(new Date(iso)); }
+  function invalidateAvailability(clearResults = false) {
+    selectedStart = "";
+    form?.querySelector<HTMLButtonElement>("[data-next='3']")?.setAttribute("disabled", "");
+    app?.querySelectorAll<HTMLButtonElement>("[data-slots] button").forEach((button) => button.removeAttribute("aria-pressed"));
+    if (!clearResults) return;
+    availabilityRequest += 1;
+    app?.querySelector<HTMLElement>("[data-slots]")?.replaceChildren();
+    app?.querySelector<HTMLElement>("[data-availability-legend]")?.replaceChildren();
+    const status = app?.querySelector<HTMLElement>("[data-slot-status]");
+    if (status) status.textContent = "Check availability for the updated selection.";
+  }
 
   form?.querySelectorAll<HTMLElement>("[data-stepper]").forEach((stepper) => {
     const input = stepper.querySelector<HTMLInputElement>("input")!;
@@ -171,14 +188,14 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       const requested = Number.isFinite(Number(input.value)) ? Number(input.value) : minimum;
       input.value = String(Math.min(maximum, Math.max(minimum, requested)));
       if (message) message.textContent = requested > maximum ? `Maximum ${maximum} ${serviceName}${maximum === 1 ? "" : "s"} available.` : "";
-      selectedStart = "";
+      invalidateAvailability();
       syncControllerChoice();
     };
-    stepper.querySelector("[data-minus]")?.addEventListener("click", () => { input.value = String(Math.max(Number(input.min), Number(input.value) - 1)); if (message) message.textContent = ""; selectedStart = ""; syncControllerChoice(); });
+    stepper.querySelector("[data-minus]")?.addEventListener("click", () => { input.value = String(Math.max(Number(input.min), Number(input.value) - 1)); if (message) message.textContent = ""; invalidateAvailability(); syncControllerChoice(); });
     stepper.querySelector("[data-plus]")?.addEventListener("click", () => {
       const maximum = Number(input.max);
       if (Number(input.value) >= maximum) { if (message) message.textContent = `Maximum ${maximum} ${serviceName}${maximum === 1 ? "" : "s"} available.`; return; }
-      input.value = String(Number(input.value) + 1); if (message) message.textContent = ""; selectedStart = ""; syncControllerChoice();
+      input.value = String(Number(input.value) + 1); if (message) message.textContent = ""; invalidateAvailability(); syncControllerChoice();
     });
     input.addEventListener("input", sync);
   });
@@ -280,7 +297,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     const slotGrid = app?.querySelector<HTMLElement>("[data-slots]");
     const next = form?.querySelector<HTMLButtonElement>("[data-next='3']");
     if (!status || !slotGrid || !next) return;
-    selectedStart = ""; next.disabled = true; slotGrid.replaceChildren(); status.textContent = "Checking the calendars…"; showError("time");
+    selectedStart = ""; next.disabled = true; slotGrid.replaceChildren(); app?.querySelector<HTMLElement>("[data-availability-legend]")?.replaceChildren(); status.textContent = "Checking the calendars…"; showError("time");
     const q = quantities();
     const params = new URLSearchParams({ date: dateInput.value, durationMinutes: String(duration()), ...Object.fromEntries(Object.entries(q).map(([k,v]) => [k,String(v)])) });
     try {
@@ -300,7 +317,8 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     } catch (error) { if (requestNumber === availabilityRequest) { status.textContent = ""; showError("time", error instanceof Error ? error.message : "Availability could not be loaded."); } }
   }
   form?.querySelector<HTMLButtonElement>("[data-check]")?.addEventListener("click", () => { void loadAvailability(); });
-  form?.querySelectorAll<HTMLInputElement>('input[name="duration"]').forEach((input) => input.addEventListener("change", () => { selectedStart = ""; }));
+  dateInput?.addEventListener("input", () => invalidateAvailability(true));
+  form?.querySelectorAll<HTMLInputElement>('input[name="duration"]').forEach((input) => input.addEventListener("change", () => invalidateAvailability(true)));
 
   function renderReview() {
     const review = app?.querySelector<HTMLElement>("[data-review]"); if (!review) return;

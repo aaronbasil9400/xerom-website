@@ -152,6 +152,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .booking-progress span { display: flex; gap: .65rem; align-items: center; padding: 1rem; color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: 1.05rem; text-transform: uppercase; }
 .booking-progress span[aria-current] { background: var(--red-action); color: white; }
 .booking-step, .booking-success { max-width: 62rem; margin-inline: auto; padding: clamp(1.25rem, 5vw, 4rem); }
+.booking-step-time { max-width: 76rem; }
 .booking-step h2, .booking-success h2, .visit-grid h2 { margin: 0 0 .5rem; font-family: "Barlow Condensed", sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); font-style: italic; font-weight: 900; line-height: .9; text-transform: uppercase; }
 .booking-step > p { margin: 0 0 2rem; color: var(--muted); }
 .quantity-list { display: grid; gap: .75rem; }
@@ -186,16 +187,22 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .field small { color: var(--muted); font-family: "Barlow", sans-serif; font-size: .75rem; font-weight: 400; text-transform: none; }
 .field input, .field textarea { width: 100%; min-height: 3.25rem; border: 1px solid var(--line); border-radius: 0; background: var(--ink); color: var(--paper); padding: .8rem 1rem; caret-color: var(--red); }
 .field textarea { resize: vertical; }
-.slot-status { min-height: 1.75rem; margin-block: 1.25rem .75rem; color: var(--muted); }
+.availability-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(27rem, .72fr); gap: clamp(2rem, 5vw, 5rem); align-items: end; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
+.availability-heading p { max-width: 38rem; margin: 0; color: var(--muted); }
+.availability-toolbar { display: grid; grid-template-columns: minmax(11rem, 1fr) auto; gap: .65rem; align-items: end; }
+.availability-toolbar .field { margin: 0; }
+.availability-toolbar .button { min-height: 3.25rem; padding-inline: 1.1rem; }
+.slot-status { min-height: 1.5rem; margin-block: 1rem .55rem; color: var(--muted); font-size: .9rem; }
 .availability-legend { display: flex; flex-wrap: wrap; gap: .55rem 1rem; margin-bottom: .8rem; color: var(--muted); font-size: .78rem; }
 .availability-legend:empty { display: none; }
 .availability-legend > span, .availability-signal-group { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
 .availability-legend .availability-mark { margin-right: .15rem; }
-.slot-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.slot-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; }
 .slot { min-height: 3.25rem; border: 1px solid var(--line); background: var(--ink); color: var(--paper); font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; }
-.availability-slot { display: grid; grid-template-columns: 4.6rem minmax(0,1fr) auto; gap: .65rem; align-items: center; padding: .7rem .8rem; text-align: left; }
-.availability-time { font-family: "Barlow Condensed", sans-serif; font-size: 1.15rem; font-weight: 900; }
-.availability-signals { display: flex; min-width: 0; align-items: center; gap: .7rem; white-space: nowrap; }
+.availability-slot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem .55rem; align-content: center; min-height: 4.5rem; padding: .55rem .65rem; text-align: left; }
+.availability-time { font-family: "Barlow Condensed", sans-serif; font-size: 1.15rem; font-weight: 900; line-height: 1; }
+.availability-signals { grid-column: 1 / -1; display: flex; min-width: 0; align-items: center; gap: .65rem; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.availability-signals::-webkit-scrollbar { display: none; }
 .availability-signal-group b { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .7rem; letter-spacing: .04em; }
 .availability-mark { display: inline-block; width: .72rem; height: .72rem; flex: 0 0 auto; border: 2px solid currentColor; color: var(--paper); }
 .availability-mark-rig { border-radius: 50%; }
@@ -203,7 +210,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .availability-mark-ps5 { border-radius: 1px; }
 .availability-mark.is-free { border-color: var(--red-action); background: var(--red-action); }
 .availability-mark.is-busy { border-color: #666; background: repeating-linear-gradient(135deg, transparent 0 2px, #666 2px 4px); color: #666; }
-.availability-state { color: var(--muted); font-size: .72rem; }
+.availability-state { color: var(--muted); font-size: .7rem; font-weight: 600; text-transform: uppercase; }
 .slot:hover:not([data-unavailable="true"]), .slot[aria-pressed="true"] { border-color: var(--red-action); background: var(--red-action); color: white; }
 .slot[aria-pressed="true"] .availability-mark.is-free { border-color: white; background: white; }
 .slot[data-unavailable="true"] { cursor: not-allowed; opacity: .68; }
@@ -264,6 +271,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .visit-grid { grid-template-columns: 1fr 1fr; }
   .visit-grid > div:last-child { grid-column: 1 / -1; }
   .placeholder-copy { grid-template-columns: 1fr; }
+  .availability-heading { grid-template-columns: 1fr; gap: 1.25rem; }
+  .slot-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 560px) {
@@ -300,9 +309,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .footer-links { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; }
   .field-grid, .visit-grid { grid-template-columns: 1fr; }
   .controller-choice { grid-template-columns: 1fr; }
+  .availability-toolbar { grid-template-columns: 1fr; }
+  .availability-toolbar .button { width: 100%; }
   .slot-grid { grid-template-columns: 1fr; }
-  .availability-slot { grid-template-columns: 3.7rem minmax(0,1fr); gap: .5rem; }
-  .availability-state { grid-column: 2; }
+  .availability-slot { grid-template-columns: minmax(0, 1fr) auto; min-height: 4.25rem; }
   .availability-signals { gap: .5rem; }
   .availability-mark { width: .65rem; height: .65rem; }
   .visit-grid > div:last-child { grid-column: auto; }
