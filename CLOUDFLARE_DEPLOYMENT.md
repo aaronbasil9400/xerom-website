@@ -66,6 +66,7 @@ Production environment variables/secrets:
 ```text
 BOOKING_MODE=live
 TURNSTILE_SECRET_KEY=<encrypted secret>
+RACE_CONTROL_TOKEN_ENCRYPTION_KEY=<at least 32 random bytes; required for configuration review tokens>
 PUBLIC_TURNSTILE_SITE_KEY=<public environment variable>
 ```
 

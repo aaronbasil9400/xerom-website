@@ -18,6 +18,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (typeof body?.draftHash !== "string" || body.draftHash !== hash) return Response.json({ error: { code: "STALE_DRAFT", message: "Reload the draft before reviewing it.", retryable: false } }, { status: 409, headers });
     const expiresAt = new Date(Date.now() + 5 * 60_000).toISOString();
     const env = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
+    if (!env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY) throw new ConfigUnavailableError("Review token signing is not configured.");
     const reviewToken = await createConfigReviewToken(env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY, { draftHash: hash, baseRevision: draft.value.parentRevision ?? draft.value.revisionId, expiresAt });
     return Response.json({ data: { draftHash: hash, baseRevision: draft.value.parentRevision ?? draft.value.revisionId, affectedBookingIds: [], validationErrors: [{ path: "impact", message: "A complete future-booking impact scan is required before publication." }], impactScanComplete: false, expiresAt, reviewToken }, etag: draft.etag }, { headers });
   } catch (error) {
