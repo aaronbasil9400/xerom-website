@@ -1,11 +1,23 @@
 ---
 import { services } from "@/config/services";
 import { pricing } from "@/config/pricing";
+import { bookingRules } from "@/config/booking";
 import { business } from "@/config/business";
 import ArrowIcon from "./ArrowIcon.astro";
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 ---
-<section class="booking-shell" data-booking-app data-whatsapp={business.whatsappNumber}>
+<section
+  class="booking-shell"
+  data-booking-app
+  data-whatsapp={business.whatsappNumber}
+  data-regular-rate={pricing.services["regular-sim"].hourlyRate}
+  data-pro-rate={pricing.services["pro-sim"].hourlyRate}
+  data-ps5-rate={pricing.services.ps5.hourlyRate}
+  data-controller-rate={pricing.services.ps5.additionalControllerRate}
+  data-regular-capacity={services["regular-sim"].capacity}
+  data-pro-capacity={services["pro-sim"].capacity}
+  data-ps5-capacity={services.ps5.capacity}
+>
   <div class="booking-progress" aria-label="Booking progress">
     <span data-progress="1" aria-current="step">1 <b>Setup</b></span>
     <span data-progress="2">2 <b>Time</b></span>
@@ -18,20 +30,35 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <p>Choose one setup or mix Regular and Pro rigs for your group.</p>
       <div class="quantity-list">
         {Object.values(services).map((service) => (
-          <div class="quantity-row">
+          <div class="quantity-row" data-service-row={service.id}>
             <div><strong>{service.name}</strong><span>RM{pricing.services[service.id].hourlyRate} per {service.unitLabel}, per hour</span></div>
-            <div class="stepper" data-stepper>
+            <div class="stepper" data-stepper data-service-name={service.name}>
               <button type="button" aria-label={`Remove one ${service.name}`} data-minus>−</button>
               <input type="number" name={service.id} value={service.id === "regular-sim" ? "1" : "0"} min="0" max={service.capacity} inputmode="numeric" aria-label={`${service.name} quantity`} />
               <button type="button" aria-label={`Add one ${service.name}`} data-plus>+</button>
             </div>
+            <p class="quantity-limit" aria-live="polite" data-limit-message></p>
           </div>
         ))}
       </div>
+      <div class="controller-choice" data-controller-choice hidden>
+        <div>
+          <strong>PS5 controllers</strong>
+          <span>{pricing.services.ps5.includedControllers} controllers provided. RM{pricing.services.ps5.additionalControllerRate} for each additional controller per booking.</span>
+        </div>
+        <label class="field">
+          <span>Additional controllers</span>
+          <select name="additionalControllers">
+            {Array.from({ length: pricing.services.ps5.maxAdditionalControllers + 1 }, (_, quantity) => <option value={quantity}>{quantity}</option>)}
+          </select>
+          <small>Choose 0–{pricing.services.ps5.maxAdditionalControllers} in addition to the included controllers.</small>
+        </label>
+      </div>
       <fieldset class="duration-choice">
         <legend>Session length</legend>
-        <label><input type="radio" name="duration" value="60" checked /> <span>1 hour</span></label>
-        <label><input type="radio" name="duration" value="120" /> <span>2 hours</span></label>
+        {bookingRules.allowedDurationsMinutes.map((minutes) => (
+          <label><input type="radio" name="duration" value={minutes} checked={minutes === 60} /> <span>{minutes} min</span></label>
+        ))}
       </fieldset>
       <p class="form-error" role="alert" data-error="setup"></p>
       <div class="booking-actions"><button class="button button-primary" type="button" data-next="2">Choose a time <ArrowIcon /></button></div>
@@ -43,6 +70,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <label class="field"><span>Date</span><input type="date" name="date" required /></label>
       <button class="button button-secondary" type="button" data-check>Check availability</button>
       <div class="slot-status" aria-live="polite" data-slot-status></div>
+      <div class="availability-legend" aria-label="Availability legend" data-availability-legend></div>
       <div class="slot-grid" data-slots></div>
       <p class="form-error" role="alert" data-error="time"></p>
       <div class="booking-actions"><button class="button" type="button" data-back="1">Back</button><button class="button button-primary" type="button" data-next="3" disabled>Enter details <ArrowIcon /></button></div>
@@ -54,6 +82,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       <div class="field-grid">
         <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" minlength="2" maxlength="80" required /></label>
         <label class="field"><span>Mobile / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="012-345 6789" aria-describedby="phone-hint" required /><small id="phone-hint">Use 012-345 6789 or +60 12 345 6789.</small></label>
+        <label class="field"><span>Email address <small>Optional</small></span><input type="email" name="email" autocomplete="email" maxlength="254" placeholder="driver@example.com" /></label>
       </div>
       <label class="field"><span>Notes <small>Optional</small></span><textarea name="notes" rows="3" maxlength="300"></textarea></label>
       <div class="booking-review" data-review></div>
@@ -69,6 +98,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     <p class="booking-id" data-booking-id></p>
     <div data-confirmation></div>
     <div class="hero-actions"><a class="button button-primary" data-whatsapp-link href="#">WhatsApp Xerom</a><a class="button button-secondary" href={business.mapsUrl}>Get directions</a></div>
+    <p class="whatsapp-status" aria-live="polite" data-whatsapp-status></p>
     <p>Need to change your booking? Message Xerom on WhatsApp and quote the booking ID.</p>
   </section>
 </section>
@@ -82,6 +112,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   const form = app?.querySelector<HTMLFormElement>("[data-booking-form]");
   let selectedStart = "";
   let attemptKey = crypto.randomUUID();
+  let availabilityRequest = 0;
   const submitMarkup = form?.querySelector<HTMLButtonElement>("[data-submit]")?.innerHTML ?? "Confirm booking";
 
   const toMalaysiaDate = (date: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
@@ -107,7 +138,15 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     const value = (name: ServiceId) => Number((form?.elements.namedItem(name) as HTMLInputElement)?.value ?? 0);
     return { regular: value("regular-sim"), pro: value("pro-sim"), ps5: value("ps5") };
   }
-  function duration() { return Number((form?.elements.namedItem("duration") as RadioNodeList)?.value ?? 60) as 60 | 120; }
+  function duration() { return Number((form?.elements.namedItem("duration") as RadioNodeList)?.value ?? 60) as 30 | 60 | 90 | 120; }
+  function additionalControllers() { return Number((form?.elements.namedItem("additionalControllers") as HTMLSelectElement | null)?.value ?? 0); }
+  function formatDuration(minutes: number) { return minutes < 60 ? `${minutes} minutes` : minutes === 60 ? "1 hour" : minutes === 120 ? "2 hours" : "1 hour 30 minutes"; }
+  function resourceSummary(items: Array<{ serviceId: ServiceId; quantity: number; additionalControllers?: number }>) {
+    return items.filter((item) => item.quantity > 0).map((item) => {
+      const name = serviceDisplay[item.serviceId]?.name ?? item.serviceId;
+      return `${item.quantity} × ${name}${item.serviceId === "ps5" && (item.additionalControllers ?? 0) > 0 ? ` (+${item.additionalControllers} controllers)` : ""}`;
+    }).join(" · ");
+  }
   function setStep(step: number) {
     app?.querySelectorAll<HTMLElement>("[data-step]").forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
     app?.querySelectorAll<HTMLElement>("[data-progress]").forEach((item) => item.toggleAttribute("aria-current", Number(item.dataset.progress) === step));
@@ -124,9 +163,36 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
 
   form?.querySelectorAll<HTMLElement>("[data-stepper]").forEach((stepper) => {
     const input = stepper.querySelector<HTMLInputElement>("input")!;
-    stepper.querySelector("[data-minus]")?.addEventListener("click", () => { input.value = String(Math.max(Number(input.min), Number(input.value) - 1)); selectedStart = ""; });
-    stepper.querySelector("[data-plus]")?.addEventListener("click", () => { input.value = String(Math.min(Number(input.max), Number(input.value) + 1)); selectedStart = ""; });
+    const message = stepper.closest("[data-service-row]")?.querySelector<HTMLElement>("[data-limit-message]");
+    const serviceName = stepper.dataset.serviceName ?? "resource";
+    const sync = () => {
+      const minimum = Number(input.min);
+      const maximum = Number(input.max);
+      const requested = Number.isFinite(Number(input.value)) ? Number(input.value) : minimum;
+      input.value = String(Math.min(maximum, Math.max(minimum, requested)));
+      if (message) message.textContent = requested > maximum ? `Maximum ${maximum} ${serviceName}${maximum === 1 ? "" : "s"} available.` : "";
+      selectedStart = "";
+      syncControllerChoice();
+    };
+    stepper.querySelector("[data-minus]")?.addEventListener("click", () => { input.value = String(Math.max(Number(input.min), Number(input.value) - 1)); if (message) message.textContent = ""; selectedStart = ""; syncControllerChoice(); });
+    stepper.querySelector("[data-plus]")?.addEventListener("click", () => {
+      const maximum = Number(input.max);
+      if (Number(input.value) >= maximum) { if (message) message.textContent = `Maximum ${maximum} ${serviceName}${maximum === 1 ? "" : "s"} available.`; return; }
+      input.value = String(Number(input.value) + 1); if (message) message.textContent = ""; selectedStart = ""; syncControllerChoice();
+    });
+    input.addEventListener("input", sync);
   });
+  function syncControllerChoice() {
+    const choice = form?.querySelector<HTMLElement>("[data-controller-choice]");
+    if (!choice) return;
+    const selected = quantities().ps5 > 0;
+    choice.hidden = !selected;
+    if (!selected) {
+      const input = form?.elements.namedItem("additionalControllers") as HTMLSelectElement | null;
+      if (input) input.value = "0";
+    }
+  }
+  syncControllerChoice();
   form?.querySelectorAll<HTMLButtonElement>("[data-next]").forEach((button) => button.addEventListener("click", () => {
     const next = Number(button.dataset.next);
     if (next === 2 && !validSetup()) return showError("setup", "Choose at least one rig or lounge.");
@@ -134,39 +200,128 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     showError(next === 2 ? "setup" : "time");
     if (next === 3) renderReview();
     setStep(next);
+    if (next === 2) void loadAvailability();
   }));
   form?.querySelectorAll<HTMLButtonElement>("[data-back]").forEach((button) => button.addEventListener("click", () => setStep(Number(button.dataset.back))));
 
-  form?.querySelector<HTMLButtonElement>("[data-check]")?.addEventListener("click", async () => {
+  type SlotCapacity = Record<ServiceId, number>;
+  type AvailabilityResponseSlot = { start: string; available: boolean; capacity: SlotCapacity };
+  const serviceDisplay: Record<ServiceId, { short: string; name: string; shape: string; quantityKey: keyof ReturnType<typeof quantities>; capacityKey: keyof DOMStringMap }> = {
+    "regular-sim": { short: "R", name: "Regular Rig", shape: "rig", quantityKey: "regular", capacityKey: "regularCapacity" },
+    "pro-sim": { short: "P", name: "Pro Rig", shape: "pro", quantityKey: "pro", capacityKey: "proCapacity" },
+    ps5: { short: "PS", name: "PS5 Lounge", shape: "ps5", quantityKey: "ps5", capacityKey: "ps5Capacity" },
+  };
+
+  function selectedServices(): ServiceId[] {
+    const selected = quantities();
+    return (Object.keys(serviceDisplay) as ServiceId[]).filter((serviceId) => selected[serviceDisplay[serviceId].quantityKey] > 0);
+  }
+
+  function configuredCapacity(serviceId: ServiceId): number {
+    return Number(app?.dataset[serviceDisplay[serviceId].capacityKey] ?? 0);
+  }
+
+  function resourceMark(serviceId: ServiceId, available: boolean): HTMLElement {
+    const mark = document.createElement("i");
+    mark.className = `availability-mark availability-mark-${serviceDisplay[serviceId].shape} ${available ? "is-free" : "is-busy"}`;
+    mark.setAttribute("aria-hidden", "true");
+    return mark;
+  }
+
+  function signalGroup(serviceId: ServiceId, available: number): HTMLElement {
+    const config = serviceDisplay[serviceId];
+    const total = configuredCapacity(serviceId);
+    const group = document.createElement("span");
+    group.className = "availability-signal-group";
+    group.setAttribute("aria-label", `${config.name}: ${available} of ${total} available`);
+    const label = document.createElement("b"); label.textContent = config.short; group.appendChild(label);
+    for (let index = 0; index < total; index += 1) group.appendChild(resourceMark(serviceId, index < available));
+    return group;
+  }
+
+  function renderAvailabilityLegend() {
+    const legend = app?.querySelector<HTMLElement>("[data-availability-legend]");
+    if (!legend) return;
+    legend.replaceChildren();
+    for (const serviceId of selectedServices()) {
+      const item = document.createElement("span");
+      item.appendChild(resourceMark(serviceId, true));
+      const text = document.createElement("span"); text.textContent = `${serviceDisplay[serviceId].short} ${serviceDisplay[serviceId].name}`; item.appendChild(text);
+      legend.appendChild(item);
+    }
+    const unavailable = document.createElement("span"); unavailable.appendChild(resourceMark("regular-sim", false));
+    const unavailableText = document.createElement("span"); unavailableText.textContent = "Unavailable"; unavailable.appendChild(unavailableText); legend.appendChild(unavailable);
+  }
+
+  function renderSlot(slot: AvailabilityResponseSlot): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "slot availability-slot";
+    button.dataset.unavailable = String(!slot.available);
+    button.setAttribute("aria-disabled", String(!slot.available));
+    const time = document.createElement("span"); time.className = "availability-time"; time.textContent = localTime(slot.start); button.appendChild(time);
+    const signals = document.createElement("span"); signals.className = "availability-signals";
+    const descriptions: string[] = [];
+    for (const serviceId of selectedServices()) {
+      const available = slot.capacity[serviceId] ?? 0;
+      signals.appendChild(signalGroup(serviceId, available));
+      descriptions.push(`${serviceDisplay[serviceId].name}: ${available} of ${configuredCapacity(serviceId)} available`);
+    }
+    button.appendChild(signals);
+    const state = document.createElement("span"); state.className = "availability-state"; state.textContent = slot.available ? "Available" : "Unavailable"; button.appendChild(state);
+    button.setAttribute("aria-label", `${localTime(slot.start)}. ${descriptions.join(". ")}. ${state.textContent}.`);
+    return button;
+  }
+
+  async function loadAvailability() {
     if (!dateInput?.value) return showError("time", "Choose a date.");
+    const requestNumber = ++availabilityRequest;
     const status = app?.querySelector<HTMLElement>("[data-slot-status]");
     const slotGrid = app?.querySelector<HTMLElement>("[data-slots]");
-    const next = form.querySelector<HTMLButtonElement>("[data-next='3']");
+    const next = form?.querySelector<HTMLButtonElement>("[data-next='3']");
     if (!status || !slotGrid || !next) return;
-    selectedStart = ""; next.disabled = true; slotGrid.replaceChildren(); status.textContent = "Checking the calendars…";
+    selectedStart = ""; next.disabled = true; slotGrid.replaceChildren(); status.textContent = "Checking the calendars…"; showError("time");
     const q = quantities();
     const params = new URLSearchParams({ date: dateInput.value, durationMinutes: String(duration()), ...Object.fromEntries(Object.entries(q).map(([k,v]) => [k,String(v)])) });
     try {
       trackConversion("availability_checked");
       const response = await fetch(`/api/availability?${params}`);
-      const data = await response.json() as { error?: string; slots?: Array<{ start: string; available: boolean }> };
+      const data = await response.json() as { error?: string; slots?: AvailabilityResponseSlot[] };
+      if (requestNumber !== availabilityRequest) return;
       if (!response.ok) throw new Error(data.error ?? "Availability could not be loaded.");
       const available = data.slots?.filter((slot) => slot.available) ?? [];
-      status.textContent = available.length ? `${available.length} start times available` : "No times fit this session. Try another date or setup.";
-      for (const slot of available) {
-        const button = document.createElement("button"); button.type = "button"; button.className = "slot"; button.textContent = localTime(slot.start);
-        button.addEventListener("click", () => { slotGrid.querySelectorAll("button").forEach((item) => item.removeAttribute("aria-pressed")); button.setAttribute("aria-pressed", "true"); selectedStart = slot.start; next.disabled = false; trackConversion("booking_slot_selected"); });
+      status.textContent = data.slots?.length ? (available.length ? `${available.length} start times available` : "No times fit this session. Try another date or setup.") : "No start times fall within opening hours for this session.";
+      renderAvailabilityLegend();
+      for (const slot of data.slots ?? []) {
+        const button = renderSlot(slot);
+        if (slot.available) button.addEventListener("click", () => { slotGrid.querySelectorAll("button").forEach((item) => item.removeAttribute("aria-pressed")); button.setAttribute("aria-pressed", "true"); selectedStart = slot.start; next.disabled = false; trackConversion("booking_slot_selected"); });
         slotGrid.appendChild(button);
       }
-    } catch (error) { status.textContent = ""; showError("time", error instanceof Error ? error.message : "Availability could not be loaded."); }
-  });
+    } catch (error) { if (requestNumber === availabilityRequest) { status.textContent = ""; showError("time", error instanceof Error ? error.message : "Availability could not be loaded."); } }
+  }
+  form?.querySelector<HTMLButtonElement>("[data-check]")?.addEventListener("click", () => { void loadAvailability(); });
+  form?.querySelectorAll<HTMLInputElement>('input[name="duration"]').forEach((input) => input.addEventListener("change", () => { selectedStart = ""; }));
 
   function renderReview() {
     const review = app?.querySelector<HTMLElement>("[data-review]"); if (!review) return;
     const q = quantities();
     const names: Record<string,string> = { regular: "Regular rigs", pro: "Pro rigs", ps5: "PS5 lounges" };
     const selections = Object.entries(q).filter(([,value]) => value > 0).map(([key,value]) => `${value} × ${names[key]}`).join(" · ");
-    review.innerHTML = `<strong>Review your session</strong><span>${selections}</span><span>${localDate(selectedStart)} · ${localTime(selectedStart)} · ${duration() / 60} hour${duration() === 120 ? "s" : ""}</span>`;
+    const controllers = q.ps5 > 0 ? additionalControllers() : 0;
+    const hours = duration() / 60;
+    const estimatedTotal = q.regular * Number(app?.dataset.regularRate) * hours + q.pro * Number(app?.dataset.proRate) * hours + q.ps5 * Number(app?.dataset.ps5Rate) * hours + controllers * Number(app?.dataset.controllerRate);
+    review.replaceChildren();
+    const title = document.createElement("strong"); title.textContent = "Review your session";
+    const selectionLine = document.createElement("span"); selectionLine.textContent = selections;
+    const timingLine = document.createElement("span"); timingLine.textContent = `${localDate(selectedStart)} · ${localTime(selectedStart)} · ${formatDuration(duration())}`;
+    review.appendChild(title); review.appendChild(selectionLine); review.appendChild(timingLine);
+    if (q.ps5 > 0) {
+      const controllerLine = document.createElement("span");
+      const included = q.ps5 * 2;
+      controllerLine.textContent = `Controllers: ${included} included + ${controllers} additional = ${included + controllers} total`;
+      review.appendChild(controllerLine);
+    }
+    const totalLine = document.createElement("span"); totalLine.textContent = `Estimated total: RM${estimatedTotal}`; review.appendChild(totalLine);
   }
 
   form?.addEventListener("submit", async (event) => {
@@ -181,11 +336,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
       items: [
         { serviceId: "regular-sim", quantity: q.regular },
         { serviceId: "pro-sim", quantity: q.pro },
-        { serviceId: "ps5", quantity: q.ps5 },
+        { serviceId: "ps5", quantity: q.ps5, additionalControllers: q.ps5 > 0 ? additionalControllers() : 0 },
       ],
       customer: {
         name: (form.elements.namedItem("name") as HTMLInputElement).value,
         phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
+        email: (form.elements.namedItem("email") as HTMLInputElement).value || undefined,
         notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value || undefined,
       },
       idempotencyKey: attemptKey,
@@ -193,14 +349,25 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     };
     try {
       const response = await fetch("/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-      const data = await response.json() as { error?: string; bookingId?: string; total?: number; start?: string };
+      const data = await response.json() as { error?: string; bookingId?: string; total?: number; start?: string; durationMinutes?: number; items?: Array<{ serviceId: ServiceId; quantity: number; additionalControllers?: number }> };
       if (!response.ok) throw new Error(data.error ?? "The booking could not be completed.");
       form.hidden = true; app?.querySelector(".booking-progress")?.setAttribute("hidden", "");
       const success = app?.querySelector<HTMLElement>("[data-success]")!; success.hidden = false;
       success.querySelector<HTMLElement>("[data-booking-id]")!.textContent = data.bookingId ?? "";
-      success.querySelector<HTMLElement>("[data-confirmation]")!.textContent = `${localDate(data.start!)} · ${localTime(data.start!)} · RM${data.total}`;
-      const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\n\nI'd like to confirm the booking. Thanks!`;
-      (success.querySelector("[data-whatsapp-link]") as HTMLAnchorElement).href = `https://wa.me/${app?.dataset.whatsapp}?text=${encodeURIComponent(message)}`;
+      const confirmedItems = data.items ?? payload.items;
+      const confirmedDuration = data.durationMinutes ?? payload.durationMinutes;
+      const summary = resourceSummary(confirmedItems as Array<{ serviceId: ServiceId; quantity: number; additionalControllers?: number }>);
+      success.querySelector<HTMLElement>("[data-confirmation]")!.textContent = `${localDate(data.start!)} · ${localTime(data.start!)} · ${formatDuration(confirmedDuration)} · ${summary} · RM${data.total}`;
+      const controllerItem = confirmedItems.find((item) => item.serviceId === "ps5");
+      const controllerLine = controllerItem && controllerItem.quantity > 0
+        ? `\nControllers: ${controllerItem.quantity * 2} included + ${controllerItem.additionalControllers ?? 0} additional`
+        : "";
+      const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nName: ${payload.customer.name}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\nDuration: ${formatDuration(confirmedDuration)}\nResources: ${summary}${controllerLine}\n\nI'd like to confirm the booking. Thanks!`;
+      const whatsappUrl = `https://wa.me/${app?.dataset.whatsapp}?text=${encodeURIComponent(message)}`;
+      (success.querySelector("[data-whatsapp-link]") as HTMLAnchorElement).href = whatsappUrl;
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      const whatsappStatus = success.querySelector<HTMLElement>("[data-whatsapp-status]");
+      if (whatsappStatus) whatsappStatus.textContent = "This booking is confirmed. If WhatsApp did not open, use the WhatsApp Xerom button.";
       trackConversion("booking_completed");
     } catch (error) { trackConversion("booking_failed"); showError("details", error instanceof Error ? error.message : "The booking could not be completed."); submit.disabled = false; submit.innerHTML = submitMarkup; }
   });

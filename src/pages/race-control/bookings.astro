@@ -1,6 +1,7 @@
 ---
 import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
 import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import { bookingRules } from '@/config/booking';
 ---
 <RaceControlLayout title="Bookings" section="bookings">
   <DemoNotice />
@@ -9,11 +10,15 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
     <form class="rc-booking-search" data-rc-booking-search>
       <label>Date from<input name="from" type="date" required /></label>
       <label>Date to<input name="to" type="date" required /></label>
-      <label>Booking or customer search<input name="query" type="search" placeholder="Optional" /></label>
+      <label>Booking or customer<input name="query" type="search" placeholder="Name or booking ID" /></label>
+      <label>Phone number<input name="phone" type="search" inputmode="tel" placeholder="Full or partial" /></label>
+      <label>Resource type<select name="service"><option value="">All resources</option><option value="regular-sim">Regular Rig</option><option value="pro-sim">Pro Rig</option><option value="ps5">PS5 Lounge</option></select></label>
+      <label>Duration<select name="duration"><option value="">All durations</option>{bookingRules.allowedDurationsMinutes.map((minutes) => <option value={minutes}>{minutes} min</option>)}</select></label>
       <button class="rc-button rc-button-primary" type="submit">Search Calendar</button>
+      <button class="rc-button" type="button" data-rc-export-csv>Export CSV</button>
       <output data-rc-search-result aria-live="polite"></output>
     </form>
-    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Events</th><th scope="col">Action</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>1</td><td>—</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>1</td><td>—</td></tr></tbody></table></div>
+    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Customer</th><th scope="col">Duration</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Price</th><th scope="col">Events</th><th scope="col">Action</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Demo customer · synthetic</td><td>60 min</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>Demo customer · synthetic</td><td>120 min</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr></tbody></table></div>
   </section>
 </RaceControlLayout>
 
@@ -21,28 +26,47 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
   const searchForm = document.querySelector<HTMLFormElement>("[data-rc-booking-search]");
   const rows = document.querySelector<HTMLElement>("[data-rc-booking-rows]");
   const result = document.querySelector<HTMLOutputElement>("[data-rc-search-result]");
+  const exportButton = document.querySelector<HTMLButtonElement>("[data-rc-export-csv]");
   const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kuala_Lumpur" }).format(new Date());
   searchForm?.querySelector<HTMLInputElement>('input[name="from"]')?.setAttribute("value", date);
   searchForm?.querySelector<HTMLInputElement>('input[name="to"]')?.setAttribute("value", date);
   const formatTime = (value: string) => new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    if (!searchForm) return params;
+    for (const [key, value] of new FormData(searchForm).entries()) if (String(value)) params.set(key, String(value));
+    return params;
+  };
+  exportButton?.addEventListener("click", () => {
+    const params = buildParams();
+    if (!params.get("from") || !params.get("to")) { if (result) result.textContent = "Choose a date range before exporting."; return; }
+    params.set("format", "csv");
+    window.location.assign(`/api/admin/bookings?${params}`);
+  });
   searchForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!rows || !result) return;
     result.textContent = "Reading Calendar events…";
-    const values = new FormData(searchForm);
-    const params = new URLSearchParams();
-    for (const [key, value] of values.entries()) params.set(key, String(value));
+    const params = buildParams();
     try {
       const response = await fetch(`/api/admin/bookings?${params}`, { cache: "no-store" });
-      const payload = await response.json() as { data?: Array<{ bookingId: string | null; version: number; status: string; start: string; end: string; resources: string[]; eventCount: number }>; error?: { message?: string } };
+      const payload = await response.json() as { data?: Array<{ bookingId: string | null; version: number; status: string; start: string; end: string; durationMinutes: number; customer: { name: string; phone: string; email?: string }; resources: string[]; additionalControllers: number; priceTotal: number | null; eventCount: number }>; error?: { message?: string } };
       if (!response.ok) throw new Error(payload.error?.message ?? "Bookings unavailable.");
       rows.replaceChildren();
       for (const booking of payload.data ?? []) {
         const row = document.createElement("tr");
         const id = document.createElement("th"); id.scope = "row"; id.textContent = booking.bookingId ?? "Calendar block";
         const when = document.createElement("td"); when.textContent = `${formatTime(booking.start)}–${formatTime(booking.end)}`;
+        const customer = document.createElement("td");
+        const customerName = document.createElement("strong"); customerName.textContent = booking.customer.name || "Not stored";
+        const customerPhone = document.createElement("span"); customerPhone.textContent = booking.customer.phone || "No phone";
+        const customerEmail = document.createElement("span"); customerEmail.textContent = booking.customer.email ?? "";
+        customer.appendChild(customerName); customer.appendChild(customerPhone); if (booking.customer.email) customer.appendChild(customerEmail);
+        const duration = document.createElement("td"); duration.textContent = `${booking.durationMinutes} min`;
         const resources = document.createElement("td"); resources.textContent = booking.resources.join(" + ");
+        if (booking.additionalControllers > 0) resources.textContent += ` · +${booking.additionalControllers} controllers`;
         const status = document.createElement("td"); status.textContent = booking.status;
+        const price = document.createElement("td"); price.textContent = booking.priceTotal === null ? "—" : `RM${booking.priceTotal}`;
         const count = document.createElement("td"); count.textContent = String(booking.eventCount);
         const action = document.createElement("td");
         if (booking.bookingId && booking.status !== "cancelled" && booking.version >= 0) {
@@ -80,7 +104,10 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
         } else {
           action.textContent = "—";
         }
-        row.appendChild(id); row.appendChild(when); row.appendChild(resources); row.appendChild(status); row.appendChild(count); row.appendChild(action); rows.appendChild(row);
+        row.appendChild(id); row.appendChild(when); row.appendChild(customer); row.appendChild(duration); row.appendChild(resources); row.appendChild(status); row.appendChild(price); row.appendChild(count); row.appendChild(action); rows.appendChild(row);
+      }
+      if ((payload.data?.length ?? 0) === 0) {
+        const row = document.createElement("tr"); const cell = document.createElement("td"); cell.colSpan = 9; cell.className = "rc-table-empty"; cell.textContent = "No Calendar bookings match these filters."; row.appendChild(cell); rows.appendChild(row);
       }
       result.textContent = `${payload.data?.length ?? 0} grouped Calendar record(s).`;
     } catch (error) {

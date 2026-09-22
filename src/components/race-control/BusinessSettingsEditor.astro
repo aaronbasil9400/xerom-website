@@ -1,0 +1,131 @@
+---
+interface Props { setting: string; title: string }
+const { setting, title } = Astro.props;
+const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const services = [{ id: "regular-sim", name: "Regular Rig" }, { id: "pro-sim", name: "Pro Rig" }, { id: "ps5", name: "PS5 Lounge" }];
+---
+
+<section class="rc-panel rc-editor" data-settings-editor={setting}>
+  <div class="rc-panel-head"><div><h2>{title} editor</h2><span>Versioned private draft · Calendar references stay server-side</span></div><span class="rc-draft-pill" data-settings-state>Loading draft</span></div>
+  <form data-settings-form aria-busy="true">
+    <div class="rc-settings-loading" data-settings-loading>Loading the current private draft…</div>
+    {setting === "resources" && <div class="rc-settings-fields" data-settings-fields hidden>
+      <div class="rc-settings-list">
+        {services.map((service) => <fieldset data-resource-service={service.id}><legend>{service.name}</legend><label class="rc-check"><input type="checkbox" data-resource-enabled={service.id} /> Enabled for customers</label><label>Number of {service.name === "PS5 Lounge" ? "PS5 Lounges" : `${service.name}s`}<input type="number" min="0" max="64" data-resource-quantity={service.id} required /></label><p data-resource-impact={service.id}></p></fieldset>)}
+      </div>
+      <fieldset><legend>PS5 controllers</legend><div class="rc-form-grid"><label>Included controllers per lounge<input type="number" min="0" max="16" data-controller="includedQuantity" required /></label><label>Maximum additional controllers<input type="number" min="0" max="16" data-controller="maxAdditionalQuantity" required /></label><label>Additional controller price (RM)<input type="number" min="0" max="10000" step="0.01" data-controller="additionalPrice" required /></label></div></fieldset>
+      <p class="rc-helper">New resources save as provisioning drafts. They cannot publish or accept bookings until a private Calendar has been provisioned and verified.</p>
+    </div>}
+    {setting === "hours" && <div class="rc-settings-fields" data-settings-fields hidden>
+      <div class="rc-hours-editor">{days.map((day) => <fieldset data-hours-day={day}><legend>{day}</legend><label class="rc-check"><input type="checkbox" data-hours-closed={day} /> Closed</label><label>Opens<input type="time" data-hours-open={day} /></label><label>Closes<input type="time" data-hours-close={day} /></label></fieldset>)}</div>
+      <p class="rc-helper">A closing time earlier than opening time is treated as next-day closing. Publication remains blocked until future bookings outside changed hours are reviewed.</p>
+    </div>}
+    {setting === "pricing" && <div class="rc-settings-fields" data-settings-fields hidden>
+      <div class="rc-settings-list">{services.map((service) => <fieldset data-pricing-service={service.id}><legend>{service.name}</legend><label>Base price per resource hour (RM)<input type="number" min="0" max="10000" step="0.01" data-base-price={service.id} required /></label><dl class="rc-price-proof"><div><dt>Base price</dt><dd data-price-base={service.id}>—</dd></div><div><dt>Discount</dt><dd data-price-discount={service.id}>—</dd></div><div><dt>Current customer price</dt><dd data-price-effective={service.id}>—</dd></div></dl></fieldset>)}</div>
+      <fieldset><legend>Quick percentage discount</legend><label>Discount percentage<input type="number" min="0" max="100" step="0.01" data-discount-percentage required /></label><p class="rc-helper">The base price is retained. Set 0% to pause this quick discount.</p></fieldset>
+    </div>}
+    {setting === "offers" && <div class="rc-settings-fields" data-settings-fields hidden><div class="rc-empty"><h2>Offers use structured rules</h2><p data-offer-summary>No active offers.</p><p>Percentage discounts are managed in Pricing. Duration packages remain supported by the configuration model but require owner-confirmed values before activation.</p></div></div>}
+    {setting === "rules" && <div class="rc-settings-fields" data-settings-fields hidden>
+      <div class="rc-form-grid"><label>Availability interval (minutes)<input type="number" min="1" max="240" data-booking-rule="slotIntervalMinutes" required /></label><label>Customer notice (minutes)<input type="number" min="0" max="10080" data-booking-rule="customerMinimumNoticeMinutes" required /></label><label>Total group resource limit<input type="number" min="1" max="64" data-booking-rule="totalGroupLimit" required /></label><label>Booking horizon (minutes)<input type="number" min="1" max="43200" data-booking-horizon required /></label></div>
+      <fieldset><legend>Allowed durations</legend><div class="rc-duration-checks">{[30,60,90,120].map((minutes) => <label class="rc-check"><input type="checkbox" value={minutes} data-booking-duration /> {minutes} minutes</label>)}</div></fieldset>
+    </div>}
+    <div class="rc-form-actions" data-settings-actions hidden><button class="rc-button" type="submit">Save draft</button><button class="rc-button rc-button-primary" type="button" data-settings-review>Review changes</button><output data-settings-result aria-live="polite"></output></div>
+  </form>
+</section>
+<section class="rc-panel rc-empty" data-settings-impact><h2>Impact review</h2><p>Save a valid draft, then review it before publication. Publishing stays blocked when impact checks are incomplete.</p></section>
+
+<script>
+  type ServiceId = "regular-sim" | "pro-sim" | "ps5";
+  type Resource = { resourceId: string; serviceId: ServiceId; displayName: string; lifecycle: string; activeFrom: string | null; retiredFrom: string | null; controllerCapacity: number | null; calendarRef: null; calendarManaged?: boolean };
+  type Promotion = { promotionId: string; type: string; label: string; state: string; percentageBasisPoints?: number; priority: number; eligibility: { serviceIds: ServiceId[]; weekdays: number[]; startDate: string | null; endDate: string | null; startTime: string | null; endTime: string | null; channels: string[]; durationMinutes: number[] }; terms: string };
+  type Config = { revisionId: string; parentRevision: string | null; publishedAt: string | null; services: Array<{ serviceId: ServiceId; enabled: boolean }>; resources: Resource[]; hours: { weekly: Record<string, Array<{ open: string; close: string; closeDayOffset: 0 | 1 }>> }; rates: Array<{ rateId: string; serviceId: ServiceId; amountSenPerResourceHour: number; effectiveFrom: string; effectiveUntil: string | null }>; promotions: Promotion[]; controllers: { includedQuantity: number; maxAdditionalQuantity: number; additionalPriceSen: number }; bookingRules: { slotIntervalMinutes: number; allowedDurationsMinutes: number[]; customerMinimumNoticeMinutes: number; horizon: { mode: string; value: number }; totalGroupLimit: number; perServiceGroupLimits: Record<ServiceId, number> } };
+  const editor = document.querySelector<HTMLElement>("[data-settings-editor]");
+  const form = editor?.querySelector<HTMLFormElement>("[data-settings-form]");
+  const loading = editor?.querySelector<HTMLElement>("[data-settings-loading]");
+  const fields = editor?.querySelector<HTMLElement>("[data-settings-fields]");
+  const actions = editor?.querySelector<HTMLElement>("[data-settings-actions]");
+  const result = editor?.querySelector<HTMLOutputElement>("[data-settings-result]");
+  const state = editor?.querySelector<HTMLElement>("[data-settings-state]");
+  const impact = document.querySelector<HTMLElement>("[data-settings-impact]");
+  let config: Config | null = null;
+  let etag: string | null = null;
+  let serverDraftHash = "";
+  const setting = editor?.dataset.settingsEditor;
+  const serviceIds: ServiceId[] = ["regular-sim", "pro-sim", "ps5"];
+  const input = <T extends HTMLInputElement>(selector: string) => editor?.querySelector<T>(selector) ?? null;
+  const setOutput = (message: string, error = false) => { if (result) { result.textContent = message; result.className = error ? "rc-output-error" : message ? "rc-output-success" : ""; } };
+  const money = (sen: number) => `RM${(sen / 100).toFixed(2).replace(/\.00$/, "")}`;
+  const activeRate = (serviceId: ServiceId) => config?.rates.filter((rate) => rate.serviceId === serviceId && !rate.effectiveUntil).at(-1);
+  const quickDiscount = () => config?.promotions.find((offer) => offer.promotionId === "quick-percentage-discount" && offer.type === "percentage");
+  const updatePriceProof = () => {
+    const percentage = Number(input('[data-discount-percentage]')?.value ?? 0);
+    for (const serviceId of serviceIds) {
+      const baseSen = Math.round(Number(input(`[data-base-price="${serviceId}"]`)?.value ?? 0) * 100);
+      const effective = Math.round(baseSen * (1 - percentage / 100));
+      const base = editor?.querySelector<HTMLElement>(`[data-price-base="${serviceId}"]`); const discount = editor?.querySelector<HTMLElement>(`[data-price-discount="${serviceId}"]`); const customer = editor?.querySelector<HTMLElement>(`[data-price-effective="${serviceId}"]`);
+      if (base) base.textContent = money(baseSen); if (discount) discount.textContent = `${percentage}%`; if (customer) customer.textContent = money(effective);
+    }
+  };
+  const populate = () => {
+    if (!config) return;
+    if (setting === "resources") {
+      for (const serviceId of serviceIds) {
+        const service = config.services.find((candidate) => candidate.serviceId === serviceId);
+        const resources = config.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle !== "retired");
+        const enabled = input(`[data-resource-enabled="${serviceId}"]`); const quantity = input(`[data-resource-quantity="${serviceId}"]`); const note = editor?.querySelector<HTMLElement>(`[data-resource-impact="${serviceId}"]`);
+        if (enabled) enabled.checked = service?.enabled ?? false; if (quantity) quantity.value = String(resources.length); if (note) note.textContent = `${resources.filter((resource) => resource.calendarManaged).length} private Calendar mapping(s) managed by the server.`;
+      }
+      const included = input('[data-controller="includedQuantity"]'); const maximum = input('[data-controller="maxAdditionalQuantity"]'); const price = input('[data-controller="additionalPrice"]');
+      if (included) included.value = String(config.controllers.includedQuantity); if (maximum) maximum.value = String(config.controllers.maxAdditionalQuantity); if (price) price.value = (config.controllers.additionalPriceSen / 100).toFixed(2);
+    } else if (setting === "hours") {
+      for (const [day, intervals] of Object.entries(config.hours.weekly)) {
+        const closed = input(`[data-hours-closed="${day}"]`); const open = input(`[data-hours-open="${day}"]`); const close = input(`[data-hours-close="${day}"]`); const interval = intervals[0];
+        if (closed) closed.checked = !interval; if (open) { open.value = interval?.open ?? "12:00"; open.disabled = !interval; } if (close) { close.value = interval?.close ?? "01:00"; close.disabled = !interval; }
+      }
+    } else if (setting === "pricing") {
+      for (const serviceId of serviceIds) { const field = input(`[data-base-price="${serviceId}"]`); if (field) field.value = String((activeRate(serviceId)?.amountSenPerResourceHour ?? 0) / 100); }
+      const discount = input('[data-discount-percentage]'); if (discount) discount.value = String((quickDiscount()?.percentageBasisPoints ?? 0) / 100); updatePriceProof();
+    } else if (setting === "offers") {
+      const summary = editor?.querySelector<HTMLElement>("[data-offer-summary]"); const enabled = config.promotions.filter((offer) => offer.state === "enabled"); if (summary) summary.textContent = enabled.length ? `${enabled.length} enabled structured offer(s).` : "No active offers.";
+    } else if (setting === "rules") {
+      editor?.querySelectorAll<HTMLInputElement>("[data-booking-rule]").forEach((field) => { field.value = String(config!.bookingRules[field.dataset.bookingRule as "slotIntervalMinutes" | "customerMinimumNoticeMinutes" | "totalGroupLimit"]); });
+      const horizon = input("[data-booking-horizon]"); if (horizon) horizon.value = String(config.bookingRules.horizon.value);
+      editor?.querySelectorAll<HTMLInputElement>("[data-booking-duration]").forEach((field) => { field.checked = config!.bookingRules.allowedDurationsMinutes.includes(Number(field.value)); });
+    }
+  };
+  const applyForm = () => {
+    if (!config) return;
+    if (setting === "resources") {
+      for (const serviceId of serviceIds) {
+        const enabled = Boolean(input(`[data-resource-enabled="${serviceId}"]`)?.checked); const quantity = Number(input(`[data-resource-quantity="${serviceId}"]`)?.value ?? 0);
+        const service = config.services.find((candidate) => candidate.serviceId === serviceId); if (service) service.enabled = enabled;
+        const current = config.resources.filter((resource) => resource.serviceId === serviceId).sort((a,b) => a.resourceId.localeCompare(b.resourceId));
+        for (let index = 0; index < Math.max(quantity, current.length); index += 1) {
+          const resource = current[index];
+          if (resource) { resource.lifecycle = index < quantity ? (resource.calendarManaged ? "active" : "draft") : "retired"; resource.retiredFrom = index < quantity ? null : new Date().toISOString(); }
+          else config.resources.push({ resourceId: `${serviceId.replace("-sim", "")}-${String(index + 1).padStart(2,"0")}`, serviceId, displayName: `${service?.serviceId === "ps5" ? "PS5 Lounge" : serviceId === "pro-sim" ? "Pro Rig" : "Regular Rig"} ${String(index + 1).padStart(2,"0")}`, lifecycle: "draft", activeFrom: null, retiredFrom: null, controllerCapacity: null, calendarRef: null, calendarManaged: false });
+        }
+        config.bookingRules.perServiceGroupLimits[serviceId] = enabled ? quantity : 0;
+      }
+      config.controllers.includedQuantity = Number(input('[data-controller="includedQuantity"]')?.value); config.controllers.maxAdditionalQuantity = Number(input('[data-controller="maxAdditionalQuantity"]')?.value); config.controllers.additionalPriceSen = Math.round(Number(input('[data-controller="additionalPrice"]')?.value) * 100);
+    } else if (setting === "hours") {
+      for (const day of Object.keys(config.hours.weekly)) { const closed = input(`[data-hours-closed="${day}"]`)?.checked; const open = input(`[data-hours-open="${day}"]`)?.value ?? ""; const close = input(`[data-hours-close="${day}"]`)?.value ?? ""; config.hours.weekly[day] = closed ? [] : [{ open, close, closeDayOffset: close <= open ? 1 : 0 }]; }
+    } else if (setting === "pricing") {
+      for (const serviceId of serviceIds) { const rate = activeRate(serviceId); if (rate) rate.amountSenPerResourceHour = Math.round(Number(input(`[data-base-price="${serviceId}"]`)?.value) * 100); }
+      const percentageBasisPoints = Math.round(Number(input('[data-discount-percentage]')?.value) * 100); const offer = quickDiscount();
+      if (offer) { offer.percentageBasisPoints = percentageBasisPoints; offer.state = percentageBasisPoints > 0 ? "enabled" : "paused"; }
+      else config.promotions.push({ promotionId: "quick-percentage-discount", type: "percentage", label: "Quick percentage discount", state: percentageBasisPoints > 0 ? "enabled" : "paused", percentageBasisPoints, priority: 0, eligibility: { serviceIds, weekdays: [0,1,2,3,4,5,6], startDate: null, endDate: null, startTime: null, endTime: null, channels: ["public","owner","walk-in"], durationMinutes: [30,60,90,120] }, terms: "" });
+    } else if (setting === "rules") {
+      editor?.querySelectorAll<HTMLInputElement>("[data-booking-rule]").forEach((field) => { (config!.bookingRules as unknown as Record<string,number>)[field.dataset.bookingRule!] = Number(field.value); }); const horizon = input("[data-booking-horizon]"); if (horizon) config.bookingRules.horizon.value = Number(horizon.value); config.bookingRules.allowedDurationsMinutes = [...editor!.querySelectorAll<HTMLInputElement>("[data-booking-duration]:checked")].map((field) => Number(field.value));
+    }
+    config.publishedAt = null;
+  };
+  async function loadDraft() {
+    if (!form) return;
+    try { const response = await fetch("/api/admin/config/draft", { cache: "no-store" }); const payload = await response.json() as { data?: Config; etag?: string | null; draftHash?: string; seeded?: boolean; error?: { message?: string } }; if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Draft unavailable."); config = payload.data; etag = payload.etag ?? null; serverDraftHash = payload.draftHash ?? ""; populate(); if (state) state.textContent = payload.seeded ? "Seed draft · not saved" : "Private draft"; loading?.setAttribute("hidden", ""); if (fields) fields.hidden = false; if (actions) actions.hidden = false; form.setAttribute("aria-busy", "false"); } catch (error) { if (loading) loading.textContent = error instanceof Error ? `${error.message} R2 setup or binding approval may still be required.` : "Draft unavailable."; if (state) state.textContent = "Setup required"; form.setAttribute("aria-busy", "false"); }
+  }
+  form?.addEventListener("change", (event) => { const target = event.target as HTMLInputElement; if (target.matches("[data-hours-closed]")) { const day = target.dataset.hoursClosed; editor?.querySelectorAll<HTMLInputElement>(`[data-hours-open="${day}"],[data-hours-close="${day}"]`).forEach((field) => { field.disabled = target.checked; }); } if (target.matches("[data-base-price],[data-discount-percentage]")) updatePriceProof(); setOutput(""); });
+  form?.addEventListener("submit", async (event) => { event.preventDefault(); if (!config || !form.reportValidity()) return; applyForm(); const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]'); if (submit) submit.disabled = true; setOutput("Saving versioned draft…"); try { const response = await fetch("/api/admin/config/draft", { method: "PUT", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ config, expectedEtag: etag }) }); const payload = await response.json() as { data?: Config; etag?: string; draftHash?: string; error?: { message?: string; fieldErrors?: Array<{path:string;message:string}> } }; if (!response.ok || !payload.data) throw new Error(`${payload.error?.message ?? "Draft could not be saved."}${payload.error?.fieldErrors?.length ? ` ${payload.error.fieldErrors.map((issue) => `${issue.path}: ${issue.message}`).join(" ")}` : ""}`); config = payload.data; etag = payload.etag ?? null; serverDraftHash = payload.draftHash ?? ""; if (state) state.textContent = "Saved private draft"; setOutput("Draft saved. Public pages are unchanged until a reviewed publication succeeds."); } catch (error) { setOutput(error instanceof Error ? error.message : "Draft could not be saved.", true); } finally { if (submit) submit.disabled = false; } });
+  editor?.querySelector<HTMLButtonElement>("[data-settings-review]")?.addEventListener("click", async () => { if (!config || !etag || !serverDraftHash) { setOutput("Save this draft before reviewing it.", true); return; } setOutput("Running publication impact review…"); try { const response = await fetch("/api/admin/config/review", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ draftHash: serverDraftHash }) }); const payload = await response.json() as { data?: { impactScanComplete: boolean; affectedBookingIds: string[]; validationErrors: Array<{message:string}> }; error?: {message?:string} }; if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Review unavailable."); if (impact) { impact.innerHTML = "<h2>Impact review</h2><p data-impact-copy></p>"; const copy = impact.querySelector<HTMLElement>("[data-impact-copy]"); if (copy) copy.textContent = payload.data.impactScanComplete ? `Review complete. ${payload.data.affectedBookingIds.length} affected booking(s).` : payload.data.validationErrors.map((issue) => issue.message).join(" "); } setOutput(payload.data.impactScanComplete ? "Review complete." : "Publication remains blocked until the impact scan is complete.", !payload.data.impactScanComplete); } catch (error) { setOutput(error instanceof Error ? error.message : "Review unavailable.", true); } });
+  void loadDraft();
+</script>

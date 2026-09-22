@@ -40,13 +40,13 @@ Calendar IDs are referenced only through server-side environment bindings. The b
 
 ### `GET /api/availability`
 
-Inputs: local date, requested line items (`regularSim`, `proSim`, or `ps5` quantities), and duration of 60 or 120 minutes.
+Inputs: local date, requested line items (`regularSim`, `proSim`, or `ps5` quantities), and a duration of 30, 60, 90, or 120 minutes.
 
 The endpoint validates the three-day horizon and one-hour notice, builds the relevant Asia/Kuala_Lumpur interval, applies opening/control-calendar constraints, queries FreeBusy for all candidate resources, and returns start times with aggregate capacity by tier. It returns no event metadata or personal data.
 
 ### `POST /api/bookings`
 
-Inputs: selected line items, duration, start time, customer name, mobile number, optional notes, Turnstile token, and idempotency key.
+Inputs: selected line items, duration, start time, customer name, mobile number, optional email, optional notes, PS5 additional-controller quantity where applicable, Turnstile token, and idempotency key.
 
 The endpoint enforces request size and content type, validates/sanitizes fields, verifies same-origin policy where applicable, verifies Turnstile, derives authoritative price and end time, and forwards a normalized command to the booking coordinator. The coordinator rechecks all calendars, allocates resources, and creates events.
 
@@ -64,7 +64,7 @@ Responses:
 
 1. Convert the requested local start to an absolute instant using `Asia/Kuala_Lumpur`; never calculate rules from the edge location’s timezone.
 2. Require start at least one hour from now and no more than three calendar days ahead under the final owner-approved horizon convention.
-3. Confirm the complete 60- or 120-minute interval lies inside the overnight business window.
+3. Confirm the complete 30-, 60-, 90-, or 120-minute interval lies inside the overnight business window.
 4. Reject any overlap with the Booking Control calendar.
 5. Query busy intervals for all candidate calendars.
 6. A resource is eligible only when no busy interval overlaps any part of the requested interval.
@@ -74,9 +74,9 @@ Responses:
 
 Overlap uses half-open intervals: `[start, end)`. Therefore an event ending at 8:00 PM does not conflict with one starting at 8:00 PM, enabling confirmed back-to-back sessions.
 
-### Manual owner booking policy update — 2026-09-16
+### Booking duration policy update — 2026-09-22
 
-Race Control/manual owner requests use the same Calendar authority, serialization, resource allocation and three-day horizon, but may start at any minute in the future and may use 30, 60 or 120 minutes without the customer-facing one-hour notice floor. Public customer requests retain the currently confirmed 60/120-minute and one-hour-notice policy until it is explicitly changed and published. Manual requests still must fit configured opening hours and cannot overlap busy resource or Booking Control events.
+Public and Race Control bookings support 30, 60, 90 and 120 minutes. Public availability starts remain aligned to 30-minute increments and retain the one-hour notice floor. Race Control/manual owner requests use the same Calendar authority, serialization, resource allocation and three-day horizon, but may start at any future minute without the public notice floor. Every request must fit configured opening hours and cannot overlap busy resource or Booking Control events.
 
 ## Concurrency strategy
 
@@ -109,8 +109,8 @@ Example title:
 
 Example private description content for staff:
 
-- Customer name and phone.
-- Service and resource quantity.
+- Customer name, phone, and optional email.
+- Service and resource quantity, plus included/additional/total PS5 controllers when applicable.
 - Start/end and duration.
 - Authoritative total price and promotion applied, if any.
 - Booking ID and `xerom.my` source.
@@ -143,7 +143,7 @@ The server derives price from versioned configuration:
 - Regular Sim: RM20 per rig-hour.
 - Pro Sim: RM30 per rig-hour.
 - PS5: RM18 per lounge-hour including two controllers.
-- Additional PS5 controllers: RM3 each, subject to an owner-confirmed maximum.
+- PS5 includes two controllers. Up to six additional controllers may be selected at RM3 each per booking, independent of duration.
 
 The total is the sum of each line item multiplied by duration hours, plus configured add-ons, followed by an explicitly active promotion rule. The browser never submits a trusted total. A booking event records both the amount and a pricing-configuration version so later price edits do not obscure what the customer saw.
 

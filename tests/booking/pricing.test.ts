@@ -11,8 +11,8 @@ describe("authoritative pricing", () => {
     expect(result.total).toBe(140);
   });
 
-  it("adds PS5 controllers per booked hour", () => {
-    expect(calculateTotal([{ serviceId: "ps5", quantity: 1, additionalControllers: 1 }], 120).total).toBe(42);
+  it("adds PS5 controllers once per booking", () => {
+    expect(calculateTotal([{ serviceId: "ps5", quantity: 1, additionalControllers: 1 }], 120).total).toBe(39);
   });
 
   it("prices a 30-minute manual session proportionally", () => {

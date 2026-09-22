@@ -11,8 +11,14 @@ const { live = false } = Astro.props;
       <div><dt>Status</dt><dd><span class="rc-status" data-live-status>—</span></dd></div>
       <div><dt>When</dt><dd data-live-when>—</dd></div>
       <div><dt>Resource</dt><dd data-live-resource>—</dd></div>
+      <div><dt>Customer</dt><dd data-live-customer>—</dd></div>
+      <div><dt>Phone</dt><dd><a data-live-phone>—</a></dd></div>
+      <div data-live-email-row><dt>Email</dt><dd><a data-live-email>—</a></dd></div>
+      <div><dt>Duration</dt><dd data-live-duration>—</dd></div>
+      <div data-live-controller-row><dt>Controllers</dt><dd data-live-controllers>—</dd></div>
       <div><dt>Calendar event</dt><dd data-live-summary>—</dd></div>
     </dl>
+    <a class="rc-button rc-button-primary rc-whatsapp-customer" data-live-whatsapp hidden target="_blank" rel="noopener noreferrer">WhatsApp customer</a>
     <div class="rc-live-actions" data-rc-live-actions hidden>
       <p>Actions update every linked Calendar event conditionally.</p>
       <label><input type="checkbox" data-live-release /> Release remaining time when completing</label>
@@ -29,7 +35,9 @@ const { live = false } = Astro.props;
 </aside>
 
 {live && <script>
-  type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; start: string; end: string };
+  import { normalizeMalaysianMobile } from "@/lib/booking/phone";
+  type BookingDetails = { customerName: string; customerPhone: string; customerEmail?: string; durationMinutes: number; includedControllers: number; additionalControllers: number; totalControllers: number; priceTotal: number | null; createdAt: string | null };
+  type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; serviceId: string; start: string; end: string; bookingDetails: BookingDetails };
   const inspectorHeading = document.querySelector<HTMLElement>("#selected-booking");
   const inspectorEmpty = document.querySelector<HTMLElement>("[data-rc-live-empty]");
   const inspectorDetails = document.querySelector<HTMLElement>("[data-rc-live-details]");
@@ -37,6 +45,9 @@ const { live = false } = Astro.props;
   const inspectorActions = document.querySelector<HTMLElement>("[data-rc-live-actions]");
   const releaseInput = document.querySelector<HTMLInputElement>("[data-live-release]");
   const actionResult = document.querySelector<HTMLOutputElement>("[data-live-action-result]");
+  const whatsappLink = document.querySelector<HTMLAnchorElement>("[data-live-whatsapp]");
+  const emailRow = document.querySelector<HTMLElement>("[data-live-email-row]");
+  const controllerRow = document.querySelector<HTMLElement>("[data-live-controller-row]");
   let selectedEvent: SelectedEvent | null = null;
   const clearInspector = () => {
     selectedEvent = null;
@@ -46,12 +57,14 @@ const { live = false } = Astro.props;
     if (inspectorActions) inspectorActions.hidden = true;
     if (inspectorNote) inspectorNote.hidden = true;
     if (actionResult) actionResult.textContent = "";
+    if (whatsappLink) whatsappLink.hidden = true;
   };
   const setInspectorValue = (selector: string, value: string) => { const target = document.querySelector<HTMLElement>(selector); if (target) target.textContent = value; };
   const formatInspectorWhen = (start: string, end: string) => {
     const formatter = new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" });
     return `${formatter.format(new Date(start))}–${formatter.format(new Date(end))}`;
   };
+  const formatDuration = (minutes: number) => minutes === 30 ? "30 minutes" : minutes === 60 ? "1 hour" : minutes === 90 ? "1 hour 30 minutes" : minutes === 120 ? "2 hours" : `${minutes} minutes`;
   const syncActionVisibility = () => {
     if (!inspectorActions || !selectedEvent) return;
     const status = selectedEvent.status.toLowerCase();
@@ -75,6 +88,20 @@ const { live = false } = Astro.props;
     setInspectorValue("[data-live-when]", formatInspectorWhen(selectedEvent.start, selectedEvent.end));
     setInspectorValue("[data-live-resource]", selectedEvent.resourceName);
     setInspectorValue("[data-live-summary]", selectedEvent.summary);
+    setInspectorValue("[data-live-customer]", selectedEvent.bookingDetails.customerName || "Not stored");
+    setInspectorValue("[data-live-duration]", formatDuration(selectedEvent.bookingDetails.durationMinutes));
+    const phone = document.querySelector<HTMLAnchorElement>("[data-live-phone]");
+    if (phone) { phone.textContent = selectedEvent.bookingDetails.customerPhone || "Not stored"; phone.removeAttribute("href"); if (selectedEvent.bookingDetails.customerPhone) phone.href = `tel:${selectedEvent.bookingDetails.customerPhone}`; }
+    const email = document.querySelector<HTMLAnchorElement>("[data-live-email]");
+    if (emailRow) emailRow.hidden = !selectedEvent.bookingDetails.customerEmail;
+    if (email && selectedEvent.bookingDetails.customerEmail) { email.textContent = selectedEvent.bookingDetails.customerEmail; email.href = `mailto:${selectedEvent.bookingDetails.customerEmail}`; }
+    if (controllerRow) controllerRow.hidden = selectedEvent.serviceId !== "ps5";
+    if (selectedEvent.serviceId === "ps5") setInspectorValue("[data-live-controllers]", `${selectedEvent.bookingDetails.includedControllers} included + ${selectedEvent.bookingDetails.additionalControllers} additional = ${selectedEvent.bookingDetails.totalControllers} total`);
+    const normalizedPhone = normalizeMalaysianMobile(selectedEvent.bookingDetails.customerPhone);
+    if (whatsappLink) {
+      whatsappLink.hidden = !selectedEvent.bookingId || !normalizedPhone;
+      if (selectedEvent.bookingId && normalizedPhone) whatsappLink.href = `https://wa.me/${normalizedPhone.slice(1)}?text=${encodeURIComponent(`Hi ${selectedEvent.bookingDetails.customerName || "there"}, this is Xerom regarding booking ${selectedEvent.bookingId}.`)}`;
+    }
     syncActionVisibility();
   });
   window.addEventListener("race-control:selection-clear", clearInspector);

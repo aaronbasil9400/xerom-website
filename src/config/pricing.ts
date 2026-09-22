@@ -7,8 +7,15 @@ export const pricing = {
   services: {
     "regular-sim": { hourlyRate: 20, compareAtHourlyRate: 22 },
     "pro-sim": { hourlyRate: 30, compareAtHourlyRate: 35 },
-    ps5: { hourlyRate: 18, compareAtHourlyRate: 20, includedControllers: 2, additionalControllerRate: 3 },
-  } satisfies Record<ServiceId, Record<string, number>>,
+    ps5: {
+      hourlyRate: 18,
+      compareAtHourlyRate: 20,
+      includedControllers: 2,
+      maxAdditionalControllers: 6,
+      additionalControllerRate: 3,
+      additionalControllerBillingUnit: "per-booking",
+    },
+  } satisfies Record<ServiceId, Record<string, number | string>>,
   promotions: [
     {
       id: "instagram-follow-tag",

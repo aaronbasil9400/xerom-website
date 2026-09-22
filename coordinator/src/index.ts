@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { bookingRequestSchema } from "../../src/lib/booking/schema";
 import { validateBookingOperatingWindow, validateBookingWindow, overlaps } from "../../src/lib/booking/time";
 import { manualBookingRules } from "../../src/config/booking";
+import { pricing } from "../../src/config/pricing";
 import { calendarGroups, allCalendarIds, resourceIdForCalendar, calendarIdForResource } from "../../src/lib/booking/resources";
 import { CalendarMutationUncertainError, queryFreeBusy, insertEvent, deleteEvent, listCalendarEvents, patchCalendarEvent, type CalendarEventPatch, type CalendarEventRecord } from "../../src/lib/google/calendar";
 import { calculateTotal } from "../../src/lib/booking/pricing";
@@ -10,6 +11,7 @@ import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
 import { blockTimeRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
 import { applyGroupedMutation, GroupedMutationError, lifecycleTransitionAllowed, type GroupedMutationStep } from "./grouped-mutation";
+import { SerializedExecutor } from "./serialized-executor";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
@@ -21,7 +23,7 @@ type RecoveryFence = { operationId: string; resourceId: string; start: string; e
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 export class BookingCoordinator extends DurableObject<Env> {
-  private mutationTail: Promise<void> = Promise.resolve();
+  private readonly mutations = new SerializedExecutor();
 
   async fetch(request: Request): Promise<Response> {
     if (request.method !== "POST") return reply({ error: "Method not allowed." }, 405);
@@ -34,7 +36,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     const bookingSource = request.headers.get("x-xerom-source") === "race-control-owner" ? "race-control-owner" : "xerom.my";
     const windowError = validateBookingWindow(booking.start, booking.durationMinutes, new Date(), bookingSource === "race-control-owner" ? manualBookingRules : undefined);
     if (windowError) return reply({ error: windowError }, 400);
-    return this.runSerialized(async () => {
+    return this.mutations.run(async () => {
       const hash = await hashPayload(booking);
       const key = `attempt:${booking.idempotencyKey}`;
       const prior = await this.ctx.storage.get<Attempt>(key);
@@ -52,6 +54,7 @@ export class BookingCoordinator extends DurableObject<Env> {
       const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
       const customerName = sanitizeCalendarText(booking.customer.name);
       const customerPhone = sanitizeCalendarText(booking.customer.phone);
+      const customerEmail = booking.customer.email ? sanitizeCalendarText(booking.customer.email) : "";
       const customerNotes = booking.customer.notes ? sanitizeCalendarText(booking.customer.notes) : "";
 
       try {
@@ -83,6 +86,9 @@ export class BookingCoordinator extends DurableObject<Env> {
         const bookingId = createBookingId();
         const price = calculateTotal(booking.items, booking.durationMinutes);
         for (const [serviceId, calendarIds] of allocations) {
+          const selectedItem = booking.items.find((item) => item.serviceId === serviceId);
+          const includedControllers = serviceId === "ps5" ? pricing.services.ps5.includedControllers * requested[serviceId] : 0;
+          const additionalControllers = serviceId === "ps5" ? selectedItem?.additionalControllers ?? 0 : 0;
           for (const calendarId of calendarIds) {
             const eventId = (await hashPayload({ attempt: booking.idempotencyKey, calendarId })).slice(0, 28);
             const event = {
@@ -92,8 +98,12 @@ export class BookingCoordinator extends DurableObject<Env> {
               description: [
                 `Customer: ${customerName}`,
                 `Phone: ${customerPhone}`,
+                customerEmail ? `Email: ${customerEmail}` : "",
                 `Service: ${serviceCore[serviceId].name}`,
                 `Duration: ${booking.durationMinutes} minutes`,
+                serviceId === "ps5" ? `Included controllers: ${includedControllers}` : "",
+                serviceId === "ps5" ? `Additional controllers: ${additionalControllers}` : "",
+                serviceId === "ps5" ? `Total controllers: ${includedControllers + additionalControllers}` : "",
                 `Booking ID: ${bookingId}`,
                 `Total booking price: RM${price.total}`,
                 customerNotes ? `Notes: ${customerNotes}` : "",
@@ -111,7 +121,16 @@ export class BookingCoordinator extends DurableObject<Env> {
                 quantity: String(requested[serviceId]),
                 status: "confirmed",
                 createdAt: new Date().toISOString(),
-                pricingVersion: price.version,
+                 pricingVersion: price.version,
+                 customerName,
+                 customerPhone,
+                 ...(customerEmail ? { customerEmail } : {}),
+                 priceTotal: String(price.total),
+                 ...(serviceId === "ps5" ? {
+                  includedControllers: String(includedControllers),
+                  additionalControllers: String(additionalControllers),
+                  totalControllers: String(includedControllers + additionalControllers),
+                } : {}),
               },
             };
             await insertEvent(env, event);
@@ -149,7 +168,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     const idempotencyKey = typeof incoming?.idempotencyKey === "string" ? incoming.idempotencyKey : "";
     if (!actionParsed.success || !/^[A-Za-z0-9_-]{8,128}$/.test(idempotencyKey)) return reply({ error: "Invalid booking action." }, 400);
     const action = actionParsed.data;
-    return this.runSerialized(async () => {
+    return this.mutations.run(async () => {
       const hash = await hashPayload({ action, idempotencyKey });
       const key = `action:${idempotencyKey}`;
       const prior = await this.ctx.storage.get<ActionAttempt>(key);
@@ -268,7 +287,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     const parsed = blockTimeRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid block command." }, 400);
     const block = parsed.data;
-    return this.runSerialized(async () => {
+    return this.mutations.run(async () => {
       const hash = await hashPayload(block);
       const key = `block:${block.idempotencyKey}`;
       const prior = await this.ctx.storage.get<BlockAttempt>(key);
@@ -327,18 +346,6 @@ export class BookingCoordinator extends DurableObject<Env> {
     }
     const fences = await this.activeRecoveryFences(start, end);
     return reply({ fences: fences.map(({ resourceId, start: fenceStart, end: fenceEnd }) => ({ resourceId, start: fenceStart, end: fenceEnd })) });
-  }
-
-  private async runSerialized<T>(operation: () => Promise<T>): Promise<T> {
-    const previous = this.mutationTail;
-    let release!: () => void;
-    this.mutationTail = new Promise<void>((resolve) => { release = resolve; });
-    await previous;
-    try {
-      return await operation();
-    } finally {
-      release();
-    }
   }
 
   private async listBlockingEvents(

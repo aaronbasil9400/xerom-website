@@ -1,5 +1,44 @@
 # QA Report
 
+## Website upgrade implementation checkpoint — 2026-09-22
+
+Environment: local Astro/Cloudflare development, mock public booking API, no R2 binding, no deployment and no Calendar mutation.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro/TypeScript/lint diagnostics | Pass | `npm run check`: 0 errors, 0 warnings, 0 hints across 121 files |
+| Unit/contract tests | Pass | `npm test`: 92/92 across 21 files, including all durations, CSV escaping, image validation, rate-limit adapter and exactly-one-winner serialization |
+| Production build | Pass | `npm run build`: Cloudflare server build completed |
+| Media manifest | Pass | `npm run assets:verify`: 21/21 derivatives |
+| Coordinator compile | Pass | `npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` |
+| Diff hygiene | Pass | `git diff --check` returned no findings |
+| Full responsive E2E | Pass | `npx playwright test --workers=1`: 69 passed, 33 intentional viewport/project skips at 375, 390, 430, 768, 1024 and 1440 |
+| Production availability UI | Pass locally | Today auto-load, approved single-row indicators, mixed resources, accessible names and no 375px overflow are asserted |
+| Customer confirmation | Pass locally | Optional email, controllers, resource summary, booking success independent of WhatsApp and fallback CTA are asserted |
+| Race Control settings/publishing | Pass locally at code boundary | Editors, redacted seed, combined filters, CSV download contract, hero requirements and no overflow pass all widths |
+| Impeccable detector | Advisory | Existing shared CSS type/color ramp findings and old side-tab declarations remain; shipped active-nav override is 1px. No new blocking detector category. |
+
+The first full E2E pass found 13px horizontal overflow on the Publishing page at 768px. The uploader now collapses to one column at 900px and constrains the file input; a focused rerun and the subsequent full run pass.
+
+Not marked complete externally: live R2 draft/media writes, impact-scan publication, Calendar provisioning, configured rate-limit bindings, uploaded hero cutover, enriched protected live-inspector selection, production Turnstile and deployed-origin verification. No external account or business-data mutation occurred.
+
+## Website upgrade mockup checkpoint — 2026-09-22
+
+Scope verified at this checkpoint: canonical config/booking changes, homepage navigation/order/placeholders, booking Setup controls, Race Control manual-booking field parity, and the standalone availability-indicator mockup. The production availability indicator, automatic availability load, downstream customer/Race Control/settings/publishing work, external services, and deployment were not exercised and are not claimed complete.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro/TypeScript diagnostics | Pass | `npm run check`: 0 errors, 0 warnings, 0 hints across 112 files |
+| Unit/contract tests | Pass | `npm test`: 81/81 across 18 files |
+| Production build | Pass | `npm run build`: Cloudflare server build completed |
+| Targeted responsive E2E | Pass | `npx playwright test tests/e2e/site.spec.ts tests/e2e/race-control.spec.ts --workers=1`: 49 passed, 23 intentional responsive skips across 375, 390, 430, 768, 1024 and 1440 widths |
+| Homepage/placeholder routes | Pass | E2E covered `/`, `/events`, `/whats-new`, `/membership`, existing core routes, broken images, console failures and overflow |
+| Booking Setup | Pass | E2E covered four durations, maximum warning, PS5 controller reveal and 0–6 choices at 375px; happy path passed all six widths |
+| Availability mockup | Awaiting owner approval | `docs/mockups/availability-indicators.html`; captures at `.impeccable/review/availability-mockup/desktop.png` and `mobile.png` |
+| Impeccable detector | Degraded/advisory | Optional parser modules unavailable, so regex fallback undercounted findings. New mockup Arial warning was removed. Existing shared CSS ramp advisories and the brief-required membership pill remain documented, not represented as a clean detector pass. |
+
+No Cloudflare account/configuration change, R2 activation, deployment, Google Calendar write, Calendar deletion, or production mutation occurred in this checkpoint.
+
 ## Merge-hardening verification — 2026-09-19 (in progress)
 
 Initial merge audit against freshly fetched `origin/main`: feature branch was 0 behind / 55 commits ahead. Existing checks passed: Astro diagnostics 0, Vitest 68/68, production build, media manifest, generated Worker type freshness, website dry-run, coordinator dry-run, and six-width Playwright (55 passed with 23 intentional viewport-specific skips). `git diff --check` exposed committed trailing whitespace. Read-only Cloudflare inspection confirmed the latest branch build for `1a4104f` succeeded, production remained on version `f3cefffa`, the active website Durable Object binding already targeted `xerom-race-control-coordinator`, coordinator version `e5f71ac7` was at 100%, and coordinator logs/traces were enabled. Production and branch availability returned live `200`; branch Race Control redirected to Access; the coordinator public entry point returned `404`. No external writes were performed.

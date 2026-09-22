@@ -136,3 +136,28 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Treat all-day Google Calendar events as Malaysia-local blocking intervals and apply the same opening-hours, horizon, venue-control, lifecycle-state, and conflict checks to owner reschedules/extensions.
 - Keep edge rate limiting as a high-priority, explicitly deferred post-demo launch task per owner instruction; the deferral does not satisfy the public-launch gate.
 - Enable website Worker logs at full sampling and traces at 10%, matching the coordinator, so the production cutover has searchable failure evidence without logging booking payloads or personal data.
+
+## 2026-09-22 — Website upgrade contract
+
+- Adopt the supplied Feature Upgrade & Implementation Brief as the new product requirement for public 30/60/90/120-minute sessions, 30-minute slots, optional booking email, and online PS5 controller selection.
+- Charge RM3 once per additional controller per booking. A PS5 booking includes two controllers and permits up to six additional controllers.
+- Keep Google Calendar as the booking system of record. Do not introduce a conventional database; continue with private R2 revisions for runtime business configuration/media and Durable Object state for serialization/recovery.
+- Implement the R2 integration in code but do not activate R2, accept billing terms, or change the Cloudflare account without a separate owner approval.
+- Preserve the hard availability-UI approval gate: produce desktop and mobile mockups, then stop before implementing the production indicator component.
+
+## 2026-09-22 — Calendar booking projection and CSV shape
+
+- Continue treating grouped Google Calendar events as the booking record. Race Control derives one normalized record from private metadata with description fallbacks for legacy events; no customer directory or booking database is introduced.
+- Export one CSV row per booking/service line so mixed-service reservations remain analytically usable. Customer/booking fields repeat per line, while quantity, controller and Calendar event ID values stay attributable to the service.
+- Store new booking customer/contact and total-price metadata in private Calendar extended properties as well as the human-readable description. Do not send these fields to analytics or logs.
+
+## 2026-09-22 — Private draft/media security boundary
+
+- Never return resource Calendar references from the owner draft API. The browser receives a redacted projection; managed references are restored server-side by resource ID before schema validation and conditional R2 writes.
+- Preserve the existing homepage hero contract: exact 16:9 composition, 1600×900 upload master minimum/recommendation, JPEG/PNG/WebP, and 8 MB maximum. Uploaded objects remain private R2 data and are served through an allowlisted immutable media route only after publication references the asset.
+- R2 remains an explicit owner gate. Code may show an unsaved seed and validation UI, but must not claim persistence or publication without configured bindings and a completed impact scan.
+
+## 2026-09-22 — Edge rate limiting
+
+- Use Cloudflare Workers Rate Limiting bindings as permissive abuse protection, not as concurrency control. Public anonymous limits use generous route-plus-IP keys; owner actions use the authenticated Access actor ID.
+- Keep bindings optional for local development and document the production namespace setup separately. The Durable Object serialized reread remains the only final-resource allocation authority.

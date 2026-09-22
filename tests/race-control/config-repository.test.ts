@@ -48,7 +48,7 @@ describe("R2 config repository contract", () => {
     const revision = { ...createSeedConfig(refs), revisionId: "revision-1", publishedAt: "2026-09-16T13:00:00+08:00" };
     await repository.writeImmutableRevision(revision);
     await expect(repository.writeImmutableRevision(revision)).rejects.toBeInstanceOf(ConfigConflictError);
-    const active = await repository.activate({ schemaVersion: 1, revisionId: "revision-1", activatedAt: "2026-09-16T13:00:01+08:00", operationId: "operation-123" }, null);
+    const active = await repository.activate({ schemaVersion: 2, revisionId: "revision-1", activatedAt: "2026-09-16T13:00:01+08:00", operationId: "operation-123" }, null);
     expect(active.value.revisionId).toBe("revision-1");
     const loaded = await repository.readActive();
     expect(loaded.config.revisionId).toBe("revision-1");

@@ -2,12 +2,13 @@ import { listCalendarEvents, type CalendarEventRecord } from "@/lib/google/calen
 import type { ServiceId } from "@/config/service-core";
 import { bookingRules } from "@/config/booking";
 import { localIso, localWeekday } from "@/lib/booking/time";
+import { extractBookingEventDetails, type BookingEventDetails } from "@/lib/race-control/bookings";
 
 export interface ScheduleResource {
   resourceId: string;
   serviceId: ServiceId | "control";
   displayName: string;
-  events: Array<CalendarEventRecord & { resourceId: string; serviceId: ServiceId | "control" }>;
+  events: Array<CalendarEventRecord & { resourceId: string; serviceId: ServiceId | "control"; bookingDetails: BookingEventDetails }>;
 }
 
 export interface ScheduleWindow {
@@ -54,7 +55,7 @@ export async function loadRaceControlSchedule(env: CloudflareEnv, businessDate: 
   const resources = registry(env) as Array<ScheduleResource & { calendarId: string }>;
   await Promise.all(resources.map(async (resource) => {
     const events = await listCalendarEvents(env, resource.calendarId, timeMin, timeMax);
-    resource.events = events.filter((event) => event.status !== "cancelled" && event.transparency !== "transparent").map((event) => ({ ...event, resourceId: resource.resourceId, serviceId: resource.serviceId }));
+    resource.events = events.filter((event) => event.status !== "cancelled" && event.transparency !== "transparent").map((event) => ({ ...event, resourceId: resource.resourceId, serviceId: resource.serviceId, bookingDetails: extractBookingEventDetails(event) }));
   }));
   return { businessDate, serverNow: new Date().toISOString(), businessWindow, resources: resources.map(({ calendarId: _calendarId, ...resource }) => resource) };
 }

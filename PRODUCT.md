@@ -99,3 +99,10 @@ Target WCAG 2.2 AA for the public experience. Booking must support keyboard navi
 - Adding resources automatically provisions calendars after explicit confirmation. Calendar deletion also requires explicit confirmation; history-preserving retirement and nonempty-calendar deletion policy are specified in the plan.
 - Preserve the existing visual direction and official wordmark.
 - Implementation specification and proposed engineering defaults: [Race Control plan](docs/RACE_CONTROL_PLAN.md). Agent entry point: [Race Control handoff](docs/agent/RACE_CONTROL_HANDOFF.md). These documents describe planned behavior; they do not certify implementation.
+
+## Owner update — 2026-09-22 website upgrade
+
+- Public and owner bookings support 30, 60, 90, and 120 minutes in 30-minute availability increments. This supersedes the earlier public 60/120-minute and manual 30/60/120-minute defaults.
+- Public bookings may collect an optional email address. If supplied, it must be validated and stored with the private Calendar booking for Race Control and CSV export. Email delivery remains out of scope: `TODO: Implement booking confirmation email backend.`
+- A PS5 lounge includes two controllers. Customers may select up to six additional controllers. Each additional controller costs RM3 once per booking, regardless of session length.
+- Business Settings and Publishing should use the planned private R2 configuration/media architecture, but implementation is code-only until the owner separately approves account-level R2 activation or billing/terms changes.

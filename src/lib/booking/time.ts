@@ -1,5 +1,5 @@
 import { bookingRules } from "@/config/booking";
-import type { AvailabilitySlot, BusyByCalendar } from "./types";
+import type { AvailabilitySlot, BookingDurationMinutes, BusyByCalendar } from "./types";
 import type { ServiceId } from "@/config/service-core";
 
 const MALAYSIA_OFFSET = "+08:00";
@@ -101,7 +101,7 @@ export function validateBookingOperatingWindow(start: string, end: string, enfor
         && (!enforceSlotAlignment || (relativeStart - open) % bookingRules.slotIntervalMinutes === 0);
     });
   });
-  if (!containingWindow) return enforceSlotAlignment ? "Choose an hourly slot during opening hours." : "Choose a slot during opening hours.";
+  if (!containingWindow) return enforceSlotAlignment ? `Choose a ${bookingRules.slotIntervalMinutes}-minute slot during opening hours.` : "Choose a slot during opening hours.";
   return null;
 }
 
@@ -120,7 +120,7 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
   );
 }
 
-export function generateCandidateSlots(date: string, durationMinutes: 60 | 120, now = new Date()): Array<{ start: string; end: string }> {
+export function generateCandidateSlots(date: string, durationMinutes: BookingDurationMinutes, now = new Date()): Array<{ start: string; end: string }> {
   const windows = bookingRules.weeklyHours[localWeekday(date)] ?? [];
   const slots: Array<{ start: string; end: string }> = [];
   for (const window of windows) {

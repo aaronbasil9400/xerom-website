@@ -1,13 +1,13 @@
 import { pricing, pricingVersion } from "@/config/pricing";
-import type { BookingLineItem } from "./types";
+import type { BookingDurationMinutes, BookingLineItem } from "./types";
 
-export function calculateTotal(items: BookingLineItem[], durationMinutes: 30 | 60 | 120) {
+export function calculateTotal(items: BookingLineItem[], durationMinutes: BookingDurationMinutes) {
   const hours = durationMinutes / 60;
   const lines = items.filter((item) => item.quantity > 0).map((item) => {
     const config = pricing.services[item.serviceId];
     const base = config.hourlyRate * item.quantity * hours;
     const controllerAddOn = item.serviceId === "ps5"
-      ? (item.additionalControllers ?? 0) * pricing.services.ps5.additionalControllerRate * hours
+      ? (item.additionalControllers ?? 0) * pricing.services.ps5.additionalControllerRate
       : 0;
     return { ...item, amount: base + controllerAddOn };
   });

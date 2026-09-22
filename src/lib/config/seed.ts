@@ -22,8 +22,8 @@ const resourceSeeds: Array<{ resourceId: keyof SeedCalendarRefs["resources"]; se
 export function createSeedConfig(calendarRefs: SeedCalendarRefs, now = "2026-09-16T00:00:00+08:00"): ConfigRevision {
   const rateByService: Record<ServiceId, number> = { "regular-sim": 2_000, "pro-sim": 3_000, ps5: 1_800 };
   const draft = {
-    schemaVersion: 1,
-    revisionId: "seed-draft-v1",
+    schemaVersion: 2,
+    revisionId: "seed-draft-v2",
     parentRevision: null,
     publishedAt: null,
     actorId: "migration:compiled-config",
@@ -65,9 +65,16 @@ export function createSeedConfig(calendarRefs: SeedCalendarRefs, now = "2026-09-
     })),
     // Owner values for offers are unresolved. No synthetic or Instagram offer is activated.
     promotions: [],
+    controllers: {
+      serviceId: "ps5",
+      includedQuantity: 2,
+      maxAdditionalQuantity: 6,
+      additionalPriceSen: 300,
+      billingUnit: "per-booking",
+    },
     bookingRules: {
-      slotIntervalMinutes: 60,
-      allowedDurationsMinutes: [60, 120],
+      slotIntervalMinutes: 30,
+      allowedDurationsMinutes: [30, 60, 90, 120],
       customerMinimumNoticeMinutes: 60,
       horizon: { mode: "rolling-minutes", value: 4_320 },
       bufferMinutes: 0,

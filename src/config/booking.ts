@@ -1,8 +1,8 @@
 export const bookingRules = {
   timezone: "Asia/Kuala_Lumpur",
-  slotIntervalMinutes: 60,
-  allowedDurationsMinutes: [60, 120] as const,
-  durationErrorMessage: "Choose a one- or two-hour session.",
+  slotIntervalMinutes: 30,
+  allowedDurationsMinutes: [30, 60, 90, 120] as const,
+  durationErrorMessage: "Choose a 30-, 60-, 90-, or 120-minute session.",
   minimumNoticeMinutes: 60,
   maximumAdvanceMinutes: 72 * 60,
   bufferMinutes: 0,
@@ -20,13 +20,13 @@ export const bookingRules = {
 
 /**
  * Owner front-desk overrides. These apply only to Race Control/manual bookings;
- * public customer policy stays on the owner-confirmed values above until it is
- * explicitly changed and published through runtime configuration.
+ * public customer policy keeps its notice floor while owner bookings may start
+ * at any future minute.
  */
 export const manualBookingRules = {
   minimumNoticeMinutes: 0,
   maximumAdvanceMinutes: bookingRules.maximumAdvanceMinutes,
-  allowedDurationsMinutes: [30, 60, 120] as const,
-  durationErrorMessage: "Choose a 30-, 60-, or 120-minute session.",
+  allowedDurationsMinutes: bookingRules.allowedDurationsMinutes,
+  durationErrorMessage: bookingRules.durationErrorMessage,
   enforceSlotAlignment: false,
 } as const;

@@ -51,12 +51,11 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .brand { display: inline-flex; align-items: center; text-decoration: none; }
 .brand-logo { display: block; width: clamp(7.8rem, 12vw, 11rem); height: auto; }
 .footer-logo { display: block; width: 8.5rem; height: auto; margin-bottom: .6rem; }
-.desktop-nav { display: flex; justify-content: center; gap: clamp(1rem, 3vw, 2.5rem); }
+.desktop-nav { display: flex; justify-content: center; gap: clamp(.65rem, 1.5vw, 1.5rem); }
 .desktop-nav a, .footer-links a { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .desktop-nav a:hover, .footer-links a:hover { color: var(--paper); }
-.header-location { display: inline-flex; align-items: center; gap: .45rem; color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
-.header-location::before { content: ""; width: .55rem; height: .55rem; border-radius: 50% 50% 50% 0; background: var(--red); transform: rotate(-45deg); }
-.header-location:hover { color: var(--paper); }
+.header-membership { display: inline-flex; min-height: 2.65rem; align-items: center; justify-content: center; padding: .55rem 1rem; border-radius: 999px; background: var(--paper); color: var(--red-action); font-family: "Barlow Condensed", sans-serif; font-size: .82rem; font-weight: 900; letter-spacing: .06em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
+.header-membership:hover { background: white; color: #a91616; transform: translateY(-1px); }
 .button { display: inline-flex; min-height: 3.25rem; align-items: center; justify-content: center; gap: .9rem; padding: .75rem 1.25rem; border: 1px solid var(--paper); color: var(--paper); font-family: "Barlow Condensed", sans-serif; font-size: 1.05rem; font-style: italic; font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .3s var(--ease-out); cursor: pointer; }
 .button:hover { transform: translateY(-2px); }
 .button-primary { border-color: var(--red-action); background: var(--red-action); color: white; clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%); padding-inline: 1.7rem; }
@@ -137,6 +136,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .page-hero { padding-block: clamp(5rem, 11vw, 10rem) clamp(3rem, 7vw, 6rem); }
 .page-hero p { max-width: 56ch; }
 .notice { padding: 1rem 1.2rem; border: 1px solid #8b732b; background: #221d0d; color: #fff1b7; }
+.placeholder-page { padding-block: 1rem var(--section); }
+.placeholder-hero { position: relative; min-height: clamp(26rem, 62vw, 43rem); border: 1px solid var(--line); overflow: hidden; }
+.placeholder-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,8,8,.94), rgba(8,8,8,.08) 70%); }
+.placeholder-hero img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.placeholder-hero > div { position: absolute; z-index: 1; right: clamp(1rem, 5vw, 4rem); bottom: clamp(1.5rem, 5vw, 4rem); left: clamp(1rem, 5vw, 4rem); }
+.placeholder-status { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.placeholder-copy { display: grid; grid-template-columns: 1fr minmax(18rem, .7fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; padding-block: clamp(3rem, 8vw, 7rem); }
+.placeholder-copy h2 { margin: 0 0 1rem; font-family: "Barlow Condensed", sans-serif; font-size: clamp(2.2rem, 5vw, 4rem); font-style: italic; line-height: .95; text-transform: uppercase; }
+.placeholder-copy p { max-width: 62ch; color: var(--muted); }
+.placeholder-copy img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
 
 .booking-shell { scroll-margin-top: 7rem; margin-bottom: var(--section); border: 1px solid var(--line); background: var(--panel); }
 .booking-progress { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
@@ -149,10 +158,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .quantity-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; min-height: 5.5rem; padding: 1rem; border: 1px solid var(--line); background: var(--ink); }
 .quantity-row strong { display: block; font-family: "Barlow Condensed", sans-serif; font-size: 1.45rem; font-style: italic; text-transform: uppercase; }
 .quantity-row span { color: var(--muted); }
+.quantity-limit { grid-column: 1 / -1; min-height: 1.15rem; margin: -.45rem 0 0; color: #ff9d97; font-size: .85rem; }
 .stepper { display: grid; grid-template-columns: 2.8rem 3rem 2.8rem; align-items: center; }
 .stepper button { width: 2.8rem; height: 2.8rem; border: 1px solid var(--line); background: var(--panel-raised); color: var(--paper); font-size: 1.5rem; cursor: pointer; }
 .stepper input { width: 3rem; height: 2.8rem; border: 1px solid var(--line); border-inline: 0; background: var(--ink); color: var(--paper); font-weight: 700; text-align: center; appearance: textfield; }
 .stepper input::-webkit-inner-spin-button { appearance: none; }
+.controller-choice { display: grid; grid-template-columns: minmax(0,1fr) minmax(14rem,.55fr); gap: 1.5rem; align-items: center; margin-top: .75rem; padding: 1rem; border: 1px solid var(--line); background: var(--ink); }
+.controller-choice[hidden] { display: none; }
+.controller-choice > div strong, .controller-choice > div span { display: block; }
+.controller-choice > div strong { font-family: "Barlow Condensed", sans-serif; font-size: 1.3rem; font-style: italic; text-transform: uppercase; }
+.controller-choice > div span { margin-top: .35rem; color: var(--muted); }
+.controller-choice .field { margin: 0; }
+.controller-choice select { width: 100%; min-height: 3.25rem; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 0; background: var(--ink); color: var(--paper); }
 .duration-choice { display: flex; flex-wrap: wrap; gap: .75rem; margin: 2rem 0 0; padding: 0; border: 0; }
 .duration-choice legend { width: 100%; margin-bottom: .5rem; font-family: "Barlow Condensed", sans-serif; font-size: 1.2rem; font-weight: 700; text-transform: uppercase; }
 .duration-choice label { cursor: pointer; }
@@ -170,9 +187,28 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .field input, .field textarea { width: 100%; min-height: 3.25rem; border: 1px solid var(--line); border-radius: 0; background: var(--ink); color: var(--paper); padding: .8rem 1rem; caret-color: var(--red); }
 .field textarea { resize: vertical; }
 .slot-status { min-height: 1.75rem; margin-block: 1.25rem .75rem; color: var(--muted); }
-.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .65rem; }
+.availability-legend { display: flex; flex-wrap: wrap; gap: .55rem 1rem; margin-bottom: .8rem; color: var(--muted); font-size: .78rem; }
+.availability-legend:empty { display: none; }
+.availability-legend > span, .availability-signal-group { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+.availability-legend .availability-mark { margin-right: .15rem; }
+.slot-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .slot { min-height: 3.25rem; border: 1px solid var(--line); background: var(--ink); color: var(--paper); font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; }
-.slot:hover, .slot[aria-pressed="true"] { border-color: var(--red-action); background: var(--red-action); color: white; }
+.availability-slot { display: grid; grid-template-columns: 4.6rem minmax(0,1fr) auto; gap: .65rem; align-items: center; padding: .7rem .8rem; text-align: left; }
+.availability-time { font-family: "Barlow Condensed", sans-serif; font-size: 1.15rem; font-weight: 900; }
+.availability-signals { display: flex; min-width: 0; align-items: center; gap: .7rem; white-space: nowrap; }
+.availability-signal-group b { color: var(--muted); font-family: "Barlow Condensed", sans-serif; font-size: .7rem; letter-spacing: .04em; }
+.availability-mark { display: inline-block; width: .72rem; height: .72rem; flex: 0 0 auto; border: 2px solid currentColor; color: var(--paper); }
+.availability-mark-rig { border-radius: 50%; }
+.availability-mark-pro { transform: rotate(45deg); }
+.availability-mark-ps5 { border-radius: 1px; }
+.availability-mark.is-free { border-color: var(--red-action); background: var(--red-action); }
+.availability-mark.is-busy { border-color: #666; background: repeating-linear-gradient(135deg, transparent 0 2px, #666 2px 4px); color: #666; }
+.availability-state { color: var(--muted); font-size: .72rem; }
+.slot:hover:not([data-unavailable="true"]), .slot[aria-pressed="true"] { border-color: var(--red-action); background: var(--red-action); color: white; }
+.slot[aria-pressed="true"] .availability-mark.is-free { border-color: white; background: white; }
+.slot[data-unavailable="true"] { cursor: not-allowed; opacity: .68; }
+.slot[data-unavailable="true"] .availability-time { text-decoration: line-through; text-decoration-thickness: 2px; }
+.slot[data-unavailable="true"] .availability-state { color: #ff9d97; }
 .form-error { min-height: 1.5rem; margin: 1rem 0 0 !important; color: #ff9d97 !important; font-weight: 600; }
 .booking-review { display: grid; gap: .35rem; margin-block: 2rem 1rem; padding: 1.25rem; border: 1px solid var(--red); background: #170a0a; }
 .booking-review strong { font-family: "Barlow Condensed", sans-serif; font-size: 1.35rem; text-transform: uppercase; }
@@ -203,7 +239,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (max-width: 900px) {
   .site-header { grid-template-columns: 1fr auto auto; gap: .65rem; }
-  .desktop-nav, .header-cta, .header-location { display: none; }
+  .desktop-nav, .header-cta, .header-membership { display: none; }
   .mobile-book-cta { display: inline-flex; min-width: 5.5rem; min-height: 2.75rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--red-action); color: white; font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; }
   .menu-toggle { display: grid; width: 3rem; height: 3rem; place-content: center; gap: .45rem; border: 0; background: transparent; color: var(--paper); }
   .menu-toggle span:not(.sr-only) { display: block; width: 1.7rem; height: 2px; background: currentColor; }
@@ -227,6 +263,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .cta-panel { grid-template-columns: 1fr; align-items: start; }
   .visit-grid { grid-template-columns: 1fr 1fr; }
   .visit-grid > div:last-child { grid-column: 1 / -1; }
+  .placeholder-copy { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -262,6 +299,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .site-footer { grid-template-columns: 1fr; }
   .footer-links { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; }
   .field-grid, .visit-grid { grid-template-columns: 1fr; }
+  .controller-choice { grid-template-columns: 1fr; }
+  .slot-grid { grid-template-columns: 1fr; }
+  .availability-slot { grid-template-columns: 3.7rem minmax(0,1fr); gap: .5rem; }
+  .availability-state { grid-column: 2; }
+  .availability-signals { gap: .5rem; }
+  .availability-mark { width: .65rem; height: .65rem; }
   .visit-grid > div:last-child { grid-column: auto; }
   .booking-progress b { display: none; }
   .booking-progress span { justify-content: center; }

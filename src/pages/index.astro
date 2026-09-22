@@ -10,6 +10,17 @@ import { business, contactLinks } from "@/config/business";
 import { Image } from "astro:assets";
 import ArrowIcon from "@/components/ArrowIcon.astro";
 import "@/styles/home.css";
+import { env as cloudflareEnv } from "cloudflare:workers";
+import { getConfigRepository } from "@/lib/config/repository";
+
+let publishedHeroAssetId: string | null = null;
+try {
+  const { config } = await getConfigRepository(cloudflareEnv).readActive();
+  const candidate = config.websiteContent.homepage.heroAssetId;
+  if (candidate?.startsWith("hero-")) publishedHeroAssetId = candidate;
+} catch {
+  // Compiled placeholder remains the explicit fallback until R2 is activated and a draft is published.
+}
 ---
 
 <BaseLayout>
@@ -17,11 +28,11 @@ import "@/styles/home.css";
     <div class="home-flow">
       <section class="home-hero" aria-labelledby="hero-title" data-home-hero>
         <div class="home-hero-media">
-          <picture>
+          {publishedHeroAssetId ? <img class="home-hero-image hero-image" src={`/api/media/${publishedHeroAssetId}`} alt="" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" /> : <picture>
             <source type="image/avif" srcset={`${media.heroSources.heroAvif640.src} 640w, ${media.heroSources.heroAvif960.src} 960w, ${media.heroSources.heroAvif1600.src} 1600w`} sizes="(max-width: 900px) 100vw, 88rem" />
             <source type="image/webp" srcset={`${media.heroSources.heroWebp640.src} 640w, ${media.heroSources.heroWebp960.src} 960w, ${media.heroSources.heroWebp1600.src} 1600w`} sizes="(max-width: 900px) 100vw, 88rem" />
             <img class="home-hero-image hero-image" src={media.hero.src} alt="Illustrative placeholder showing friends enjoying sim racing; replace with approved Xerom photography" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" />
-          </picture>
+          </picture>}
         </div>
         <div class="home-hero-copy">
           <p class="home-eyebrow">Sim Racing · PS5 · Cafe</p>
@@ -34,7 +45,7 @@ import "@/styles/home.css";
           </div>
           <a class="home-location-cue" href={contactLinks.directions}>Bandar Bukit Tinggi, Klang</a>
         </div>
-        <p class="hero-placeholder-label">Illustrative hero · final owner photo pending</p>
+        {!publishedHeroAssetId && <p class="hero-placeholder-label">Illustrative hero · final owner photo pending</p>}
       </section>
 
       <ExperienceDock />
@@ -52,8 +63,8 @@ import "@/styles/home.css";
           </div>
         </div>
         <div class="home-session-grid">
-          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={media.regularRigSmall} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
           <SessionCard title={services["pro-sim"].name} copy={services["pro-sim"].description} image={media.proRigSmall} alt={services["pro-sim"].imageAlt} price={formatMoney(pricing.services["pro-sim"].hourlyRate)} href="/book?service=pro-sim" featured />
+          <SessionCard title={services["regular-sim"].name} copy={services["regular-sim"].description} image={media.regularRigSmall} alt={services["regular-sim"].imageAlt} price={formatMoney(pricing.services["regular-sim"].hourlyRate)} href="/book?service=regular-sim" />
           <SessionCard title={services.ps5.name} copy={services.ps5.description} image={media.ps5LoungeSmall} alt={services.ps5.imageAlt} price={formatMoney(pricing.services.ps5.hourlyRate)} href="/book?service=ps5" />
           <SessionCard title="Cafe" copy="A place to pause between sessions and spend more of the night together." image={media.cafeSmall} alt="Three colourful drinks from the Xerom cafe" href="/experiences#cafe" />
         </div>
@@ -66,10 +77,10 @@ import "@/styles/home.css";
       </div>
       <div>
         <h2 class="section-title" id="setup-title">Choose your <span class="red">setup</span></h2>
-        <p class="lede">Start with the accessible Regular Rig, step into the dedicated Pro Rig, or settle into a PS5 lounge. Every option is booked by the hour.</p>
+        <p class="lede">Step into the dedicated Pro Rig, start with the accessible Regular Rig, or settle into a PS5 lounge. Choose a session from 30 minutes to two hours.</p>
         <ul class="feature-list">
-          <li><span>Three Regular rigs for casual group racing</span></li>
           <li><span>One Pro rig for a more focused drive</span></li>
+          <li><span>Three Regular rigs for casual group racing</span></li>
           <li><span>Two PS5 lounges with two controllers included</span></li>
         </ul>
         <a class="button button-secondary" href="/experiences">Compare experiences</a>

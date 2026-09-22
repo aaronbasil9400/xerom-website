@@ -1,4 +1,69 @@
 ---
-import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
+import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import { heroImageRequirements } from '@/lib/media/image-validation';
 ---
-<RaceControlLayout title="Website Content" section="content"><DemoNotice /><section class="rc-panel rc-editor"><div class="rc-panel-head"><h2>Public website sections · structured draft</h2><span class="rc-draft-pill">Owner review required</span></div><div class="rc-form-grid"><label>Venue headline<input placeholder="TODO(owner): approved headline" /></label><label>Contact / WhatsApp<input placeholder="TODO(owner): confirm display format" /></label><label class="rc-wide">About the venue<textarea placeholder="TODO(owner): approved copy only"></textarea></label></div><p class="rc-helper">Fixed sections and approved media only. Arbitrary HTML and unverified claims are not supported.</p><div class="rc-form-actions"><button class="rc-button" type="button">Save draft</button><button class="rc-button rc-button-primary" type="button">Review publication</button></div></section></RaceControlLayout>
+<RaceControlLayout title="Website Content" section="content">
+  <DemoNotice />
+  <section class="rc-panel rc-editor" data-publishing-editor>
+    <div class="rc-panel-head"><div><h2>Homepage hero image</h2><span>Preserves the current 16:9 crop on desktop, tablet and mobile</span></div><span class="rc-draft-pill">Private draft</span></div>
+    <form data-hero-upload-form>
+      <div class="rc-publishing-grid">
+        <div class="rc-upload-spec">
+          <h3>Image requirements</h3>
+          <dl><div><dt>Aspect ratio</dt><dd>{heroImageRequirements.aspectRatio}</dd></div><div><dt>Recommended</dt><dd>{heroImageRequirements.recommendedWidth} × {heroImageRequirements.recommendedHeight}px</dd></div><div><dt>Minimum</dt><dd>{heroImageRequirements.minimumWidth} × {heroImageRequirements.minimumHeight}px</dd></div><div><dt>Maximum size</dt><dd>8 MB</dd></div><div><dt>Formats</dt><dd>JPEG, PNG, WebP</dd></div></dl>
+          <p>The current hero uses a 1600 × 900 master with responsive 960 × 540 and 640 × 360 derivatives. Uploads keep that exact 16:9 composition; no new hero sizing is introduced.</p>
+        </div>
+        <div class="rc-upload-control">
+          <label>Choose approved Xerom hero image<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required /></label>
+          <div class="rc-upload-preview" data-hero-preview><span>No replacement selected</span></div>
+          <p data-hero-file-details aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="rc-form-actions"><button class="rc-button rc-button-primary" type="submit">Upload to private draft</button><output data-hero-upload-result aria-live="polite"></output></div>
+    </form>
+  </section>
+  <section class="rc-panel rc-empty"><h2>Publication status</h2><p>Uploading stores an immutable private media object and updates the configuration draft. The homepage changes only after the separate review and publication gate succeeds.</p></section>
+</RaceControlLayout>
+
+<script>
+  const publishing = document.querySelector<HTMLElement>("[data-publishing-editor]");
+  const form = publishing?.querySelector<HTMLFormElement>("[data-hero-upload-form]");
+  const fileInput = form?.querySelector<HTMLInputElement>('input[name="image"]');
+  const preview = form?.querySelector<HTMLElement>("[data-hero-preview]");
+  const details = form?.querySelector<HTMLElement>("[data-hero-file-details]");
+  const result = form?.querySelector<HTMLOutputElement>("[data-hero-upload-result]");
+  let previewUrl = "";
+  const inspect = async (file: File) => {
+    if (!["image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
+    if (file.size > 8 * 1024 * 1024) throw new Error("The hero image must be no larger than 8 MB.");
+    const bitmap = await createImageBitmap(file);
+    const dimensions = { width: bitmap.width, height: bitmap.height }; bitmap.close();
+    if (dimensions.width < 1600 || dimensions.height < 900) throw new Error("The hero image must be at least 1600 × 900 pixels.");
+    if (dimensions.width * 9 !== dimensions.height * 16) throw new Error("The hero image must use the existing 16:9 aspect ratio.");
+    return dimensions;
+  };
+  fileInput?.addEventListener("change", async () => {
+    const file = fileInput.files?.[0]; if (!file || !preview || !details) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    preview.replaceChildren(); result && (result.textContent = "");
+    try { const dimensions = await inspect(file); previewUrl = URL.createObjectURL(file); const image = document.createElement("img"); image.src = previewUrl; image.alt = "Selected homepage hero preview"; preview.appendChild(image); details.textContent = `${file.name} · ${dimensions.width} × ${dimensions.height}px · ${(file.size / 1024 / 1024).toFixed(2)} MB`; }
+    catch (error) { fileInput.value = ""; const message = error instanceof Error ? error.message : "The image could not be read."; preview.innerHTML = "<span>Invalid image</span>"; details.textContent = message; }
+  });
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault(); const file = fileInput?.files?.[0]; if (!file || !result) return; const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]'); if (submit) submit.disabled = true; result.className = ""; result.textContent = "Validating and uploading the private media object…";
+    try {
+      await inspect(file);
+      const uploadBody = new FormData(); uploadBody.set("image", file);
+      const uploadResponse = await fetch("/api/admin/media/hero", { method: "POST", headers: { "X-Xerom-CSRF": "race-control-v1" }, body: uploadBody });
+      const upload = await uploadResponse.json() as { data?: { assetId: string }; error?: { message?: string } }; if (!uploadResponse.ok || !upload.data) throw new Error(upload.error?.message ?? "The hero image could not be uploaded.");
+      const draftResponse = await fetch("/api/admin/config/draft", { cache: "no-store" }); const draft = await draftResponse.json() as { data?: Record<string,any>; etag?: string | null; error?: {message?:string} }; if (!draftResponse.ok || !draft.data) throw new Error(draft.error?.message ?? "The configuration draft could not be loaded.");
+      draft.data.websiteContent.homepage.heroAssetId = upload.data.assetId; draft.data.publishedAt = null;
+      const saveResponse = await fetch("/api/admin/config/draft", { method: "PUT", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ config: draft.data, expectedEtag: draft.etag ?? null }) });
+      const saved = await saveResponse.json() as { error?: {message?:string} }; if (!saveResponse.ok) throw new Error(saved.error?.message ?? "The image uploaded, but the draft could not be updated.");
+      result.className = "rc-output-success"; result.textContent = "Hero image saved to the private draft. Review and publish the draft before the homepage changes.";
+    } catch (error) { result.className = "rc-output-error"; result.textContent = error instanceof Error ? error.message : "The hero image could not be uploaded."; }
+    finally { if (submit) submit.disabled = false; }
+  });
+  window.addEventListener("beforeunload", () => { if (previewUrl) URL.revokeObjectURL(previewUrl); });
+</script>

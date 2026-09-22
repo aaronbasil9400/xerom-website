@@ -10,7 +10,7 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 - [ ] Define public-holiday and shortened-hour handling, and how closures are announced.
 - [ ] Confirm whether the advertised 5% Instagram follow-and-tag discount is currently active, how staff verify it, whether it applies during booking or at the venue, which services/add-ons it covers, and whether it can combine with sales.
 - [ ] Confirm the displayed previous/compare-at prices (Regular RM22, Pro RM35, PS5 RM20) are currently valid and may be shown as struck-through anchors on `/pricing`; otherwise remove them.
-- [ ] Confirm the maximum controllers supported by each PS5 lounge, and whether the advertised RM3 additional-controller add-on should be bookable online (the booking UI does not currently collect controllers).
+- [x] Owner-confirmed in the 2026-09-22 upgrade brief: each PS5 booking includes 2 controllers and may add 0–6 additional controllers at RM3 each.
 - [ ] Confirm whether `012-940 1440` is both the public call and WhatsApp number, and provide the preferred international display/link format.
 - [x] Official logo supplied and converted to a transparent two-color SVG; original retained at `src/assets/brand/xerom-logo-source.png`.
 - [x] Supply owner-approved Regular Rig, Pro Rig, PS5 Lounge, and cafe photography.
@@ -53,6 +53,12 @@ Scope answers are recorded in PRODUCT.md; do not ask them again. The implementat
 - [ ] Enter actual percentage offer amounts, selected weekday/weekend days, active dates/windows, package durations/prices and eligible services. Support is approved; real offers are not yet supplied.
 - [ ] Confirm resource-calendar history retention/export policy before allowing permanent deletion of a calendar containing historical events. Empty retired test calendars can exercise the confirmed deletion flow.
 - [ ] Confirm proposed completed operation-journal retention (30 days); unresolved recovery data must remain until reconciled.
-- [ ] Confirm controller add-on billing basis (per session versus per hour) as well as the existing maximum-controller item before enabling online add-ons.
+- [x] Owner-confirmed 2026-09-22: the RM3 additional-controller charge applies once per controller per booking, not per hour.
 
-Holiday editing and conflict review are now approved features; actual holiday dates/hours still require owner input. Current 60/120-minute session defaults remain until the owner publishes a rule change.
+## Explicitly deferred engineering
+
+- [ ] TODO: Implement booking confirmation email backend. The current upgrade captures, validates and stores optional email only; no email provider or delivery path is approved.
+- [ ] Owner approval is still required before activating R2/configuring the private config and media bucket bindings. The settings and uploader code must remain visibly non-persistent until then.
+- [ ] Configure the five documented Cloudflare Rate Limiting namespaces/bindings before public launch; code currently fails open when an optional binding is absent.
+
+Holiday editing and conflict review are approved features; actual holiday dates/hours still require owner input. Current confirmed booking durations are 30/60/90/120 minutes.

@@ -27,8 +27,9 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
 <script>
   import { assignTimelineLanes } from "@/lib/race-control/timeline";
 
-  type LiveEvent = { id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; resourceId: string; resourceName: string; serviceId: string };
-  type LiveResource = { resourceId: string; serviceId: string; displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; resourceId?: string; serviceId?: string }> };
+  type BookingDetails = { customerName: string; customerPhone: string; customerEmail?: string; durationMinutes: number; includedControllers: number; additionalControllers: number; totalControllers: number; priceTotal: number | null; createdAt: string | null };
+  type LiveEvent = { id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; bookingDetails: BookingDetails; resourceId: string; resourceName: string; serviceId: string };
+  type LiveResource = { resourceId: string; serviceId: string; displayName: string; events: Array<{ id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; bookingDetails: BookingDetails; resourceId?: string; serviceId?: string }> };
   type ScheduleWindow = { start: string; end: string };
   const liveContainer = document.querySelector<HTMLElement>("[data-rc-live-events]");
   const liveStatus = document.querySelector<HTMLElement>("[data-rc-live-status]");
@@ -63,8 +64,10 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
     summary: event.summary || "Calendar block",
     resourceName: event.resourceName,
     start: event.start,
-    end: event.end,
-  } }));
+     end: event.end,
+     serviceId: event.serviceId,
+     bookingDetails: event.bookingDetails,
+   } }));
   const buildAxisTicks = (window: ScheduleWindow) => {
     const start = Date.parse(window.start);
     const end = Date.parse(window.end);

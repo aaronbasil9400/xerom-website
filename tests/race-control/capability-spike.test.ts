@@ -21,7 +21,7 @@ class MemoryConditionalStore implements ConditionalObjectStore {
 }
 
 const pointer = (revisionId: string, operationId: string) => ({
-  schemaVersion: 1 as const,
+  schemaVersion: 2 as const,
   revisionId,
   activatedAt: "2026-09-16T12:00:00+08:00",
   operationId,

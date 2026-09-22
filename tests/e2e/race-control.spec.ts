@@ -14,7 +14,7 @@ test("Race Control shell is private-labelled, responsive, and free of browser er
   await expect(page.getByRole("button", { name: "Next", exact: true })).toBeEnabled();
   await expect(page.locator("#agenda-title")).not.toHaveText("Sunday · 13 September 2026");
   await expect(page.getByText(/Any minute within opening hours; no one-hour notice floor/i)).toBeVisible();
-  await expect(page.locator("#new-booking select[name='duration'] option")).toHaveText(["30 minutes", "60 minutes", "120 minutes"]);
+  await expect(page.locator("#new-booking select[name='duration'] option")).toHaveText(["30 minutes", "60 minutes", "90 minutes", "120 minutes"]);
   await expect(page.locator(".rc-demo-banner")).toHaveCount(0);
   await expect(page.getByText("Draft surface", { exact: true })).toHaveCount(0);
   await expect(page.locator(".rc-notice")).toHaveCount(0);
@@ -62,10 +62,41 @@ test("Race Control phone navigation ignores a saved desktop collapse preference"
   expect(overflow).toBe(false);
 });
 
-test("Race Control settings routes remain explicit drafts", async ({ page }) => {
+test("Race Control settings routes load the canonical unsaved draft without leaking calendar IDs", async ({ page }) => {
   for (const path of ["resources", "hours", "pricing", "offers", "rules"]) {
     await page.goto(`/race-control/settings/${path}`);
-    await expect(page.getByText("Not published", { exact: true })).toBeVisible();
-    await expect(page.locator('[placeholder*="TODO(owner)"]').first()).toBeVisible();
+    await expect(page.locator("[data-settings-state]")).toContainText(/Seed draft|Private draft/);
+    await expect(page.locator("[data-settings-fields]")).toBeVisible();
+    await expect(page.locator("body")).not.toContainText("fixture-calendar-ref");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   }
+});
+
+test("Bookings exposes combinable filters and normalized CSV export", async ({ page }) => {
+  await page.goto("/race-control/bookings");
+  await expect(page.getByLabel("Phone number")).toBeVisible();
+  await expect(page.getByLabel("Resource type")).toHaveValue("");
+  await expect(page.getByLabel("Duration")).toHaveValue("");
+  const downloadPromise = page.waitForEvent("download").catch(() => null);
+  await page.route("**/api/admin/bookings?**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.searchParams.get("format") === "csv") return route.fulfill({ status: 200, headers: { "content-type": "text/csv", "content-disposition": 'attachment; filename="xerom.csv"' }, body: "booking_id\r\nXR-FIXTURE" });
+    return route.continue();
+  });
+  await page.getByLabel("Phone number").fill("0123");
+  await page.getByLabel("Resource type").selectOption("regular-sim");
+  await page.getByLabel("Duration").selectOption("60");
+  await page.getByRole("button", { name: "Export CSV" }).click();
+  const download = await downloadPromise;
+  expect(download?.suggestedFilename()).toBe("xerom.csv");
+});
+
+test("Publishing preserves and explains the existing hero contract", async ({ page }) => {
+  await page.goto("/race-control/content");
+  await expect(page.getByRole("heading", { name: "Homepage hero image" })).toBeVisible();
+  await expect(page.getByText("16:9", { exact: true })).toBeVisible();
+  await expect(page.getByText("1600 × 900px", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("8 MB", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Choose approved Xerom hero image")).toHaveAttribute("accept", "image/jpeg,image/png,image/webp");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 });

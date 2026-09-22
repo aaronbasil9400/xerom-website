@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const raceControlSchemaVersion = 1 as const;
+export const raceControlSchemaVersion = 2 as const;
 export const malaysiaTimezone = "Asia/Kuala_Lumpur" as const;
 
 const id = z.string().min(1).max(96).regex(/^[a-z0-9][a-z0-9_-]*$/);
@@ -119,6 +119,14 @@ export const bookingRulesSchema = z.object({
   mixedServiceAllowed: z.boolean(),
 }).strict();
 
+export const controllerSettingsSchema = z.object({
+  serviceId: z.literal("ps5"),
+  includedQuantity: z.number().int().nonnegative().max(16),
+  maxAdditionalQuantity: z.number().int().nonnegative().max(16),
+  additionalPriceSen: z.number().int().nonnegative().max(1_000_000),
+  billingUnit: z.literal("per-booking"),
+}).strict();
+
 export const websiteContentSchema = z.object({
   homepage: z.object({ headline: safeText(80), intro: safeText(500), heroAssetId: id.nullable() }).strict(),
   experiences: z.record(serviceIdSchema, z.object({ heading: safeText(80), body: safeText(600), assetId: id.nullable() }).strict()),
@@ -147,6 +155,7 @@ export const configRevisionSchema = z.object({
   hours: z.object({ weekly: weeklyHoursSchema, exceptions: z.array(hoursExceptionSchema).max(366) }).strict(),
   rates: z.array(rateSchema).min(3).max(128),
   promotions: z.array(promotionSchema).max(128),
+  controllers: controllerSettingsSchema,
   bookingRules: bookingRulesSchema,
   websiteContent: websiteContentSchema,
 }).strict().superRefine((config, context) => {

@@ -2,7 +2,9 @@ import type { APIRoute } from "astro";
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { bookingRequestSchema } from "@/lib/booking/schema";
 import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
-import { searchRaceControlBookings } from "@/lib/race-control/bookings";
+import { bookingRecordsToCsv, searchRaceControlBookings } from "@/lib/race-control/bookings";
+import { bookingRules } from "@/config/booking";
+import { serviceCore, type ServiceId } from "@/config/service-core";
 
 export const prerender = false;
 const headers = { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" };
@@ -12,8 +14,19 @@ export const GET: APIRoute = async ({ request }) => {
   const from = params.get("from") ?? "";
   const to = params.get("to") ?? from;
   const query = params.get("query") ?? "";
+  const phone = params.get("phone") ?? "";
+  const service = params.get("service") ?? "";
+  const durationText = params.get("duration") ?? "";
+  const format = params.get("format") ?? "json";
   try {
-    const data = await searchRaceControlBookings(cloudflareEnv as typeof cloudflareEnv & CloudflareEnv, from, to, query);
+    if (service && !(service in serviceCore)) return new Response(JSON.stringify({ error: { code: "INVALID_FILTER", message: "Choose a valid resource type.", retryable: false } }), { status: 400, headers });
+    const durationMinutes = durationText ? Number(durationText) : undefined;
+    if (durationMinutes !== undefined && !bookingRules.allowedDurationsMinutes.some((allowed) => allowed === durationMinutes)) return new Response(JSON.stringify({ error: { code: "INVALID_FILTER", message: "Choose a valid booking duration.", retryable: false } }), { status: 400, headers });
+    if (format !== "json" && format !== "csv") return new Response(JSON.stringify({ error: { code: "INVALID_FORMAT", message: "Choose JSON or CSV.", retryable: false } }), { status: 400, headers });
+    const data = await searchRaceControlBookings(cloudflareEnv as typeof cloudflareEnv & CloudflareEnv, from, to, { query, phone, serviceId: service ? service as ServiceId : undefined, durationMinutes });
+    if (format === "csv") {
+      return new Response(`\uFEFF${bookingRecordsToCsv(data)}`, { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="xerom-bookings-${from}-to-${to}.csv"`, "cache-control": "private, no-store" } });
+    }
     return new Response(JSON.stringify({ data }), { headers });
   } catch (error) {
     console.error(JSON.stringify({ message: "race_control_booking_search_failed", error: error instanceof Error ? error.message : "unknown" }));

@@ -20,6 +20,11 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(page.locator('[data-session-card] a[href="/book?service=regular-sim"]')).toHaveCount(1);
   await expect(page.locator('[data-session-card] a[href="/book?service=pro-sim"]')).toHaveCount(1);
   await expect(page.locator('[data-session-card] a[href="/book?service=ps5"]')).toHaveCount(1);
+  await expect(page.locator("[data-session-card]").nth(0)).toContainText("Pro Rig");
+  await expect(page.locator("[data-session-card]").nth(1)).toContainText("Regular Rig");
+  await expect(page.locator('a[href="/events"]')).not.toHaveCount(0);
+  await expect(page.locator('a[href="/whats-new"]')).not.toHaveCount(0);
+  await expect(page.locator('a[href="/membership"]')).not.toHaveCount(0);
   await expect(page.getByRole("heading", { level: 2, name: "Choose your setup", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Compare experiences", exact: true })).toHaveAttribute("href", "/experiences");
   await expect(page.getByRole("heading", { name: /more than racing/i })).toHaveCount(0);
@@ -59,15 +64,20 @@ test("mobile header keeps booking visible and menu keyboard-safe", async ({ page
 });
 
 test("mock booking flow reaches confirmation", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "open", { configurable: true, value: (url?: string | URL) => { (window as typeof window & { __openedWhatsapp?: string }).__openedWhatsapp = String(url ?? ""); return null; } });
+  });
   await page.route("**/api/bookings", async (route) => {
-    const payload = route.request().postDataJSON() as { start?: string };
+    const payload = route.request().postDataJSON() as { start?: string; durationMinutes?: number; items?: unknown[] };
     await route.fulfill({
       status: 201,
       contentType: "application/json",
-      body: JSON.stringify({ bookingId: "XR-E2E01", total: 20, start: payload.start }),
+      body: JSON.stringify({ bookingId: "XR-E2E01", total: 44, start: payload.start, durationMinutes: payload.durationMinutes, items: payload.items }),
     });
   });
   await page.goto("/book");
+  await page.locator('[data-service-row="ps5"]').getByRole("button", { name: /add one ps5 lounge/i }).click();
+  await page.getByLabel("Additional controllers").selectOption("2");
   await page.getByRole("button", { name: /choose a time/i }).click();
   await page.getByLabel("Date").evaluate((input: HTMLInputElement) => {
     const date = new Date();
@@ -82,9 +92,14 @@ test("mock booking flow reaches confirmation", async ({ page }) => {
   await page.getByRole("button", { name: /enter details/i }).click();
   await page.getByLabel("Name").fill("Test Customer");
   await page.getByLabel("Mobile / WhatsApp").fill("+60123456789");
+  await page.getByLabel("Email address Optional").fill("test@example.com");
   await page.getByRole("button", { name: /confirm booking/i }).click();
   await expect(page.getByRole("heading", { name: /booking confirmed/i })).toBeVisible();
   await expect(page.locator("[data-booking-id]")).toContainText("XR-");
+  const whatsappUrl = await page.evaluate(() => (window as typeof window & { __openedWhatsapp?: string }).__openedWhatsapp ?? "");
+  expect(decodeURIComponent(whatsappUrl)).toContain("Resources: 1 × Regular Rig · 1 × PS5 Lounge (+2 controllers)");
+  expect(decodeURIComponent(whatsappUrl)).toContain("Controllers: 2 included + 2 additional");
+  await expect(page.locator("[data-whatsapp-status]")).toContainText("booking is confirmed");
 });
 
 test("booking form rejects a non-Malaysian mobile number before submit", async ({ page }) => {
@@ -112,12 +127,65 @@ test("booking form rejects a non-Malaysian mobile number before submit", async (
   expect(bookingPostCount).toBe(0);
 });
 
+test("booking setup enforces configured limits and controller rules", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-375", "Single setup validation browser check");
+  await page.goto("/book");
+  await expect(page.locator('input[name="duration"]')).toHaveCount(4);
+  await expect(page.getByLabel("Email address Optional")).toHaveAttribute("type", "email");
+  const regularRow = page.locator('[data-service-row="regular-sim"]');
+  const addRegular = regularRow.getByRole("button", { name: /add one regular rig/i });
+  await addRegular.click();
+  await addRegular.click();
+  await addRegular.click();
+  await expect(regularRow.getByText(/maximum 3 regular rigs available/i)).toBeVisible();
+  await expect(page.getByLabel("Regular Rig quantity")).toHaveValue("3");
+  await expect(page.locator("[data-controller-choice]")).toBeHidden();
+  await page.locator('[data-service-row="ps5"]').getByRole("button", { name: /add one ps5 lounge/i }).click();
+  await expect(page.locator("[data-controller-choice]")).toBeVisible();
+  await expect(page.getByLabel("Additional controllers")).toHaveValue("0");
+  await expect(page.getByLabel("Additional controllers").locator("option")).toHaveCount(7);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+});
+
+test("today auto-loads approved single-row availability indicators", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-375", "Single approved-indicator browser check");
+  let requestedDate = "";
+  await page.route("**/api/availability?**", async (route) => {
+    requestedDate = new URL(route.request().url()).searchParams.get("date") ?? "";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        slots: [
+          { start: `${requestedDate}T12:00:00+08:00`, available: true, capacity: { "regular-sim": 3, "pro-sim": 1, ps5: 2 } },
+          { start: `${requestedDate}T12:30:00+08:00`, available: false, capacity: { "regular-sim": 2, "pro-sim": 0, ps5: 1 } },
+        ],
+      }),
+    });
+  });
+  await page.goto("/book");
+  await page.locator('[data-service-row="pro-sim"]').getByRole("button", { name: /add one pro rig/i }).click();
+  await page.locator('[data-service-row="ps5"]').getByRole("button", { name: /add one ps5 lounge/i }).click();
+  const today = await page.getByLabel("Date").getAttribute("min");
+  await page.getByRole("button", { name: /choose a time/i }).click();
+  await expect(page.locator(".availability-slot")).toHaveCount(2);
+  expect(requestedDate).toBe(today);
+  await expect(page.locator("[data-availability-legend]")).toContainText("R Regular Rig");
+  await expect(page.locator("[data-availability-legend]")).toContainText("P Pro Rig");
+  await expect(page.locator("[data-availability-legend]")).toContainText("PS PS5 Lounge");
+  await expect(page.locator(".availability-slot").first()).toHaveAccessibleName(/Regular Rig: 3 of 3 available.*Pro Rig: 1 of 1 available.*PS5 Lounge: 2 of 2 available/i);
+  await expect(page.locator(".availability-slot").nth(1)).toHaveAttribute("aria-disabled", "true");
+  const signalTops = await page.locator(".availability-slot").first().locator(".availability-signal-group").evaluateAll((groups) => groups.map((group) => Math.round(group.getBoundingClientRect().top)));
+  expect(new Set(signalTops).size).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+});
+
 test("core routes render without console errors or broken images", async ({ page }) => {
   const consoleErrors: string[] = [];
   const failedRequests: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("requestfailed", (request) => failedRequests.push(`${request.method()} ${request.url()}`));
-  for (const route of ["/", "/experiences", "/pricing", "/book", "/visit"]) {
+  for (const route of ["/", "/experiences", "/pricing", "/book", "/visit", "/events", "/whats-new", "/membership"]) {
     const response = await page.goto(route);
     expect(response?.ok(), `${route} should load`).toBe(true);
     await expect(page.locator("main h1")).toBeVisible();

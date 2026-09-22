@@ -28,10 +28,10 @@ describe("booking time rules", () => {
     expect(validateBookingWindow("2026-09-10T14:00:00+08:00", 60, now)).toBeNull();
   });
 
-  it("rejects times outside opening hours and off the public hourly grid", () => {
+  it("rejects times outside opening hours and off the public 30-minute grid", () => {
     const now = new Date("2026-09-09T10:00:00+08:00");
     expect(validateBookingWindow("2026-09-10T13:00:00+08:00", 60, now)).toMatch(/opening hours/i);
-    expect(validateBookingWindow("2026-09-10T14:30:00+08:00", 60, now)).toMatch(/hourly slot/i);
+    expect(validateBookingWindow("2026-09-10T14:15:00+08:00", 60, now)).toMatch(/30-minute slot/i);
     expect(validateBookingWindow("2026-09-13T23:00:00+08:00", 120, new Date("2026-09-13T10:00:00+08:00"))).toBeNull();
   });
 
@@ -40,7 +40,7 @@ describe("booking time rules", () => {
     expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 30, now, manualBookingRules)).toBeNull();
     expect(validateBookingWindow("2026-09-10T14:00:30+08:00", 60, now, manualBookingRules)).toMatch(/future|minute/i);
     expect(validateBookingWindow("2026-09-10T13:59:00+08:00", 60, now, manualBookingRules)).toMatch(/future/i);
-    expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 45, now, manualBookingRules)).toMatch(/30|60|120/);
+    expect(validateBookingWindow("2026-09-10T14:11:00+08:00", 45, now, manualBookingRules)).toMatch(/30|60|90|120/);
   });
 
   it("validates reschedule and extension intervals against overnight opening hours", () => {
@@ -76,5 +76,14 @@ describe("resource availability", () => {
     expect(busy.r1).toHaveLength(1);
     expect(result[0].available).toBe(false);
     expect(result[0].capacity["regular-sim"]).toBe(0);
+  });
+
+  it.each([30, 60, 90, 120])("blocks a %i-minute request when any part overlaps", (durationMinutes) => {
+    const start = "2026-09-13T20:00:00+08:00";
+    const end = new Date(Date.parse(start) + durationMinutes * 60_000).toISOString();
+    const overlapStart = new Date(Date.parse(start) + Math.max(1, durationMinutes - 15) * 60_000).toISOString();
+    const result = buildAvailability([{ start, end }], { ...groups, "regular-sim": [...groups["regular-sim"]], "pro-sim": [...groups["pro-sim"]], ps5: [...groups.ps5] }, { r1: [{ start: overlapStart, end }] }, undefined, { "regular-sim": 3, "pro-sim": 0, ps5: 0 });
+    expect(result[0].capacity["regular-sim"]).toBe(2);
+    expect(result[0].available).toBe(false);
   });
 });

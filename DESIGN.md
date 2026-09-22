@@ -262,6 +262,8 @@ The homepage presents opening hours beside the verified Klang location cue in a 
 
 The three-step booking flow uses an Action Racing Red current-progress cell, bordered quantity rows with compact steppers, full-width selectable duration and time controls, and a dark-red review block. Selected choices and the success mark use Action Racing Red plus white rather than relying on border alone; the oversized booking ID remains Bright Racing Red display information. Status copy uses a polite live region and failures use alert semantics.
 
+Availability slots keep all selected service signals on one horizontal scan line. Regular Rig uses a labelled circle, Pro Rig a labelled diamond, and PS5 Lounge a labelled square; filled Action Red means available while a gray hatched outline means unavailable. The full-name legend appears above the slots, unavailable times also use struck time text and explicit state copy, and mobile moves only the state copy—not the resource signals—to a second grid row. The layout must never create page-level horizontal scrolling.
+
 ### Race Control / Owner Operate Shell
 
 Race Control is the private owner front-desk surface and keeps the Broadcast language in a denser, utility-first composition. This guidance describes the verified shell only: the current implementation is a demo fixture with draft controls and no live Calendar or publishing mutation. Future connected screens must preserve the visual distinction while deriving operational truth from the approved contracts and architecture.
@@ -273,6 +275,8 @@ Race Control is the private owner front-desk surface and keeps the Broadcast lan
 - **Phone agenda:** Below 560px, replace the wide timeline with a chronological list preserving time-first scanning, resource/service context, status, and an explicit action affordance.
 - **Page titles and states:** Use compact approximately 2rem italic condensed titles. `Demo fixture`, `Draft surface`, `Owner review required`, `Not published`, and `Setup required` use the warm warning treatment so provisional state is unmistakable and never confused with an error or live success.
 - **Forms and records:** Editors, tables, activity streams, connection status, and inspector details stay rectangular, border-led, and tightly padded. Use condensed uppercase data labels, warm-white values, muted metadata, and red only for active/brand signals.
+- **Business Settings:** Settings editors use one bordered operational panel with compact fieldsets rather than detached marketing cards. Resource/service columns collapse to one column below 900px; daily hours use horizontal operational rows on desktop and a single flow on phones. Base price, discount and current customer price appear together as a three-cell proof strip so edits never hide the original value. Unsaved seed, saved private draft, setup-required and publication-blocked states must be explicit.
+- **Publishing:** Hero media upload preserves the shipped 16:9 frame. The requirements ledger and preview share one split panel on desktop and collapse below 900px. The preview itself uses `aspect-ratio: 16 / 9` and `object-fit: cover`, matching the homepage crop rather than introducing an admin-only composition. Validation and persistence status remain adjacent to the upload action.
 
 **The Operate, Don’t Market Rule.** Race Control should read like a calm owner instrument panel: schedule, state, impact, and next action first. Never import the public homepage’s cinematic hero, promotional route, invented operational claims, or decorative density into this shell.
 

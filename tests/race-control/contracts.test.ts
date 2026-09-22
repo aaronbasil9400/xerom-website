@@ -20,7 +20,7 @@ describe("Race Control shared contracts", () => {
     const seed = createSeedConfig(syntheticCalendarRefs);
     expect(configRevisionSchema.parse(seed).promotions).toEqual([]);
     expect(seed.rates.map((rate) => rate.amountSenPerResourceHour)).toEqual([2_000, 3_000, 1_800]);
-    expect(seed.bookingRules.allowedDurationsMinutes).toEqual([60, 120]);
+    expect(seed.bookingRules.allowedDurationsMinutes).toEqual([30, 60, 90, 120]);
     expect(seed.resources).toHaveLength(6);
   });
 

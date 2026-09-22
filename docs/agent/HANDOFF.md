@@ -1,6 +1,28 @@
 # Agent Handoff
 
-Last updated: 2026-09-19
+Last updated: 2026-09-22
+
+## Website upgrade kickoff — 2026-09-22 (in progress)
+
+The owner supplied a new website upgrade brief and execution prompt. The architecture audit and required Checkpoint 1 report are complete. Google Calendar remains the booking record; the recommended persistence shape remains private R2 config/media plus the coordinator, with no conventional database. The owner specified RM3 per additional PS5 controller per booking and requested code-only R2 work with account activation separately gated.
+
+Implementation tracking and the detailed activity log are in `docs/agent/WEBSITE_UPGRADE_WORKLOG.md`. Phases 2–4 are implemented and locally verified. Phase 5 mockups are in `docs/mockups/availability-indicators.html` with desktop/mobile captures under `.impeccable/review/availability-mockup/`. Work is stopped at the mandatory approval gate: do not implement production indicators, availability auto-load, or downstream phases until the owner explicitly approves or revises the mockup. Email delivery remains explicitly deferred.
+
+Mockup revision 2 spells out all mobile legend abbreviations and includes dedicated Pro-only and PS5-only examples. It is still awaiting owner approval.
+
+Owner approved mockup revision 2 on 2026-09-22. The Phase 5 hard stop is lifted; production availability implementation may proceed using that approved system.
+
+## Website upgrade continuation checkpoint — 2026-09-22
+
+The approved production availability indicators, today auto-load, full-duration capacity logic, optional-email booking flow, detailed confirmation and WhatsApp auto-open/fallback are implemented. Race Control now projects Calendar events into normalized contact/controller records, displays contact details in the live inspector, provides WhatsApp Customer, combines phone/resource/duration booking filters and exports escaped analytics CSV.
+
+Business Settings and Publishing code now use the planned R2 boundary without activating R2. Settings load a clearly unsaved seed when storage is unavailable; managed Calendar IDs are redacted from browser responses and restored only server-side. The hero uploader preserves the existing 16:9/1600×900 contract and validates JPEG/PNG/WebP up to 8 MB on both client and server. Publication remains intentionally blocked because the future-booking impact scan and R2 activation are incomplete.
+
+Cloudflare Rate Limiting adapters and recommended values are documented in `docs/architecture/RATE_LIMITING.md`; production bindings are not configured. The coordinator still serializes public and owner writes through one queue, and the new final-resource unit test proves exactly one of two simultaneous attempts succeeds.
+
+Latest local evidence: Astro check clean; 92/92 unit tests; production build; 21/21 media derivatives; coordinator dry run; clean diff; Playwright 69 passed / 33 intentional viewport skips across 375, 390, 430, 768, 1024 and 1440. The first Playwright pass found 13px tablet overflow in Publishing; the grid breakpoint was corrected and the clean full rerun passed.
+
+Remaining gates: authenticated protected-preview verification of the enriched live inspector; owner-approved R2 activation/bindings; complete affected-booking impact scan and publish/rollback path; automatic Calendar provisioning for increased resource quantity; production rate-limit bindings; approved replacement hero; production Turnstile; final external/deployed QA. No deployment, R2 activation or Calendar mutation was performed in this checkpoint.
 
 ## Merge-hardening checkpoint — 2026-09-19 (in progress)
 

@@ -2,13 +2,14 @@ import { z } from "zod";
 import { configRevisionSchema, serviceIdSchema, type ConfigRevision } from "./schema";
 
 export const publicConfigSchema = z.object({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(2),
   revisionId: z.string(),
   venue: z.object({ name: z.string(), timezone: z.literal("Asia/Kuala_Lumpur"), currency: z.literal("MYR") }).strict(),
   services: z.array(z.object({ serviceId: serviceIdSchema, name: z.string(), shortName: z.string(), unitLabel: z.string(), description: z.string(), enabled: z.boolean(), activeResourceCount: z.number().int().nonnegative() }).strict()),
   hours: configRevisionSchema.shape.hours,
   rates: configRevisionSchema.shape.rates,
   promotions: configRevisionSchema.shape.promotions,
+  controllers: configRevisionSchema.shape.controllers,
   bookingRules: configRevisionSchema.shape.bookingRules,
   websiteContent: configRevisionSchema.shape.websiteContent,
 }).strict();
@@ -28,6 +29,7 @@ export function toPublicConfig(config: ConfigRevision): PublicConfig {
     hours: parsed.hours,
     rates: parsed.rates,
     promotions: parsed.promotions.filter((promotion) => promotion.state === "enabled"),
+    controllers: parsed.controllers,
     bookingRules: parsed.bookingRules,
     websiteContent: parsed.websiteContent,
   });
