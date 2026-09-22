@@ -1,5 +1,12 @@
 # Decision Log
 
+## 2026-09-22 — Configuration review scans fail closed
+
+- Scan all server-known resource calendars plus Booking Control when hours, resources, allowed durations, or booking buffers change.
+- Paginate complete Calendar inventories. Expand finite recurring series through Calendar instances; require explicit resolution for open-ended series and unrecognized manual blocks.
+- Skip Calendar reads for pricing/content-only changes because existing bookings retain locked prices and those edits cannot invalidate availability.
+- Issue short-lived review tokens only after a complete conflict-free scan. Keep publication unavailable until token verification and R2 activation run inside booking-coordinator serialization.
+
 ## 2026-09-22 — Private R2 activation approved
 
 - Use separate private `xerom-race-control-config` and `xerom-race-control-media` buckets, both accessed only through Worker bindings.

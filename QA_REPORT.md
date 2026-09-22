@@ -261,6 +261,19 @@ No live maintenance/closure block was created. Real conflict review, compensatio
 
 The review endpoint has not been run with live R2 or Google data and intentionally cannot authorize publication while those gates are absent.
 
+## Complete configuration impact scan checkpoint (2026-09-22)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Complete Calendar inventory | Implemented | Review paginates all configured resource and Booking Control calendars without a silent future cutoff |
+| Recurring events | Fail closed | Finite series expand through the Calendar instances API; open-ended series remain explicit blocking conflicts |
+| Availability-impact validation | Pass locally | Hours, overnight windows, exceptions, buffers, retired/disabled resources and removed durations are checked against future events |
+| Manual/unknown blocks | Fail closed | Unrecognized future busy events are reported for explicit owner resolution rather than assumed safe |
+| Irrelevant changes | Pass locally | Pricing/content-only drafts skip Calendar impact scanning and do not invalidate locked historical prices |
+| Local verification | Pass | `npm run check`: clean; `npm test -- --run`: 107/107 tests |
+
+The scan is read-only. No booking, Calendar event, R2 active pointer or configuration revision was created. Authenticated live review remains to be exercised by the owner; publication/rollback remains a separate unimplemented mutation path.
+
 ## Bounded owner booking search checkpoint (2026-09-16)
 
 | Check | Result | Evidence |

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { insertEventWithToken, listCalendarEventsWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarMutationUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
+import { insertEventWithToken, listCalendarEventsWithToken, listCalendarReviewInventoryWithToken, patchCalendarEventWithToken, queryFreeBusyWithToken, CalendarMutationUncertainError, CalendarVersionConflictError, type CalendarEventInput } from "@/lib/google/calendar";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -86,6 +86,20 @@ describe("Google Calendar fail-closed adapters", () => {
       allDay: true,
       transparency: "opaque",
     });
+  });
+
+  it("expands finite recurring series and preserves open-ended masters", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(Response.json({ items: [
+        { id: "finite", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY;COUNT=2"] },
+        { id: "open", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY"] },
+      ] }))
+      .mockResolvedValueOnce(Response.json({ items: [{ id: "finite-instance", start: { dateTime: event.start }, end: { dateTime: event.end } }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const events = await listCalendarReviewInventoryWithToken("token", "fixture-calendar", "2026-09-16T00:00:00Z");
+    expect(events.map((candidate) => candidate.id)).toEqual(["finite-instance", "open"]);
+    expect(events[1].recurrence).toEqual(["RRULE:FREQ=WEEKLY"]);
+    expect(fetchMock.mock.calls[1][0]).toContain("/finite/instances?");
   });
 
   it("patches only owned fields with If-Match and exposes external edits as 412", async () => {
