@@ -1,5 +1,11 @@
 # Decision Log
 
+## 2026-09-23 — Production deployment order and shared review secret
+
+- Deploy the coordinator before the website, because the website emits the updated `activate-config` command (`draftEtag`) and the booking `configRevision` contract that the coordinator must already accept.
+- Keep one shared `RACE_CONTROL_TOKEN_ENCRYPTION_KEY` value on both Workers so the website can sign review tokens and the coordinator can verify them inside serialization. When rotating, set both sides together and treat the interval between updates as a publication freeze.
+- Do not manually seed `active.json` during deployment. An empty config bucket keeps the compiled bootstrap live; publication stays an explicit authenticated owner action.
+
 ## 2026-09-23 — Serialized configuration publication and rollback
 
 - Bind each publication attempt to the saved draft ETag, normalized draft hash, active base revision and a five-minute signed review token. Derive a stable operation ID from that reviewed attempt, not from configuration content alone, so a lost response replays while a later publication of identical content remains a new revision.

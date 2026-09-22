@@ -115,3 +115,10 @@ Started: 2026-09-22
 - Added focused tests for token tampering/expiry, stale ETag/hash/base revision, serialized scan conflicts, immutable replay, pre-activation retry, pointer-swap races, and post-activation response loss.
 - Final local verification: `npm run check` clean; 119/119 unit/contract tests; production and staging builds passed; both Wrangler dry runs passed; six-width Playwright completed with 70 passed and 38 intentional viewport-specific skips.
 - No publication endpoint was called, no `active.json` or immutable production revision was created, and no Google Calendar event was created or changed.
+
+### 2026-09-23 — Production deployment of `c1432b5`
+
+- Rotated a single shared `RACE_CONTROL_TOKEN_ENCRYPTION_KEY` onto both Workers via `wrangler secret bulk` using a 0600 temp JSON file that was deleted immediately afterward; the value was never printed.
+- Deployed the coordinator first (`xerom-race-control-coordinator`, version `41465367-fa6f-4ad9-9882-a34ac334c90b`), then the website (`xerom-website`, version `2a1f2aaa-1937-4166-95c9-fc1e6e7e7990`, then secret version `65bf1e62-013d-4d3b-887f-850ee7714425`). The website secret was resynced after deploy because Wrangler blocks direct secret edits while an undeployed version exists.
+- Read-only verification: homepage and `/api/public-config` 200 (compiled bootstrap `seed-draft-v2`); Race Control and admin config routes 302 to Access; coordinator public URL 404 by design; live availability 200 in `live` mode; both R2 config objects absent.
+- Publication, rollback and authenticated owner review were not exercised; no Calendar or R2 object was written.

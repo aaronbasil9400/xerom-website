@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-23
 
+## Production deployment checkpoint — 2026-09-23
+
+Commit `c1432b5` is deployed to Cloudflare. The coordinator (`xerom-race-control-coordinator`) is live at version `41465367-fa6f-4ad9-9882-a34ac334c90b`, and the website (`xerom-website`) is live at code version `2a1f2aaa-1937-4166-95c9-fc1e6e7e7990` followed by secret-change version `65bf1e62-013d-4d3b-887f-850ee7714425`. The coordinator was deployed first because the website emits the new `activate-config` command and booking revision contract.
+
+One shared `RACE_CONTROL_TOKEN_ENCRYPTION_KEY` value was rotated onto both Workers through `wrangler secret bulk` (never printed, passed only through a 0600 temp file that was deleted afterward). Both Workers now report the secret.
+
+Read-only production verification after deploy: homepage `/` 200; `/api/public-config` 200 with compiled bootstrap (`seed-draft-v2`); `/race-control/schedule` and `/api/admin/config/draft` 302 to Cloudflare Access; coordinator public URL 404 as designed; live `/api/availability` 200 with `mode: "live"` and configured capacities. `xerom-race-control-config` still has no `active.json` or `draft.json` object.
+
+Not done: no configuration revision was published, `active.json` was not created, no media object was added, and no Google Calendar event was created or changed. The authenticated owner review/publish flow has not yet been exercised end to end and remains the next gate.
+
 ## Configuration publication checkpoint — 2026-09-23
 
 The local branch now implements the full reviewed publication boundary. Owner publication reloads and hashes the saved draft, verifies its five-minute token/base revision, repeats the complete Calendar scan inside the shared Durable Object queue, records durable intent, writes an immutable R2 revision and conditionally verifies `active.json`. Same-attempt retries recover before or after activation without duplicate revisions. Rollback creates a new draft from the prior revision while preserving the current private resource registry; it must pass the same review and publication path.

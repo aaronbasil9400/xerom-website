@@ -274,6 +274,22 @@ The review endpoint has not been run with live R2 or Google data and intentional
 
 The scan is read-only. No booking, Calendar event, R2 active pointer or configuration revision was created. Authenticated live review remains to be exercised by the owner; publication/rollback remains a separate unimplemented mutation path.
 
+## Production deployment checkpoint (2026-09-23)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Coordinator deployed first | Pass | `xerom-race-control-coordinator` version `41465367-fa6f-4ad9-9882-a34ac334c90b` at 100% |
+| Website deployed | Pass | `xerom-website` version `2a1f2aaa-1937-4166-95c9-fc1e6e7e7990`, then secret version `65bf1e62-013d-4d3b-887f-850ee7714425` |
+| Shared review secret | Pass | Both Workers list `RACE_CONTROL_TOKEN_ENCRYPTION_KEY`; value rotated once, never printed, temp file deleted |
+| Public homepage | Pass | `GET /` -> 200 |
+| Public config read | Pass | `GET /api/public-config` -> 200, `revisionId` `seed-draft-v2` (compiled bootstrap) |
+| Owner route protection | Pass | `/race-control/schedule` and `/api/admin/config/draft` -> 302 to Cloudflare Access |
+| Coordinator public surface | Pass | Coordinator root -> 404; the Durable Object is reachable only through the website binding |
+| Live availability | Pass | `GET /api/availability` -> 200, `mode: "live"`, configured capacities |
+| Config bucket unpublished | Pass | `active.json` and `draft.json` return "The specified key does not exist." |
+
+No configuration revision was published, no `active.json` was created, no media object was added, and no Google Calendar event was created or changed. The authenticated owner review/publish flow is the next unverified gate.
+
 ## Serialized configuration publication checkpoint (2026-09-23)
 
 | Check | Result | Evidence |
