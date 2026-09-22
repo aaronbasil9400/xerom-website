@@ -52,6 +52,7 @@ interface GoogleEventRecord {
   transparency?: string;
   extendedProperties?: { private?: Record<string, string> };
   recurrence?: string[];
+  recurringEventId?: string;
 }
 
 async function readEventWithToken(token: string, calendarId: string, eventId: string): Promise<GoogleEventRecord | null> {
@@ -136,6 +137,7 @@ export interface CalendarEventRecord {
   privateProperties: Record<string, string>;
   allDay: boolean;
   recurrence?: string[];
+  recurringEventId?: string;
 }
 
 function eventBoundary(value: { dateTime?: string; date?: string } | undefined): { value: string; allDay: boolean } | null {
@@ -189,45 +191,53 @@ function normalizeCalendarEvent(item: GoogleEventRecord): CalendarEventRecord | 
   const start = eventBoundary(item.start);
   const end = eventBoundary(item.end);
   if (!item.id || !start || !end) return null;
-  return { id: item.id, etag: item.etag ?? "", summary: item.summary ?? "Calendar block", description: item.description ?? "", start: start.value, end: end.value, status: item.status ?? "confirmed", transparency: item.transparency ?? "opaque", privateProperties: item.extendedProperties?.private ?? {}, allDay: start.allDay || end.allDay, recurrence: item.recurrence ?? [] };
+  return { id: item.id, etag: item.etag ?? "", summary: item.summary ?? "Calendar block", description: item.description ?? "", start: start.value, end: end.value, status: item.status ?? "confirmed", transparency: item.transparency ?? "opaque", privateProperties: item.extendedProperties?.private ?? {}, allDay: start.allDay || end.allDay, recurrence: item.recurrence ?? [], recurringEventId: item.recurringEventId };
 }
 
-/** Complete finite-series expansion; open-ended masters stay explicit and block review. */
+/**
+ * Bounded future-conflict inventory for configuration review.
+ *
+ * Reads only events that end after `timeMin` (never the whole calendar history), expanding recurring
+ * series into concrete instances. Any series without an UNTIL/COUNT rule is fetched as its master and
+ * returned explicitly, so availability-affecting review stays fail-closed for open-ended schedules.
+ */
 export async function listCalendarReviewInventory(env: CloudflareEnv, calendarId: string, timeMin: string): Promise<CalendarEventRecord[]> {
   const token = await getGoogleAccessToken(env);
   return listCalendarReviewInventoryWithToken(token, calendarId, timeMin);
 }
 
 export async function listCalendarReviewInventoryWithToken(token: string, calendarId: string, timeMin: string): Promise<CalendarEventRecord[]> {
-  const masters: CalendarEventRecord[] = [];
+  const occurrences: CalendarEventRecord[] = [];
+  const seriesIds = new Set<string>();
   let pageToken: string | undefined;
   do {
-    const params = new URLSearchParams({ singleEvents: "false", showDeleted: "false", maxResults: "2500" });
+    const params = new URLSearchParams({ singleEvents: "true", showDeleted: "false", orderBy: "startTime", timeMin, maxResults: "2500" });
     if (pageToken) params.set("pageToken", pageToken);
     const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, { headers: { authorization: `Bearer ${token}` } });
     if (!response.ok) throw new Error(`Calendar event listing failed (${response.status}).`);
     const data = await response.json<{ items?: GoogleEventRecord[]; nextPageToken?: string }>();
     if (!Array.isArray(data.items)) throw new Error("Calendar event listing returned an invalid response.");
-    for (const item of data.items) { const event = normalizeCalendarEvent(item); if (event) masters.push(event); }
+    for (const item of data.items) {
+      const event = normalizeCalendarEvent(item);
+      if (!event) continue;
+      occurrences.push({ ...event, recurrence: [] });
+      if (item.recurringEventId) seriesIds.add(item.recurringEventId);
+    }
     pageToken = data.nextPageToken;
   } while (pageToken);
-  const events = masters.filter((event) => !event.recurrence?.length && Date.parse(event.end) > Date.parse(timeMin));
-  for (const master of masters.filter((event) => event.recurrence?.length)) {
-    const finite = master.recurrence!.some((rule) => rule.startsWith("RRULE:") && (rule.includes("UNTIL=") || rule.includes("COUNT=")));
-    if (!finite) { events.push(master); continue; }
-    let instancePageToken: string | undefined;
-    do {
-      const params = new URLSearchParams({ timeMin, showDeleted: "false", maxResults: "2500" });
-      if (instancePageToken) params.set("pageToken", instancePageToken);
-      const response = await fetch(`${API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(master.id)}/instances?${params}`, { headers: { authorization: `Bearer ${token}` } });
-      if (!response.ok) throw new Error(`Calendar recurring event listing failed (${response.status}).`);
-      const data = await response.json<{ items?: GoogleEventRecord[]; nextPageToken?: string }>();
-      if (!Array.isArray(data.items)) throw new Error("Calendar recurring event listing returned an invalid response.");
-      for (const item of data.items) { const event = normalizeCalendarEvent(item); if (event) events.push({ ...event, recurrence: [] }); }
-      instancePageToken = data.nextPageToken;
-    } while (instancePageToken);
+
+  const openEnded: CalendarEventRecord[] = [];
+  for (const seriesId of seriesIds) {
+    const master = await readEventWithToken(token, calendarId, seriesId);
+    if (!master) continue;
+    const recurrence = master.recurrence ?? [];
+    const finite = recurrence.some((rule) => rule.startsWith("RRULE:") && (rule.includes("UNTIL=") || rule.includes("COUNT=")));
+    if (recurrence.length > 0 && !finite) {
+      const event = normalizeCalendarEvent(master);
+      if (event) openEnded.push(event);
+    }
   }
-  return events;
+  return [...occurrences, ...openEnded];
 }
 
 export class CalendarVersionConflictError extends Error {}

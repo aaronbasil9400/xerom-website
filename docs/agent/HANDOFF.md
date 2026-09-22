@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-23
 
+## Review-blocked publication fix — 2026-09-23
+
+The owner could not publish. Production evidence: `/api/admin/config/review` returned 503 twice, `/api/admin/config/draft` 503 twice, and the coordinator received **zero** `activate-config` calls, so the Publish button never enabled.
+
+Cause: the review impact scan listed each calendar with no time bound, walking the entire event history and expanding recurrences — a CPU/memory and Google quota risk that produced intermittent failures. Fix: the inventory is now bounded to events ending after the review instant (`singleEvents=true`, `timeMin=now`), while open-ended recurring series are still fetched by master ID and returned as explicit blocking conflicts. Review/publish failures now log an identifier-free cause and return a safe reason to the owner.
+
+Deployed as `xerom-website` version `78940cac-8abd-4bab-97d7-1b0ae38f0ef1`. Verification: Astro check clean; 119/119 unit/contract tests; staging build passed. No config revision or `active.json` exists and no Calendar event changed.
+
+Next: the owner retries **Review changes** then **Publish reviewed draft**. If review now reports conflicts, they are real future Calendar blocks in the private calendars that need explicit resolution; if it reports an error, the new logs name the cause without exposing identifiers.
+
 ## Production deployment checkpoint — 2026-09-23
 
 Commit `c1432b5` is deployed to Cloudflare. The coordinator (`xerom-race-control-coordinator`) is live at version `41465367-fa6f-4ad9-9882-a34ac334c90b`, and the website (`xerom-website`) is live at code version `2a1f2aaa-1937-4166-95c9-fc1e6e7e7990` followed by secret-change version `65bf1e62-013d-4d3b-887f-850ee7714425`. The coordinator was deployed first because the website emits the new `activate-config` command and booking revision contract.

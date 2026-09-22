@@ -88,18 +88,23 @@ describe("Google Calendar fail-closed adapters", () => {
     });
   });
 
-  it("expands finite recurring series and preserves open-ended masters", async () => {
+  it("bounds review inventory to future occurrences and flags open-ended series", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(Response.json({ items: [
-        { id: "finite", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY;COUNT=2"] },
-        { id: "open", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY"] },
+        { id: "finite-instance", recurringEventId: "finite", start: { dateTime: event.start }, end: { dateTime: event.end } },
+        { id: "open-instance", recurringEventId: "open", start: { dateTime: event.start }, end: { dateTime: event.end } },
+        { id: "one-off", start: { dateTime: event.start }, end: { dateTime: event.end } },
       ] }))
-      .mockResolvedValueOnce(Response.json({ items: [{ id: "finite-instance", start: { dateTime: event.start }, end: { dateTime: event.end } }] }));
+      .mockResolvedValueOnce(Response.json({ id: "finite", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY;COUNT=2"] }))
+      .mockResolvedValueOnce(Response.json({ id: "open", start: { dateTime: event.start }, end: { dateTime: event.end }, recurrence: ["RRULE:FREQ=WEEKLY"] }));
     vi.stubGlobal("fetch", fetchMock);
     const events = await listCalendarReviewInventoryWithToken("token", "fixture-calendar", "2026-09-16T00:00:00Z");
-    expect(events.map((candidate) => candidate.id)).toEqual(["finite-instance", "open"]);
-    expect(events[1].recurrence).toEqual(["RRULE:FREQ=WEEKLY"]);
-    expect(fetchMock.mock.calls[1][0]).toContain("/finite/instances?");
+    expect(fetchMock.mock.calls[0][0]).toContain("singleEvents=true");
+    expect(fetchMock.mock.calls[0][0]).toContain("timeMin=");
+    expect(fetchMock.mock.calls[0][0]).not.toContain("timeMax=");
+    expect(events.map((candidate) => candidate.id)).toEqual(["finite-instance", "open-instance", "one-off", "open"]);
+    expect(events.find((candidate) => candidate.id === "open")?.recurrence).toEqual(["RRULE:FREQ=WEEKLY"]);
+    expect(events.find((candidate) => candidate.id === "open-instance")?.recurrence).toEqual([]);
   });
 
   it("patches only owned fields with If-Match and exposes external edits as 412", async () => {

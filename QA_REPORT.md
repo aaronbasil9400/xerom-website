@@ -274,6 +274,22 @@ The review endpoint has not been run with live R2 or Google data and intentional
 
 The scan is read-only. No booking, Calendar event, R2 active pointer or configuration revision was created. Authenticated live review remains to be exercised by the owner; publication/rollback remains a separate unimplemented mutation path.
 
+## Publication-blocking review incident (2026-09-23)
+
+Symptom: the owner could not publish. Production logs showed `POST /api/admin/config/review` returned 503 twice (and 200 twice), `PUT /api/admin/config/draft` returned 503 twice, and the coordinator received **zero** `activate-config` commands — so publication never started and the Publish button never enabled.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Root-cause scope | Identified | Review ran the new full Calendar scan; the inventory listed each calendar with no time bound, walking full history and expanding recurrences (CPU/memory and Google quota risk) |
+| Bounded inventory | Fixed | `singleEvents=true` with `timeMin` (events ending after the review instant) and no full-history walk |
+| Open-ended series | Preserved | Series without `UNTIL`/`COUNT` are fetched by master ID and returned as explicit blocking conflicts |
+| Diagnostics | Added | Review/publish log an identifier-free cause; the owner sees a safe reason instead of a generic message |
+| Tests | Pass | 119/119 unit/contract, including updated bounded-inventory coverage |
+| Type/build | Pass | `npm run check` clean; staging build passed |
+| Deploy | Pass | `xerom-website` version `78940cac-8abd-4bab-97d7-1b0ae38f0ef1` |
+
+No configuration was published; `active.json` and immutable revisions remain absent and no Calendar event changed. The owner must retry **Review changes**, then **Publish reviewed draft**, and the resulting logs will confirm either success or a precise remaining conflict.
+
 ## Production deployment checkpoint (2026-09-23)
 
 | Check | Result | Evidence |

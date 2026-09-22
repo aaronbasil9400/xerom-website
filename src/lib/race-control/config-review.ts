@@ -28,7 +28,15 @@ export async function reviewConfigDraft(env: CloudflareEnv, current: ConfigRevis
     ...proposed.resources.filter((resource) => resource.calendarRef).map((resource) => [resource.calendarRef!, { resourceId: resource.resourceId, calendarRef: resource.calendarRef! }] as const),
   ]).values()];
   const token = await getGoogleAccessToken(env);
-  const inventories = await Promise.all(calendars.map(async (resource) => ({ resource, events: await listCalendarReviewInventoryWithToken(token, resource.calendarRef, now) })));
+  const inventories = await Promise.all(calendars.map(async (resource) => {
+    try {
+      return { resource, events: await listCalendarReviewInventoryWithToken(token, resource.calendarRef, now) };
+    } catch (error) {
+      // Log the resource identity and static adapter message only; never the Calendar ID or event content.
+      console.error(JSON.stringify({ message: "config_review_calendar_failed", resourceId: resource.resourceId, error: error instanceof Error ? error.message : "unknown" }));
+      throw error;
+    }
+  }));
   const events: FutureCalendarEvent[] = inventories.flatMap(({ resource, events }) => events
     .filter((event) => event.status !== "cancelled" && event.transparency !== "transparent" && event.privateProperties.status !== "cancelled" && ((event.recurrence?.length ?? 0) > 0 || Date.parse(event.end) > Date.parse(now)))
     .map((event) => ({ eventId: event.id, resourceId: resource.resourceId, start: event.start, end: event.end, bookingId: event.privateProperties.bookingId ?? null, recurring: (event.recurrence?.length ?? 0) > 0, recurrenceHasNoEnd: event.recurrence?.some((rule) => rule.startsWith("RRULE:") && !rule.includes("UNTIL=") && !rule.includes("COUNT=")) ?? false, allDay: event.allDay })));

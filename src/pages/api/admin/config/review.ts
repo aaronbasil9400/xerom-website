@@ -32,7 +32,10 @@ export const POST: APIRoute = async ({ request }) => {
     const reviewToken = impact.publishable ? await createConfigReviewToken(env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY, { draftHash: hash, baseRevision, expiresAt }) : null;
     return Response.json({ data: { draftHash: hash, baseRevision, ...impact, impactScanComplete: true, expiresAt, reviewToken }, etag: draft.etag }, { headers });
   } catch (error) {
-    const message = error instanceof ConfigUnavailableError ? error.message : "Configuration review is unavailable.";
-    return Response.json({ error: { code: "CONFIG_UNAVAILABLE", message, retryable: true } }, { status: 503, headers });
+    // Adapter/credential errors use static, identifier-free text; log structured cause without Calendar IDs or customer data.
+    const detail = error instanceof Error ? error.message : "unknown";
+    console.error(JSON.stringify({ message: "config_review_failed", detail }));
+    const message = error instanceof ConfigUnavailableError ? error.message : "Calendar impact review could not be completed. Nothing was published. Retry the review.";
+    return Response.json({ error: { code: "REVIEW_UNAVAILABLE", message, detail, retryable: true } }, { status: 503, headers });
   }
 };

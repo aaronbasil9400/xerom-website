@@ -1,5 +1,11 @@
 # Decision Log
 
+## 2026-09-23 — Bound configuration review inventory
+
+- The review inventory now lists only events that end after the review instant (`singleEvents=true`, `timeMin=now`, no `timeMax`) instead of walking each calendar's entire history. Unbounded listings risked Worker CPU/memory exhaustion and Google quota errors, which surfaced as intermittent 503s and blocked publication.
+- Recurring series are expanded into concrete instances for conflict checks. Any series without `UNTIL`/`COUNT` is fetched by its master ID and returned explicitly so open-ended schedules still fail closed.
+- Review and publish failures now log a structured, identifier-free cause and return a safe reason to the owner. Calendar IDs, event contents, and customer data are never logged or returned.
+
 ## 2026-09-23 — Production deployment order and shared review secret
 
 - Deploy the coordinator before the website, because the website emits the updated `activate-config` command (`draftEtag`) and the booking `configRevision` contract that the coordinator must already accept.

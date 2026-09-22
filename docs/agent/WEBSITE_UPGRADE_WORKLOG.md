@@ -122,3 +122,9 @@ Started: 2026-09-22
 - Deployed the coordinator first (`xerom-race-control-coordinator`, version `41465367-fa6f-4ad9-9882-a34ac334c90b`), then the website (`xerom-website`, version `2a1f2aaa-1937-4166-95c9-fc1e6e7e7990`, then secret version `65bf1e62-013d-4d3b-887f-850ee7714425`). The website secret was resynced after deploy because Wrangler blocks direct secret edits while an undeployed version exists.
 - Read-only verification: homepage and `/api/public-config` 200 (compiled bootstrap `seed-draft-v2`); Race Control and admin config routes 302 to Access; coordinator public URL 404 by design; live availability 200 in `live` mode; both R2 config objects absent.
 - Publication, rollback and authenticated owner review were not exercised; no Calendar or R2 object was written.
+
+### 2026-09-23 — Review-blocked publication fix
+
+- Diagnosed from production observability: review 503 twice, draft 503 twice, and zero coordinator `activate-config` calls, so publication never began.
+- Bounded the review Calendar inventory to future occurrences and made open-ended series an explicit, fail-closed conflict; added identifier-free failure logging and a safe owner-facing reason.
+- Deployed website version `78940cac-8abd-4bab-97d7-1b0ae38f0ef1`; typecheck, 119/119 tests and staging build pass. Publication still requires the owner's authenticated retry.
