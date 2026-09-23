@@ -583,3 +583,14 @@ No Calendar or production mutation was made. The 60-second interval is a freshne
 | Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (68/68), `npm run build`, and Playwright (18 passed; 6 intentional skips) |
 
 The attached screenshot was used only to identify the owner-selected elements. No Calendar or production state changed.
+
+## Compact homepage hours card (2026-09-23)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Runtime summary | Pass | Unit tests cover Malaysia-local day rollover, changed weekly hours, and a same-day closure exception |
+| Responsive layout | Pass | Playwright homepage check passed at 375, 390, 430, 768, 1024, and 1440px with no page overflow; cropped captures: `.impeccable/review/hours-summary/mobile-375.png` and `desktop-1440.png` |
+| Link and accessibility | Pass | Playwright found one concise hours value and the `Weekly hours` link to `/visit#hours` at every required width; the core-routes check found no browser console errors or broken images |
+| Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (126/126), `npm run build`, full Playwright suite (70 passed, 38 intentional viewport-specific skips) |
+
+Browser checks used the local Astro mock-mode server on 2026-09-23. The supplied staging screenshot was a visual reference; the staging deployment was not changed. No live Calendar event or production configuration was touched. Public-holiday policy remains an owner TODO; an explicitly published date exception is reflected in the compact card.

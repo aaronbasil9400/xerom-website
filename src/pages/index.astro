@@ -10,6 +10,7 @@ import ArrowIcon from "@/components/ArrowIcon.astro";
 import "@/styles/home.css";
 import { env as cloudflareEnv } from "cloudflare:workers";
 import { resolveRuntimeConfig } from "@/lib/config/runtime";
+import { todayOpeningHours } from "@/lib/config/hours-display";
 
 let publishedHeroAssetId: string | null = null;
 const { config: runtimeConfig } = await resolveRuntimeConfig(cloudflareEnv);
@@ -24,6 +25,7 @@ const runtimeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (runtimeCo
 const dayLabels = { monday: "Mon", tuesday: "Tue", wednesday: "Wed", thursday: "Thu", friday: "Fri", saturday: "Sat", sunday: "Sun" } as const;
 const clock = (value: string) => new Intl.DateTimeFormat("en-MY", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" }).format(new Date(`2026-01-01T${value}:00+08:00`));
 const runtimeHours = Object.entries(runtimeConfig.hours.weekly).map(([day, intervals]) => ({ days: dayLabels[day as keyof typeof dayLabels], hours: intervals.length ? intervals.map((interval) => `${clock(interval.open)}–${clock(interval.close)}`).join(", ") : "Closed" }));
+const todayHours = todayOpeningHours(runtimeConfig.hours);
 const activeCount = (serviceId: "regular-sim" | "pro-sim" | "ps5") => runtimeConfig.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active").length;
 const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/);
 ---
@@ -63,8 +65,9 @@ const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/
             <p>From casual laps to focused race simulation.</p>
           </div>
           <div class="hours-chip" aria-label="Opening hours">
-            <strong>Opening hours</strong>
-            {runtimeHours.map((group) => <span><b>{group.days}</b> {group.hours}</span>)}
+            <strong>Today · {todayHours.day}</strong>
+            <span>{todayHours.hours}</span>
+            <a href="/visit#hours">Weekly hours <ArrowIcon /></a>
           </div>
         </div>
         <div class="home-session-grid">

@@ -1,5 +1,11 @@
 # Decision Log
 
+## 2026-09-23 — Compact homepage hours summary
+
+- The hours card beside Pick Your Pace shows only today's Malaysia-local opening window and links to the complete weekly schedule on `/visit#hours`. This keeps the card short at phone and desktop widths even when the owner gives each weekday a different schedule.
+- Derive today's window from the active runtime configuration, with a matching date exception taking precedence over weekly hours. The card makes no live open/closed claim; overnight close times belong to the following day.
+- Keep the full weekly rows in the homepage visit section and Visit page. Neither booking rules nor owner settings publication changes as part of this presentation update.
+
 ## 2026-09-23 — Owner-confirmed private calendar provisioning
 
 - Increasing a resource quantity can no longer be published by hand: the readiness gate requires every non-retired resource to carry an active private Calendar. Race Control now provisions that Calendar itself instead of asking the owner to paste a Calendar ID.

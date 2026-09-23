@@ -9,6 +9,10 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   const experienceDock = page.locator("[data-experience-dock]");
   await expect(page.getByRole("link", { name: /book a session/i }).first()).toBeVisible();
   await expect(page.locator("[data-session-card]")).toHaveCount(4);
+  const hoursSummary = page.locator(".hours-chip");
+  await expect(hoursSummary).toContainText(/Today · (Mon|Tue|Wed|Thu|Fri|Sat|Sun)/);
+  await expect(hoursSummary.locator("span")).toHaveCount(1);
+  await expect(hoursSummary.getByRole("link", { name: "Weekly hours" })).toHaveAttribute("href", "/visit#hours");
   await expect(experienceDock.locator(":scope > a")).toHaveCount(3);
   if (viewportWidth <= 560) {
     await expect(experienceDock).toBeHidden();
