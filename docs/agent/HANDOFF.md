@@ -2,6 +2,12 @@
 
 Last updated: 2026-09-23
 
+## Homepage hours-card deployment — 2026-09-23
+
+The Pick Your Pace card now shows today's Malaysia-local hours from active runtime configuration, including any date exception, with a link to the weekly schedule on `/visit#hours`. Commit `6587800` is pushed to `origin/minor_changes`; Cloudflare built preview version `2ea013fa-723f-4cbd-8fd5-ad714aa1ac5f`. The owner-requested `xerom-website.aaronbasil9400.workers.dev` Worker is deployed at version `c032fa67-ba2c-4132-b943-200324bdbcdd` (100% traffic).
+
+Read-only deployed Playwright passed the homepage at all six required widths. At 390 and 1440px, the card and link were visually inspected, the weekly schedule destination loaded, and no console errors, failed requests or horizontal overflow appeared. Local check, 126 unit tests, staging build and the full local Playwright suite passed. No Calendar event or owner configuration was changed. The unrelated untracked `graphify-out/` directory was left intact.
+
 ## Private calendar provisioning — 2026-09-23
 
 Resource increases were unpublishable because the readiness gate requires every non-retired resource to have an active private Calendar, and nothing could bind one. Race Control now provisions it: `POST /api/admin/resources/provision` creates one private secondary calendar per resource in the service-account identity, verifies read/write with a removed probe event, reconciles lost responses through a stable `xerom-resource:<resourceId>` marker instead of blind retries, and links `calendarRef` in the draft without ever returning it to the browser. The Resources editor lists every resource and offers **Create private calendar** for unlinked rows.

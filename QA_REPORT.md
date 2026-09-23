@@ -593,4 +593,10 @@ The attached screenshot was used only to identify the owner-selected elements. N
 | Link and accessibility | Pass | Playwright found one concise hours value and the `Weekly hours` link to `/visit#hours` at every required width; the core-routes check found no browser console errors or broken images |
 | Regression | Pass | `npm run check` (0 errors/warnings/hints), `npm test` (126/126), `npm run build`, full Playwright suite (70 passed, 38 intentional viewport-specific skips) |
 
-Browser checks used the local Astro mock-mode server on 2026-09-23. The supplied staging screenshot was a visual reference; the staging deployment was not changed. No live Calendar event or production configuration was touched. Public-holiday policy remains an owner TODO; an explicitly published date exception is reflected in the compact card.
+Browser checks for this checkpoint used the local Astro mock-mode server on 2026-09-23. The supplied staging screenshot was a visual reference; deployment followed in the checkpoint below. No live Calendar event or owner configuration was touched. Public-holiday policy remains an owner TODO; an explicitly published date exception is reflected in the compact card.
+
+## Cloudflare hours-card deployment (2026-09-23)
+
+Commit `6587800` was pushed to `origin/minor_changes` and Cloudflare uploaded branch preview version `2ea013fa-723f-4cbd-8fd5-ad714aa1ac5f` under alias `minor-changes`. `npm run build:staging` and a dry run against the generated Astro Wrangler config passed. The requested `xerom-website` URL was then deployed at Worker version `c032fa67-ba2c-4132-b943-200324bdbcdd`; Cloudflare reports that version at 100% traffic.
+
+Read-only Playwright against `https://xerom-website.aaronbasil9400.workers.dev` passed the homepage check at 375, 390, 430, 768, 1024 and 1440px. Separate 390px and 1440px browser checks returned HTTP 200, rendered `TODAY · WED 2 pm–1 am Weekly hours`, reached `/visit#hours`, had zero horizontal overflow, and recorded no console errors or failed requests. Cropped deployed card screenshots were visually inspected. No booking, Calendar, R2 publication or owner setting was changed.
