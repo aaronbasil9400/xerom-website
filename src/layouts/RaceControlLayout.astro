@@ -28,7 +28,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
       <a class="rc-button rc-button-primary" href="/race-control/schedule#new-booking">New booking</a>
     </header>
     <div class="rc-shell">
-      <RaceControlNav active={section} />
+      <RaceControlNav active={section} live={liveEnabled} />
       <main class="rc-main" id="main-content">
         <div class="rc-page-heading"><h1>{title}</h1></div>
         <slot />

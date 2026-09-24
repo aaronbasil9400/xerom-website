@@ -48,6 +48,7 @@ const runtimeLinks = {
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="description" content={description} />
+    {import.meta.env.PUBLIC_STAGING_SITE === "1" && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />

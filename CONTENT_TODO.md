@@ -23,10 +23,10 @@ Only unresolved or replaceable items belong here. Remove an item only after its 
 
 ## Required before booking integration
 
-- [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in the Xerom Booking Google account on 2026-09-13; coordinator granted Make changes and see all event details so it can create private booking events).
+- [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in client-owned project/account on 2026-09-24; all seven are private, `Asia/Kuala_Lumpur`, and shared with the coordinator at Make changes and see all event details).
 - [x] Provide server-side calendar IDs through encrypted Worker secrets; never paste them into documentation or client code.
-- [x] Create the dedicated Google service account and agree on its calendar permissions (Xerom Booking Coordinator identity created in the dedicated Xerom Booking Cloud project on 2026-09-13).
-- [ ] **Replace the Turnstile demo widget before public launch.** The temporary `workers.dev` demo intentionally uses Cloudflare's always-pass test site/secret pair, so customers see the widget warning “For testing only. If seen, report to site owner.” Create a hostname-scoped widget for the canonical production hostname, update the `PUBLIC_TURNSTILE_SITE_KEY` build variable and encrypted `TURNSTILE_SECRET_KEY`, then verify the warning is gone and real site verification succeeds. The booking-coordinator Worker was created and deployed on 2026-09-13.
+- [x] Create the dedicated Google service account and agree on its calendar permissions (client-owned Xerom Booking project and coordinator identity created on 2026-09-24; event-writer access verified).
+- [ ] **Add the final domain to Turnstile before domain cutover.** The always-pass demo pair has been replaced by a real managed widget scoped to `xerom-website.xerombookings.workers.dev`; deployed booking submissions pass real Siteverify. When the owner supplies the canonical hostname, add it to the widget and update the `PUBLIC_TURNSTILE_SITE_KEY` build variable and encrypted `TURNSTILE_SECRET_KEY` if the widget is replaced. The original unused widget whose secret appeared in Wrangler output was deleted.
 - [ ] Confirm whether optional customer notes should be collected.
 - [ ] Confirm event reminder behavior and whether staff want a Calendar event color convention.
 - [ ] Confirm the staff-readable booking-title format.
@@ -59,6 +59,6 @@ Scope answers are recorded in PRODUCT.md; do not ask them again. The implementat
 
 - [ ] TODO: Implement booking confirmation email backend. The current upgrade captures, validates and stores optional email only; no email provider or delivery path is approved.
 - [x] R2 enabled on 2026-09-22. Private APAC buckets `xerom-race-control-config` and `xerom-race-control-media` are bound to the deployed Worker. `r2.dev` is disabled, no custom domains exist, and no browser CORS is configured.
-- [ ] Configure the five documented Cloudflare Rate Limiting namespaces/bindings before public launch; code currently fails open when an optional binding is absent.
+- [x] Configure five Cloudflare Rate Limiting bindings on the client Worker using the documented route limits and unique account namespace IDs.
 
 Holiday editing and conflict review are approved features; actual holiday dates/hours still require owner input. Current confirmed booking durations are 30/60/90/120 minutes.

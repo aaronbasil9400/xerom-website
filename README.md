@@ -4,7 +4,7 @@ Production website and database-free booking system for Xerom SimRacing & Cafe i
 
 ## Current status
 
-The responsive Astro site and approved Race · Play · Refuel booking experience are deployed on the connected `xerom-website` Cloudflare Worker. The client demo currently uses live Google Calendar availability/events and Cloudflare's documented Turnstile test pair; replace the test pair before public launch.
+The responsive Astro site is deployed in the client-owned Cloudflare account at [xerom-website.xerombookings.workers.dev](https://xerom-website.xerombookings.workers.dev). Live availability and booking use the client-owned private Google Calendars, a serialized coordinator Worker, real hostname-scoped Turnstile, and five rate-limit bindings. Race Control and owner APIs require Cloudflare Access. The temporary hostname is marked `noindex`; the canonical domain and GitHub auto-deploy connection are still pending.
 
 ## Planned stack
 
@@ -37,7 +37,7 @@ npm install
 npm run dev
 ```
 
-Local development uses mock availability and booking confirmation. The demo Worker is explicitly configured with `BOOKING_MODE=live`; new preview environments must remain disabled unless they use dedicated test calendars.
+Local development uses mock availability and booking confirmation. The temporary Worker is configured with `BOOKING_MODE=live` and currently uses the production-named resource calendars. Any additional preview that is not intended to accept customer reservations must use `BOOKING_MODE=disabled` or its own dedicated test calendars.
 
 Verification:
 

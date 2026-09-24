@@ -13,4 +13,4 @@ Cloudflare Workers Rate Limiting bindings are the implementation target. The API
 
 The anonymous public routes use a deliberately generous IP key because no account identity exists and many Malaysian mobile users may share an address. Turnstile remains the stronger bot signal on booking creation. Ordinary page navigation is not limited.
 
-The bindings are optional in code so local development works. Production enforcement requires separately creating/configuring five `ratelimits` bindings with unique account namespace IDs: `PUBLIC_AVAILABILITY_RATE_LIMIT`, `PUBLIC_BOOKING_RATE_LIMIT`, `OWNER_READ_RATE_LIMIT`, `OWNER_MUTATION_RATE_LIMIT`, and `OWNER_UPLOAD_RATE_LIMIT`. Account-level configuration is not performed by this change.
+The bindings are optional in code so local development works. The client Worker config declares all five bindings with unique namespace IDs `101001`–`101005`, using the limits in the table above. Wrangler created these bindings on the staging Worker deployment. They are local to each Cloudflare location, so use them as abuse protection rather than the booking serialization guarantee.

@@ -1,6 +1,6 @@
 ---
-interface Props { active: string }
-const { active } = Astro.props;
+interface Props { active: string; live?: boolean }
+const { active, live = false } = Astro.props;
 const links = [
   { id:'schedule', label:'Schedule', href:'/race-control/schedule' }, { id:'bookings', label:'Bookings', href:'/race-control/bookings' },
   { id:'resources', label:'Resources', href:'/race-control/settings/resources' }, { id:'hours', label:'Hours & Closures', href:'/race-control/settings/hours' },
@@ -17,5 +17,5 @@ const links = [
   {links.slice(2,7).map((link) => <a class:list={{active: active === link.id}} href={link.href} aria-current={active === link.id ? 'page' : undefined}>{link.label}</a>)}
   <p class="rc-nav-label rc-nav-settings">Publishing</p>
   {links.slice(7).map((link) => <a class:list={{active: active === link.id}} href={link.href} aria-current={active === link.id ? 'page' : undefined}>{link.label}</a>)}
-  <p class="rc-nav-foot">Owner-only access<br /><span>Demo fixture mode</span></p>
+  <p class="rc-nav-foot">Owner-only access<br /><span>{live ? "Shared Calendar live" : "Demo fixture mode"}</span></p>
 </nav>

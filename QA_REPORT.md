@@ -1,5 +1,28 @@
 # QA Report
 
+## Client-owned staging rebuild — 2026-09-24
+
+Environment: the transferred repository checked out locally and pointed at `xerombookings-dev/xerom-website`; Cloudflare account owned by the client; Google Calendar project and calendars owned by the client. Temporary public URL: `https://xerom-website.xerombookings.workers.dev`.
+
+| Check | Result | Evidence |
+|---|---|---|
+| GitHub access | Pass | `git push --dry-run origin main` reached the transferred repository and reported `Everything up-to-date`; source changes from this setup still need to be committed and pushed. |
+| Cloudflare identity | Pass | `wrangler whoami` identified the client Cloudflare account. |
+| Coordinator | Pass | `xerom-race-control-coordinator` deployed with SQLite Durable Object and private R2 config binding. |
+| Website | Pass | `xerom-website` deployed at the temporary workers.dev host; homepage, booking, and all public routes rendered. Current Worker version `9957311f-c190-4ded-9233-f1999cf740b7`. |
+| Staging indexing | Pass | Homepage canonical resolves to the workers.dev URL; `meta[name=robots]` is `noindex, nofollow`; `/robots.txt` returns `Disallow: /`. |
+| Private R2 storage | Pass | Both private APAC buckets have deployed bindings. Put/get/delete probes passed in both and were removed. No active/draft configuration or media was published. |
+| Owner protection | Pass | Cloudflare Access redirects unauthenticated `/race-control/*` and `/api/admin/*`; authenticated Safari owner session loaded the live schedule. `GET /api/admin/config/draft` returned the compiled `seed-draft-v2` fallback. |
+| Google Calendar identity | Pass | Client-owned service account authenticated to Calendar API. Seven client-owned private calendars are writer-accessible to it, listed in `Asia/Kuala_Lumpur`, and verified by live reads. Calendar IDs remain only in Worker secrets. |
+| Live availability | Pass | Public booking flow returned live Regular, Pro, and PS5 availability from Calendar: 3/3 Regular, 1/1 Pro, and 2/2 PS5 capacity at tested times. Both current-day and next-day ranges loaded successfully. |
+| Turnstile | Pass | Managed widget is hostname-scoped to the temporary workers.dev host. Safari completed the human check; live booking submission passed server-side Siteverify. The first unused widget whose secret appeared in CLI output was deleted. |
+| Worker rate limits | Pass | Wrangler deployment lists all five bindings: availability 120/min, booking 10/min, owner read 60/min, owner mutation 60/min, and uploads 10/min. |
+| Live final-resource race | Pass | Two simultaneous Pro Sim requests for Fri 25 Sep 2026, 11:30 PM MYT produced one confirmation and one “slot was just taken” response. The single winner event was deleted; follow-up Calendar search found no matching test event and FreeBusy returned zero busy intervals. |
+| Responsive homepage | Pass | Remote `tests/e2e/visual.spec.ts` passed at 375, 390, 430, 768, 1024, and 1440 CSS px. Screenshots were visually inspected; generated files were restored to the repository’s tracked baseline. |
+| Local checks | Pass | `npm run check`: 0 errors/warnings/hints; `npm test -- --run`: 126/126; `npm run build:staging` with the real staging site key; Wrangler website dry-run included all five Rate Limiting bindings. |
+
+Known remaining launch gates: connect the Worker to GitHub automatic builds, add the owner’s final canonical domain to DNS and Turnstile, verify `/sitemap.xml` and redirects after domain cutover, complete unresolved owner content items, and test reviewed R2 publication/rollback. The temporary Worker is live against the production-named calendars but remains noindex. The IAB browser logged Cloudflare Turnstile `%c%d ... NaN` diagnostics during widget initialization/expiry; real Safari rendered the widget and live server-side verification passed. Rate limit thresholds were not load-tested.
+
 ## Private R2 binding checkpoint — 2026-09-22
 
 - Configured private Worker bindings for `xerom-race-control-config` and `xerom-race-control-media`; no `r2.dev`, custom domain or CORS exposure.

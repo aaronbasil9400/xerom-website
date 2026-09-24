@@ -1,5 +1,13 @@
 # Decision Log
 
+## 2026-09-24 — Client Cloudflare staging protection and rate limits
+
+- The transferred repository deploys in the client's Cloudflare account at `xerom-website.xerombookings.workers.dev` while the canonical domain remains undecided. Staging builds use that hostname for canonical metadata and `noindex`/`Disallow` so the temporary URL is not indexed.
+- Cloudflare Access protects only `/race-control/*` and `/api/admin/*`; its allow policy is scoped to the verified client owner identity. The public marketing and booking surfaces remain reachable for verification.
+- The website Worker uses a separate managed Turnstile widget restricted to the temporary hostname. The first unused widget was deleted after its secret appeared in CLI output; only the replacement secret is stored as an encrypted Worker secret.
+- Five Cloudflare Rate Limiting bindings are enabled in the Worker config with unique account namespace IDs and the documented per-route limits. The Durable Object remains responsible for booking serialization and final Calendar revalidation.
+- Google Calendar remains the business record. Seven private calendars are owned by the client's Google account, shared with the client-owned service account using “Make changes and see all event details,” and validated in Kuala Lumpur time.
+
 ## 2026-09-23 — Compact homepage hours summary
 
 - The hours card beside Pick Your Pace shows only today's Malaysia-local opening window and links to the complete weekly schedule on `/visit#hours`. This keeps the card short at phone and desktop widths even when the owner gives each weekday a different schedule.

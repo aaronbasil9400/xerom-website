@@ -25,20 +25,22 @@ Node version: current Cloudflare-supported LTS compatible with Astro 7
 
 The site uses `@astrojs/cloudflare` with compile-time image optimization and no Astro session store.
 
-## Current Worker client demo
+## Client-owned temporary Worker — 2026-09-24
 
-The client demo uses the existing `xerom-website` Worker and the separately deployed `xerom-race-control-coordinator`. The root configuration uses `BOOKING_MODE=live`, so a successful demo booking is a real Calendar reservation and must be cancelled or removed from every assigned resource calendar afterward.
+The transferred repository is deployed in the client account at `https://xerom-website.xerombookings.workers.dev`, bound to `xerom-race-control-coordinator`. The Worker is live on the seven production-named, private Google Calendars owned by `xerombookings@gmail.com`. The temporary URL is marked `noindex`; attach the approved canonical hostname and update the Turnstile widget before domain cutover.
 
-Deploy the current Worker with:
+Race Control and `/api/admin/*` are protected by Cloudflare Access for the owner email. The public booking flow uses a managed Turnstile widget scoped to the Worker hostname, and the Worker has all five Rate Limiting bindings. Test reservations on these calendars are real reservations: label them clearly and remove them from every assigned calendar after the test.
+
+Build and deploy with the client hostname-scoped public widget key:
 
 ```bash
-npm run build:staging
-npx wrangler deploy --message "Client demo"
+PUBLIC_TURNSTILE_SITE_KEY=<public-site-key> npm run build:staging
+npx wrangler deploy --var BOOKING_MODE:live --message "Client staging update"
 ```
 
-`build:staging` injects Cloudflare's documented always-pass public demo site key so the widget is present. It does not contain or change the private `TURNSTILE_SECRET_KEY`. To use a real widget later, override `PUBLIC_TURNSTILE_SITE_KEY` for the build and update the Worker secret through Wrangler's secret workflow.
+`build:staging` requires an explicit `PUBLIC_TURNSTILE_SITE_KEY` and fails instead of falling back to Cloudflare's always-pass test key. Store its matching `TURNSTILE_SECRET_KEY` only as an encrypted Worker secret. To deploy a non-booking preview, use `--var BOOKING_MODE:disabled`.
 
-Do not use this Worker for unattended previews or synthetic browser tests. Branch previews that need isolation must use `BOOKING_MODE=disabled` or a separately provisioned set of seven test calendars and Turnstile domains.
+Do not point unattended previews or synthetic browser tests at the production-named calendars. Use `BOOKING_MODE=disabled` or a separately provisioned set of seven test calendars and a hostname-scoped Turnstile widget.
 
 ## Deploy the coordinator first
 
@@ -54,11 +56,12 @@ npx wrangler secret put PRO_SIM_01_CALENDAR_ID --config coordinator/wrangler.rac
 npx wrangler secret put PS5_01_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
 npx wrangler secret put PS5_02_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
 npx wrangler secret put BOOKING_CONTROL_CALENDAR_ID --config coordinator/wrangler.race-control.jsonc
+npx wrangler secret put VENUE_GOOGLE_ACCOUNT_EMAIL --config coordinator/wrangler.race-control.jsonc
 npx wrangler secret put RACE_CONTROL_TOKEN_ENCRYPTION_KEY --config coordinator/wrangler.race-control.jsonc
-npm run coordinator:deploy
+npx wrangler deploy --config coordinator/wrangler.race-control.jsonc
 ```
 
-Use the same randomly generated review-token secret for the coordinator and public Worker; never print or commit it. The coordinator also binds the private `xerom-race-control-config` bucket so fresh Calendar revalidation, immutable revision creation and conditional pointer activation occur inside venue serialization. Never place secrets in `wrangler.jsonc`. Cloudflare requires this Durable Object to be deployed as a Worker and then bound to the public Worker using the `script_name` recorded in the root `wrangler.jsonc`.
+The coordinator and public Worker need the same randomly generated review-token secret. Enter each value at Wrangler's secret prompt; do not put values in command arguments, logs, source files, or `wrangler.jsonc`. The website also needs the Google service account and seven Calendar IDs for live availability and Race Control schedule reads, plus `OWNER_EMAILS` and the same `RACE_CONTROL_TOKEN_ENCRYPTION_KEY`. The coordinator binds the private `xerom-race-control-config` bucket so final Calendar checks, immutable revision creation and conditional pointer activation run inside venue serialization. Cloudflare requires the Durable Object Worker to be deployed before the website binds to its `script_name`.
 
 ## Configure the public Worker
 
@@ -68,7 +71,9 @@ Production environment variables/secrets:
 BOOKING_MODE=live
 TURNSTILE_SECRET_KEY=<encrypted secret>
 RACE_CONTROL_TOKEN_ENCRYPTION_KEY=<at least 32 random bytes; required for configuration review tokens>
-PUBLIC_TURNSTILE_SITE_KEY=<public environment variable>
+OWNER_EMAILS=<encrypted owner email allowlist>
+TURNSTILE_EXPECTED_HOSTNAME=<worker hostname until domain cutover>
+PUBLIC_TURNSTILE_SITE_KEY=<public build variable; not a Worker secret>
 ```
 
 The Durable Object binding must be named `BOOKING_COORDINATOR`, point to class `BookingCoordinator`, and use script `xerom-race-control-coordinator`.
@@ -98,13 +103,13 @@ Preview environments should use `BOOKING_MODE=disabled` unless they are connecte
 3. Expose only the site key as `PUBLIC_TURNSTILE_SITE_KEY`.
 4. Test success, expiry, retry, and failure before enabling live booking.
 
-### Current demo note
+### Hostname cutover
 
-The `xerom-website` Worker currently uses Cloudflare's documented always-pass Turnstile test pair so the client demo can exercise the live Google Calendar flow on its temporary `workers.dev` hostname. Replace both test values with a real hostname-scoped widget before public launch; test credentials must never remain on a production hostname.
+The current managed widget is scoped to `xerom-website.xerombookings.workers.dev`. Add the eventual canonical hostname to a verified widget before domain cutover and update `TURNSTILE_EXPECTED_HOSTNAME`; test credentials must never remain on a production hostname.
 
 ## Rate limiting
 
-**High-priority deferred launch task:** after the current client test/demo, create Cloudflare rate-limiting rules for `/api/availability` and `/api/bookings`. Start conservatively, observe real traffic, and allow ordinary group booking retries while blocking sustained automated bursts. The booking endpoint already validates origin, request size, schema, Turnstile, and idempotency; edge rate limiting is the outer abuse-control layer. Do not treat the demo deferral as production approval.
+The five documented Rate Limiting bindings are configured on the client Worker: 120/min availability, 10/min bookings, 60/min owner reads, 60/min owner mutations, and 10/min uploads. They use location-local counters, so retain the Durable Object as the global booking serialization and final Calendar revalidation layer.
 
 ## Domain and SEO
 
