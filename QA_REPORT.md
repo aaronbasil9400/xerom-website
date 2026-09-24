@@ -7,10 +7,10 @@ Environment: the transferred repository checked out locally and pointed at `xero
 | Check | Result | Evidence |
 |---|---|---|
 | GitHub access | Pass | `git push --dry-run origin main` reached the transferred repository; Cloudflare’s GitHub App is installed for only `xerombookings-dev/xerom-website`. |
-| Workers Builds | Pass | Cloudflare built commits `e51d513` and `4e5a9f9` from `xerombookings-dev/xerom-website` on `main`. `npm run build:staging` and `npx wrangler deploy` completed; the latter deployed Worker version `9d3addc3-f598-477d-bb30-46041b03d5cc` at 100% traffic. The build log confirms the Durable Object, both R2 buckets, all five rate limits, `BOOKING_MODE=live`, and assets. |
+| Workers Builds | Pass | Cloudflare built commits `e51d513`, `4e5a9f9`, and `fdde194` from `xerombookings-dev/xerom-website` on `main`. `npm run build:staging` and `npx wrangler deploy` completed; the third build deployed Worker version `62cc119a-304c-4093-b603-8f345743ed52` at 100% traffic. Its log confirms the Durable Object, both R2 buckets, all five rate limits, `BOOKING_MODE=live`, and assets. |
 | Cloudflare identity | Pass | `wrangler whoami` identified the client Cloudflare account. |
 | Coordinator | Pass | `xerom-race-control-coordinator` deployed with SQLite Durable Object and private R2 config binding. |
-| Website | Pass | `xerom-website` deployed at the temporary workers.dev host; homepage, booking, and all public routes rendered. Worker version `9d3addc3-f598-477d-bb30-46041b03d5cc` was deployed by Workers Builds from `main`. |
+| Website | Pass | `xerom-website` deployed at the temporary workers.dev host; homepage, booking, and all public routes rendered. The third Workers Build for `main` deployed Worker version `62cc119a-304c-4093-b603-8f345743ed52`. |
 | Staging indexing | Pass | Homepage canonical resolves to the workers.dev URL; `meta[name=robots]` is `noindex, nofollow`; `/robots.txt` returns `Disallow: /`. |
 | Private R2 storage | Pass | Both private APAC buckets have deployed bindings. Put/get/delete probes passed in both and were removed. No active/draft configuration or media was published. |
 | Owner protection | Pass | Cloudflare Access redirects unauthenticated `/race-control`, `/race-control/*`, and `/api/admin/*` to the owner policy. Authenticated Safari owner session loaded the live schedule. `GET /api/admin/config/draft` returned the compiled `seed-draft-v2` fallback. |
