@@ -226,3 +226,9 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 - Use Cloudflare Workers Rate Limiting bindings as permissive abuse protection, not as concurrency control. Public anonymous limits use generous route-plus-IP keys; owner actions use the authenticated Access actor ID.
 - Keep bindings optional for local development and document the production namespace setup separately. The Durable Object serialized reread remains the only final-resource allocation authority.
+
+## 2026-09-24 — Client-owned Workers Builds
+
+- Connect Cloudflare Workers Builds to the transferred `xerombookings-dev/xerom-website` repository with GitHub App access limited to that repository.
+- Deploy pushes to `main` with `npm run build:staging` and `npx wrangler deploy`; keep the temporary Workers hostname, real hostname-scoped Turnstile widget, and `noindex` behavior until the owner supplies the canonical domain.
+- Disable branch and pull-request preview builds while the Worker uses the seven production-named reservation calendars. Revisit previews only after they use disabled bookings or dedicated test calendars.

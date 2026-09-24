@@ -4,13 +4,13 @@ Last updated: 2026-09-24
 
 ## Client-owned staging rebuild — 2026-09-24
 
-The transferred repository’s local `origin` now points to `https://github.com/xerombookings-dev/xerom-website.git`; push access was verified with a dry run. Setup changes are not committed yet. Preserve the untracked `graphify-out/` directory.
+The transferred repository’s local `origin` points to `https://github.com/xerombookings-dev/xerom-website.git`; setup commit `e8547cf` is on `main` and pushed. Preserve the untracked `graphify-out/` directory.
 
 The client Cloudflare account now hosts `xerom-race-control-coordinator` and `xerom-website` at `https://xerom-website.xerombookings.workers.dev`. The website runs live against seven private, client-owned Kuala Lumpur calendars. Owner paths require the Access allow policy for the client identity. A real managed Turnstile widget is restricted to the temporary worker hostname; five Rate Limiting bindings are deployed. The temporary host is `noindex` and `robots.txt` disallows crawling.
 
 Verification: 126 unit/contract tests passed, Astro check is clean, the staging build and Wrangler dry run pass, and remote homepage visual E2E passed all six widths. Live availability returned capacities from the three service groups; the Access-authenticated Race Control schedule loaded Calendar data. Two simultaneous Pro requests at a single-resource slot produced one confirmation and one slot-taken response. The one winner event was deleted, Calendar search found no remaining matching event, and FreeBusy is clear. R2 write/read/delete probes also passed and were cleaned up.
 
-Remaining: commit and push the setup changes, connect Cloudflare Workers Builds to the transferred GitHub repository if the owner intends automatic deploys, and replace the temporary workers.dev hostname when the owner supplies the canonical domain. R2 has no active or draft configuration, and no business configuration was published. Do not run another Calendar write test without a new owner request; the authorized synthetic race test has been completed and cleaned up.
+Workers Builds is connected to only `xerombookings-dev/xerom-website` on `main`, with `npm run build:staging`, `npx wrangler deploy`, and the public Turnstile widget build variable. Preview builds are disabled because the production Worker uses live reservation calendars. The first automated build is pending the next push and must be checked before calling CI verified. The remaining launch gates are the owner’s canonical hostname, final content inputs, and reviewed Race Control configuration publication. R2 has no active or draft configuration, and no business configuration was published. Do not run another Calendar write test without a new owner request; the authorized synthetic race test has been completed and cleaned up.
 
 ## Homepage hours-card deployment — 2026-09-23
 

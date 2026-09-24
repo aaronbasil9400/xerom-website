@@ -18,16 +18,20 @@ Google Calendar remains the booking record. The Durable Object stores only short
 ## Build settings
 
 ```text
-Build command: npm run build
-Output directory: dist
-Node version: current Cloudflare-supported LTS compatible with Astro 7
+Git repository: xerombookings-dev/xerom-website
+Production branch: main
+Root directory: /
+Build command: npm run build:staging
+Deploy command: npx wrangler deploy
+Build variable: PUBLIC_TURNSTILE_SITE_KEY (public, hostname-scoped widget key)
+Preview builds: disabled
 ```
 
-The site uses `@astrojs/cloudflare` with compile-time image optimization and no Astro session store.
+Workers Builds deploys the same `xerom-website` Worker after each `main` push. The staging build creates `dist` before Wrangler deploys it. Keep preview builds disabled until they use disabled bookings or dedicated test calendars; the production Worker is connected to real reservation calendars. The site uses `@astrojs/cloudflare` with compile-time image optimization and no Astro session store.
 
 ## Client-owned temporary Worker — 2026-09-24
 
-The transferred repository is deployed in the client account at `https://xerom-website.xerombookings.workers.dev`, bound to `xerom-race-control-coordinator`. The Worker is live on the seven production-named, private Google Calendars owned by `xerombookings@gmail.com`. The temporary URL is marked `noindex`; attach the approved canonical hostname and update the Turnstile widget before domain cutover.
+The transferred repository is deployed in the client account at `https://xerom-website.xerombookings.workers.dev`, bound to `xerom-race-control-coordinator`. The Worker is live on the seven production-named, private Google Calendars owned by `xerombookings@gmail.com`. The temporary URL is marked `noindex`; attach the approved canonical hostname and update the Turnstile widget before domain cutover. Workers Builds is scoped to this repository and `main`; the first automated build is awaiting a new push.
 
 Race Control and `/api/admin/*` are protected by Cloudflare Access for the owner email. The public booking flow uses a managed Turnstile widget scoped to the Worker hostname, and the Worker has all five Rate Limiting bindings. Test reservations on these calendars are real reservations: label them clearly and remove them from every assigned calendar after the test.
 

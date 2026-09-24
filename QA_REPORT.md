@@ -6,7 +6,8 @@ Environment: the transferred repository checked out locally and pointed at `xero
 
 | Check | Result | Evidence |
 |---|---|---|
-| GitHub access | Pass | `git push --dry-run origin main` reached the transferred repository and reported `Everything up-to-date`; source changes from this setup still need to be committed and pushed. |
+| GitHub access | Pass | `git push --dry-run origin main` reached the transferred repository; Cloudflare’s GitHub App is installed for only `xerombookings-dev/xerom-website`. |
+| Workers Builds configuration | Configured; first build pending | Connected `xerombookings-dev/xerom-website` on `main`; `npm run build:staging`, `npx wrangler deploy`, and the public hostname-scoped Turnstile build variable are set. Preview builds are disabled. A documentation push will trigger the first automated build for verification. |
 | Cloudflare identity | Pass | `wrangler whoami` identified the client Cloudflare account. |
 | Coordinator | Pass | `xerom-race-control-coordinator` deployed with SQLite Durable Object and private R2 config binding. |
 | Website | Pass | `xerom-website` deployed at the temporary workers.dev host; homepage, booking, and all public routes rendered. Current Worker version `9957311f-c190-4ded-9233-f1999cf740b7`. |
@@ -21,7 +22,7 @@ Environment: the transferred repository checked out locally and pointed at `xero
 | Responsive homepage | Pass | Remote `tests/e2e/visual.spec.ts` passed at 375, 390, 430, 768, 1024, and 1440 CSS px. Screenshots were visually inspected; generated files were restored to the repository’s tracked baseline. |
 | Local checks | Pass | `npm run check`: 0 errors/warnings/hints; `npm test -- --run`: 126/126; `npm run build:staging` with the real staging site key; Wrangler website dry-run included all five Rate Limiting bindings. |
 
-Known remaining launch gates: connect the Worker to GitHub automatic builds, add the owner’s final canonical domain to DNS and Turnstile, verify `/sitemap.xml` and redirects after domain cutover, complete unresolved owner content items, and test reviewed R2 publication/rollback. The temporary Worker is live against the production-named calendars but remains noindex. The IAB browser logged Cloudflare Turnstile `%c%d ... NaN` diagnostics during widget initialization/expiry; real Safari rendered the widget and live server-side verification passed. Rate limit thresholds were not load-tested.
+Known remaining launch gates: verify the first Workers Build after a `main` push, add the owner’s final canonical domain to DNS and Turnstile, verify `/sitemap.xml` and redirects after domain cutover, complete unresolved owner content items, and test reviewed R2 publication/rollback. The temporary Worker is live against the production-named calendars but remains noindex. The IAB browser logged Cloudflare Turnstile `%c%d ... NaN` diagnostics during widget initialization/expiry; real Safari rendered the widget and live server-side verification passed. Rate limit thresholds were not load-tested.
 
 ## Private R2 binding checkpoint — 2026-09-22
 

@@ -4,7 +4,7 @@ Production website and database-free booking system for Xerom SimRacing & Cafe i
 
 ## Current status
 
-The responsive Astro site is deployed in the client-owned Cloudflare account at [xerom-website.xerombookings.workers.dev](https://xerom-website.xerombookings.workers.dev). Live availability and booking use the client-owned private Google Calendars, a serialized coordinator Worker, real hostname-scoped Turnstile, and five rate-limit bindings. Race Control and owner APIs require Cloudflare Access. The temporary hostname is marked `noindex`; the canonical domain and GitHub auto-deploy connection are still pending.
+The responsive Astro site is deployed in the client-owned Cloudflare account at [xerom-website.xerombookings.workers.dev](https://xerom-website.xerombookings.workers.dev). Live availability and booking use the client-owned private Google Calendars, a serialized coordinator Worker, real hostname-scoped Turnstile, and five rate-limit bindings. Race Control and owner APIs require Cloudflare Access. Cloudflare Workers Builds is connected to `xerombookings-dev/xerom-website` on `main`; build automation is configured for the temporary Workers hostname. The hostname remains `noindex` until the owner provides the canonical domain.
 
 ## Planned stack
 
