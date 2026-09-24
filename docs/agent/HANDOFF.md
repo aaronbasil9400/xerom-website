@@ -4,7 +4,7 @@ Last updated: 2026-09-24
 
 ## Owner configuration and staging close-out — 2026-09-24
 
-Commit `8850d13` is pushed to `main`. Cloudflare Workers Build succeeded for `xerom-website` version `64044039-4e11-4492-9f85-05a8b39d3522` at 100% traffic. The active `xerom-race-control-coordinator` is version `b58e44ef-0a75-428b-ae58-854311239fd9`; it enforces the 15-minute no-show grace period. The website remains live on `https://xerom-website.xerombookings.workers.dev` with `noindex` and the real Turnstile widget.
+Commit `8850d13` is pushed to `main`; its application build deployed as website version `64044039-4e11-4492-9f85-05a8b39d3522`. Follow-up documentation and deployment-script commit `9616370` also built successfully as version `aa385132-c3a6-47a3-827a-26d808710258`, at 100% traffic with the same application code. The active `xerom-race-control-coordinator` is version `b58e44ef-0a75-428b-ae58-854311239fd9`; it enforces the 15-minute no-show grace period. The website remains live on `https://xerom-website.xerombookings.workers.dev` with `noindex` and the real Turnstile widget.
 
 Race Control published baseline R2 revision `rev-publish_02672e14d6aa2f36126f86035e40a3f06e0be7854d0aaf4a`. The impact review checked four future Calendar events with no conflicts; no event was changed. An unlinked Regular Rig 04 draft was retired so the active inventory matches three Regular rigs, one Pro rig, and two PS5 lounges. Public config returns `compiledFallback: false`; live availability returned HTTP 200 and 21 slots.
 
