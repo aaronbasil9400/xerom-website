@@ -232,3 +232,8 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Connect Cloudflare Workers Builds to the transferred `xerombookings-dev/xerom-website` repository with GitHub App access limited to that repository.
 - Deploy pushes to `main` with `npm run build:staging` and `npx wrangler deploy`; keep the temporary Workers hostname, real hostname-scoped Turnstile widget, and `noindex` behavior until the owner supplies the canonical domain.
 - Disable branch and pull-request preview builds while the Worker uses the seven production-named reservation calendars. Revisit previews only after they use disabled bookings or dedicated test calendars.
+
+## 2026-09-24 — Protect the Race Control entry route
+
+- Include the exact `/race-control` redirect entry in the existing owner-only Cloudflare Access application alongside `/race-control/*` and `/api/admin/*`.
+- The site middleware rejects owner routes without a verified Access identity; protecting the exact entry path sends an unauthenticated owner to Access before the redirect to the live schedule.
