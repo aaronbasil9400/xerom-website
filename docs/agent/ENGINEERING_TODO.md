@@ -19,6 +19,7 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 - [x] **Harden Turnstile verification.** Siteverify now has an eight-second abort timeout and optional expected-hostname/action checks supplied by encrypted Worker configuration.
 - [x] **Replace demo Turnstile credentials.** A real managed widget is scoped to `xerom-website.xerombookings.workers.dev`; deployed submissions pass Siteverify. Add the canonical hostname and update its build/secret configuration at domain cutover.
 - [ ] **Review schema strictness.** Zod objects are non-strict, so unknown fields are silently stripped (client-sent `total`/`admin` are correctly ignored, but typos also pass). Consider `.strict()` on the public booking schema.
+- [ ] **Implement email confirmation delivery.** Public email remains optional and is stored with the Calendar booking. No provider or delivery path is configured; the public privacy notice states that no email confirmation is sent.
 
 ## Low priority / hygiene
 

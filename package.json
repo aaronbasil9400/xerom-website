@@ -15,7 +15,8 @@
     "lint": "ASTRO_TELEMETRY_DISABLED=1 WRANGLER_LOG_PATH=/tmp/xerom-wrangler.log astro check",
     "cf:typegen": "wrangler types",
     "coordinator:dev": "wrangler dev --config coordinator/wrangler.jsonc",
-    "coordinator:deploy": "wrangler deploy --config coordinator/wrangler.jsonc",
+    "coordinator:deploy": "wrangler deploy --config coordinator/wrangler.race-control.jsonc",
+    "coordinator:booking:deploy": "wrangler deploy --config coordinator/wrangler.jsonc",
     "coordinator:race-control:deploy": "wrangler deploy --config coordinator/wrangler.race-control.jsonc",
     "assets:favicon": "node scripts/render-favicon-icons.mjs",
     "assets:verify": "node scripts/verify-media-manifest.mjs"

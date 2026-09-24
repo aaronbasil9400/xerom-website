@@ -2,7 +2,17 @@
 
 Last updated: 2026-09-24
 
-## Client-owned staging rebuild — 2026-09-24
+## Owner configuration and staging close-out — 2026-09-24
+
+Commit `8850d13` is pushed to `main`. Cloudflare Workers Build succeeded for `xerom-website` version `64044039-4e11-4492-9f85-05a8b39d3522` at 100% traffic. The active `xerom-race-control-coordinator` is version `b58e44ef-0a75-428b-ae58-854311239fd9`; it enforces the 15-minute no-show grace period. The website remains live on `https://xerom-website.xerombookings.workers.dev` with `noindex` and the real Turnstile widget.
+
+Race Control published baseline R2 revision `rev-publish_02672e14d6aa2f36126f86035e40a3f06e0be7854d0aaf4a`. The impact review checked four future Calendar events with no conflicts; no event was changed. An unlinked Regular Rig 04 draft was retired so the active inventory matches three Regular rigs, one Pro rig, and two PS5 lounges. Public config returns `compiledFallback: false`; live availability returned HTTP 200 and 21 slots.
+
+Owner inputs still pending: canonical production hostname and final hero/social-share photos. Preserve the current placeholders and noindex until those arrive. Separate technical follow-ups remain listed in `docs/agent/ENGINEERING_TODO.md`; the activity-history view and email confirmations are not implemented. `graphify-out/` remains untracked and must be preserved.
+
+Deployment note: the generic coordinator deploy command initially updated the unbound legacy `xerom-booking-coordinator` Worker to version `b10d180a-27f3-4525-8c5f-11b191e4c950`. The active website binding points to `xerom-race-control-coordinator`, which was deployed and verified separately. No booking or Calendar event was created by those deployments. The default `coordinator:deploy` package script now targets the active Race Control Worker; use `coordinator:booking:deploy` only for the legacy Worker.
+
+## Initial client-owned staging rebuild checkpoint — 2026-09-24 (historical)
 
 The transferred repository’s local `origin` points to `https://github.com/xerombookings-dev/xerom-website.git`; setup commit `e8547cf` is on `main` and pushed. Preserve the untracked `graphify-out/` directory.
 

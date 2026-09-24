@@ -11,7 +11,7 @@ Environment: local Astro 7.3.2 / Cloudflare Workers adapter using the mock booki
 | Production build | Pass | `npm run build`: Cloudflare server output completed. |
 | Media provenance | Pass | `npm run assets:verify`: 21 manifested derivatives verified; owner photos and placeholders were not changed. |
 | Wrangler deployment dry-run | Pass | `npx wrangler deploy --dry-run` packaged the Worker with coordinator, both private R2 buckets, all five rate-limit bindings and assets. |
-| Coordinator dry-run | Pass | `npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` compiled the booking coordinator and its Durable Object binding. |
+| Coordinator dry-run | Pass | `npm run coordinator:deploy -- --dry-run` compiled the active `xerom-race-control-coordinator` and its Durable Object/R2 bindings. |
 | No-show grace enforcement | Pass | Unit coverage checks the 15-minute boundary and invalid start values; Race Control disables the action until the grace ends and the coordinator independently returns 409 before then. |
 | Responsive/browser checks | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4321 npm run test:e2e`: 70 passed, 38 intentional viewport/project skips, 0 failures across 375, 390, 430, 768, 1024 and 1440 CSS px. |
 | New owner-facing pages | Pass | `/booking-policy`, `/privacy`, `/events`, and `/whats-new` returned 200 with visible headings and no broken images or browser errors in the route suite. |
@@ -21,6 +21,19 @@ Environment: local Astro 7.3.2 / Cloudflare Workers adapter using the mock booki
 The first Playwright startup attempts collided with stale local Astro dev processes and a stale Vite optimized-SSR cache, which returned HTTP 500. Those repo-local processes were stopped; the suite was rerun against a fresh verified `200` server and passed in full. This startup issue did not affect the production build or Wrangler dry-run.
 
 The owner directed us to keep the current social-group hero and social-share images until replacement photos are supplied. The canonical hostname and those photos remain pending. The current workers.dev deployment stays `noindex`; domain cutover and Turnstile hostname updates are not included in this verification.
+
+### Deployed verification
+
+| Check | Result | Evidence |
+|---|---|---|
+| Workers Build | Pass | Commit `8850d13` built successfully from `main`; Worker version `64044039-4e11-4492-9f85-05a8b39d3522` has 100% traffic. Build detail confirms `npm run build:staging` then `npx wrangler deploy`. |
+| Active Race Control coordinator | Pass | `xerom-race-control-coordinator` deployed version `b58e44ef-0a75-428b-ae58-854311239fd9` with the 15-minute no-show guard and private config R2 binding. Default `coordinator:deploy` now targets this Worker; the older booking coordinator has an explicit separate script. |
+| Baseline config publication | Pass | Owner-only Race Control saved and published revision `rev-publish_02672e14d6aa2f36126f86035e40a3f06e0be7854d0aaf4a`. Impact review checked four future Calendar events and found no conflicts. No Calendar event was modified. An unlinked draft Regular Rig 04 was retired to match the confirmed three-rig inventory; no new Calendar was created. |
+| Active public configuration | Pass | `/api/public-config` returns that revision with `compiledFallback: false`, rates RM20/RM30/RM18, zero active offers, rolling 4,320-minute horizon, 30/60/90/120-minute durations, and capacities 3/1/2. The public projection contains no Calendar references. |
+| Deployed route and security smoke | Pass | `/`, `/book`, `/pricing`, `/visit`, `/booking-policy`, `/privacy`, `/robots.txt` and live availability returned 200. `/book` contains the hostname-scoped Turnstile widget and policy/privacy links; pricing contains no compare-at price markup; the temporary host remains noindex and `Disallow: /`. Unauthenticated `/race-control`, its schedule, and `/api/admin/config/draft` returned 302 to Access. |
+| Live availability | Pass | Read-only Pro Sim 60-minute availability for 2026-09-25 returned HTTP 200, `mode: live`, 21 slots and the active configuration revision. |
+
+Deployment note: the generic coordinator deploy command initially targeted the unbound legacy `xerom-booking-coordinator` Worker, version `b10d180a-27f3-4525-8c5f-11b191e4c950`; no website binding points to it. The active `xerom-race-control-coordinator` was then deployed and verified separately. No booking or Calendar event was created during either deploy.
 
 ## Client-owned staging rebuild — 2026-09-24
 
