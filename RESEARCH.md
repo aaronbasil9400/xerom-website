@@ -119,5 +119,5 @@ Owner answers dated 2026-09-15 authorize the expanded front-desk/editing feature
 - The owner confirmed `012-940 1440` as the public phone/WhatsApp. The owner directed us to adopt the existing project address and Maps URL for the current release; they have not been independently verified against the live map listing.
 - Weekly hours remain owner-confirmed. Date exceptions in Race Control control booking availability; the owner will announce closures/hour changes on Instagram until a website announcement feature is built.
 - Customer policy uses WhatsApp for change/cancellation requests, a 15-minute no-contact late grace period, and the original scheduled end time. No fee, refund, or deposit terms are advertised.
-- Use the Regular and Pro equipment wording present in the supplied pricing image. Do not list game titles, menu/prices, amenities, or testimonials without evidence.
+- Keep general Regular and Pro equipment descriptions. The supplied pricing image contains detailed equipment claims, but their current accuracy has not been confirmed; omit those claims along with game titles, menu/prices, amenities, and testimonials until verified.
 - The owner asked to leave the current hero and social-share images in place while replacement photos are pending. These and the canonical domain are the only remaining owner launch inputs.

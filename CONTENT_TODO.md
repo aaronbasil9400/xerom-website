@@ -22,7 +22,7 @@ Only owner-supplied inputs that cannot be safely chosen from the existing busine
 - [x] Staff titles and reminders: event titles use `{bookingId} | {SERVICE} | {customerName} | {duration}m`; the system sends no customer reminders and uses no special Calendar color convention.
 - [x] Resource/history policy: retain historical Calendar records; permanent deletion remains blocked for non-empty calendars.
 - [x] Operation journal retention: completed operation records may be retained for 30 days; unresolved recovery records and fences remain until reconciled. Enforcement is tracked as engineering work.
-- [x] Equipment: use the current Regular/Pro equipment wording recorded in the supplied pricing image and `RESEARCH.md`.
+- [x] Equipment: keep the existing general Regular/Pro descriptions. Omit part/model-level hardware claims until current equipment is confirmed.
 - [x] Cafe, games, accessibility, parking/transit, gallery and testimonials: publish no unverified menu, game, amenity, social-photo or review claims. Add them only when sourced material is supplied.
 - [x] Membership: no membership program is offered or promoted in the current release.
 
