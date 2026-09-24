@@ -31,7 +31,7 @@ Workers Builds deploys the same `xerom-website` Worker after each `main` push. T
 
 ## Client-owned temporary Worker — 2026-09-24
 
-The transferred repository is deployed in the client account at `https://xerom-website.xerombookings.workers.dev`, bound to `xerom-race-control-coordinator`. The Worker is live on the seven production-named, private Google Calendars owned by `xerombookings@gmail.com`. The temporary URL is marked `noindex`; attach the approved canonical hostname and update the Turnstile widget before domain cutover. Workers Builds is scoped to this repository and `main`; its first automated deployment completed successfully as Worker version `b6822d8b-e342-402d-97a0-90f5d34ea67f`.
+The transferred repository is deployed in the client account at `https://xerom-website.xerombookings.workers.dev`, bound to `xerom-race-control-coordinator`. The Worker is live on the seven production-named, private Google Calendars owned by `xerombookings@gmail.com`. The temporary URL is marked `noindex`; attach the approved canonical hostname and update the Turnstile widget before domain cutover. Workers Builds is scoped to this repository and `main`; two automated deployments completed successfully, with Worker version `9d3addc3-f598-477d-bb30-46041b03d5cc` at the second verification checkpoint.
 
 The bare `/race-control` entry, nested Race Control routes, and `/api/admin/*` are protected by Cloudflare Access for the owner email. The public booking flow uses a managed Turnstile widget scoped to the Worker hostname, and the Worker has all five Rate Limiting bindings. Test reservations on these calendars are real reservations: label them clearly and remove them from every assigned calendar after the test.
 
