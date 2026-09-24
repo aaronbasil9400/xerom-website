@@ -1,4 +1,23 @@
 ---
-import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
+import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import { env as cloudflareEnv } from "cloudflare:workers";
+const runtimeEnv = cloudflareEnv as typeof cloudflareEnv & CloudflareEnv;
+const connected = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEnv.GOOGLE_PRIVATE_KEY && runtimeEnv.BOOKING_COORDINATOR);
+const settingsConnected = Boolean(runtimeEnv.RACE_CONTROL_CONFIG_BUCKET);
 ---
-<RaceControlLayout title="Connection" section="connection"><DemoNotice /><section class="rc-panel rc-connection"><div class="rc-panel-head"><div><p class="rc-eyebrow">Integration status</p><h2>Google Calendar</h2></div><span class="rc-warning-pill">Setup required</span></div><dl><div><dt>Owner authorization</dt><dd>Not configured · TODO(owner)</dd></div><div><dt>Booking identity</dt><dd>Server-side only · status unavailable</dd></div><div><dt>Resource calendars</dt><dd>IDs remain private and are not shown here</dd></div></dl><button class="rc-button rc-button-primary" type="button">Connect Google (disabled in demo)</button></section></RaceControlLayout>
+<RaceControlLayout title="Connection" section="connection">
+  <DemoNotice connected={connected} />
+  <section class="rc-panel rc-connection">
+    <div class="rc-panel-head">
+      <div><p class="rc-eyebrow">Integration status</p><h2>Google Calendar</h2></div>
+      <span class="rc-draft-pill">{connected ? "Connected" : "Unavailable"}</span>
+    </div>
+    <dl>
+      <div><dt>Booking identity</dt><dd>{connected ? "Client-owned service account · server-side Worker secrets" : "Calendar credentials or coordinator binding are unavailable."}</dd></div>
+      <div><dt>Resource calendars</dt><dd>{connected ? "Six private booking calendars and one venue-control calendar are configured. Calendar IDs remain private." : "Calendar references remain private; live resource status is unavailable in this environment."}</dd></div>
+      <div><dt>Owner access</dt><dd>Race Control is restricted by the client’s Cloudflare Access policy.</dd></div>
+      <div><dt>Configuration</dt><dd>{settingsConnected ? "Business settings save to a private R2 draft. Review checks Calendar impact before an explicit publication updates the public site." : "Private configuration storage is unavailable in this environment."}</dd></div>
+    </dl>
+  </section>
+</RaceControlLayout>

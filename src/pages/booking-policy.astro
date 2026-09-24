@@ -1,0 +1,35 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { business } from "@/config/business";
+import { NO_SHOW_GRACE_MINUTES } from "@/lib/race-control/no-show";
+---
+
+<BaseLayout title="Booking Policy | Xerom SimRacing & Cafe" description="Changes, cancellations and late arrivals for Xerom bookings.">
+  <header class="section-shell page-hero">
+    <h1 class="display">Booking <span class="red">policy</span></h1>
+    <p class="lede">A few practical details for keeping your session on schedule.</p>
+  </header>
+  <section class="section-shell policy-content">
+    <article>
+      <h2>Changes and cancellations</h2>
+      <p>Message Xerom on WhatsApp as early as possible and include your booking ID. A change or cancellation is complete after staff confirms it and updates the reservation.</p>
+      <p><a href={`https://wa.me/${business.whatsappNumber}`}>Message Xerom on WhatsApp</a></p>
+    </article>
+    <article>
+      <h2>Arriving late</h2>
+      <p>Please arrive before your booked start time. We allow a {NO_SHOW_GRACE_MINUTES}-minute grace period. If you are more than {NO_SHOW_GRACE_MINUTES} minutes late and have not contacted us, staff may mark the booking as a no-show.</p>
+      <p>Your session still ends at its scheduled time. An extension depends on availability and staff confirmation.</p>
+    </article>
+    <article>
+      <h2>Booking times</h2>
+      <p>Online bookings require at least one hour of notice and can be made up to 72 hours ahead, subject to the opening hours and availability shown in the booking flow. Date-specific hours and closures can change availability.</p>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .policy-content { display: grid; gap: 1rem; padding-bottom: var(--section); }
+  .policy-content article { padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--line); background: var(--panel); }
+  .policy-content h2 { margin-top: 0; font-family: "Barlow Condensed", sans-serif; font-size: 1.6rem; text-transform: uppercase; }
+  .policy-content p:last-child { margin-bottom: 0; }
+</style>

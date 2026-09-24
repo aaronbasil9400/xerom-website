@@ -45,7 +45,13 @@ export const bookingRequestSchema = z.object({
   }
 });
 
-export const publicBookingRequestSchema = bookingRequestSchema.refine((request) => Boolean(request.configRevision), { path: ["configRevision"], message: "Reload booking settings before confirming." });
+export const publicBookingRequestSchema = bookingRequestSchema
+  .superRefine((request, context) => {
+    if (request.customer.notes !== undefined) {
+      context.addIssue({ code: "custom", path: ["customer", "notes"], message: "Notes are not collected on online bookings." });
+    }
+  })
+  .refine((request) => Boolean(request.configRevision), { path: ["configRevision"], message: "Reload booking settings before confirming." });
 
 export const availabilityQuerySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

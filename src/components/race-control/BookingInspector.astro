@@ -1,4 +1,5 @@
 ---
+import { NO_SHOW_GRACE_MINUTES } from "@/lib/race-control/no-show";
 interface Props { live?: boolean }
 const { live = false } = Astro.props;
 ---
@@ -21,6 +22,7 @@ const { live = false } = Astro.props;
     <a class="rc-button rc-button-primary rc-whatsapp-customer" data-live-whatsapp hidden target="_blank" rel="noopener noreferrer">WhatsApp customer</a>
     <div class="rc-live-actions" data-rc-live-actions hidden>
       <p>Actions update every linked Calendar event conditionally.</p>
+      <p>No-show is available after the {NO_SHOW_GRACE_MINUTES}-minute late-arrival grace period.</p>
       <label><input type="checkbox" data-live-release /> Release remaining time when completing</label>
       <div class="rc-live-action-buttons">
         <button class="rc-button rc-button-small" type="button" data-live-action="check-in">Check in</button>
@@ -36,6 +38,7 @@ const { live = false } = Astro.props;
 
 {live && <script>
   import { normalizeMalaysianMobile } from "@/lib/booking/phone";
+  import { NO_SHOW_GRACE_MINUTES } from "@/lib/race-control/no-show";
   type BookingDetails = { customerName: string; customerPhone: string; customerEmail?: string; durationMinutes: number; includedControllers: number; additionalControllers: number; totalControllers: number; priceTotal: number | null; createdAt: string | null };
   type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; serviceId: string; start: string; end: string; bookingDetails: BookingDetails };
   const inspectorHeading = document.querySelector<HTMLElement>("#selected-booking");
@@ -49,7 +52,10 @@ const { live = false } = Astro.props;
   const emailRow = document.querySelector<HTMLElement>("[data-live-email-row]");
   const controllerRow = document.querySelector<HTMLElement>("[data-live-controller-row]");
   let selectedEvent: SelectedEvent | null = null;
+  let noShowTimer: number | undefined;
   const clearInspector = () => {
+    if (noShowTimer !== undefined) window.clearTimeout(noShowTimer);
+    noShowTimer = undefined;
     selectedEvent = null;
     if (inspectorHeading) inspectorHeading.textContent = "Select a live booking";
     if (inspectorEmpty) inspectorEmpty.hidden = false;
@@ -66,13 +72,24 @@ const { live = false } = Astro.props;
   };
   const formatDuration = (minutes: number) => minutes === 30 ? "30 minutes" : minutes === 60 ? "1 hour" : minutes === 90 ? "1 hour 30 minutes" : minutes === 120 ? "2 hours" : `${minutes} minutes`;
   const syncActionVisibility = () => {
-    if (!inspectorActions || !selectedEvent) return;
-    const status = selectedEvent.status.toLowerCase();
+    const currentSelection = selectedEvent;
+    if (!inspectorActions || !currentSelection) return;
+    if (noShowTimer !== undefined) window.clearTimeout(noShowTimer);
+    noShowTimer = undefined;
+    const status = currentSelection.status.toLowerCase();
     const isActive = status === "confirmed" || status === "checked_in";
-    inspectorActions.hidden = !selectedEvent.bookingId || selectedEvent.version < 0 || !isActive;
+    inspectorActions.hidden = !currentSelection.bookingId || currentSelection.version < 0 || !isActive;
     inspectorActions.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((button) => {
       const action = button.dataset.liveAction;
-      button.hidden = action === "check-in" ? status !== "confirmed" : action === "complete" ? status !== "checked_in" : action === "no-show" || action === "cancel" ? status === "completed" || status === "no_show" || status === "cancelled" : true;
+      button.hidden = action === "check-in" ? status !== "confirmed" : action === "complete" ? status !== "checked_in" : action === "no-show" ? status !== "confirmed" : action === "cancel" ? status !== "confirmed" && status !== "checked_in" : true;
+      if (action === "no-show" && !button.hidden) {
+        const parsedStart = Date.parse(currentSelection.start);
+        const availableAt = Number.isFinite(parsedStart) ? parsedStart + NO_SHOW_GRACE_MINUTES * 60_000 : Number.POSITIVE_INFINITY;
+        const wait = availableAt - Date.now();
+        button.disabled = wait > 0;
+        button.title = wait > 0 ? `Available after the ${NO_SHOW_GRACE_MINUTES}-minute grace period.` : "";
+        if (wait > 0) noShowTimer = window.setTimeout(syncActionVisibility, wait + 50);
+      }
     });
   };
   window.addEventListener("race-control:select-event", (event) => {

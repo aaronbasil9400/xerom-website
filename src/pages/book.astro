@@ -6,6 +6,6 @@ import { resolveRuntimeConfig } from "@/lib/config/runtime";
 const { config } = await resolveRuntimeConfig(cloudflareEnv);
 ---
 <BaseLayout runtimeConfig={config} title="Book a Session | Xerom SimRacing & Cafe" description="Check availability and book Regular Sim, Pro Sim or a PS5 lounge at Xerom in Klang.">
-  <header class="section-shell page-hero"><h1 class="display">Build your <span class="red">race night</span></h1><p class="lede">Choose the rigs or lounges your group needs, then reserve an available one- or two-hour session.</p></header>
+  <header class="section-shell page-hero"><h1 class="display">Build your <span class="red">race night</span></h1><p class="lede">Choose the rigs or lounges your group needs, then reserve an available session from 30 minutes to two hours.</p></header>
   <div class="section-shell"><BookingApp runtimeConfig={config} /></div>
 </BaseLayout>

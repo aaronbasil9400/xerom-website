@@ -42,11 +42,11 @@ Calendar IDs are referenced only through server-side environment bindings. The b
 
 Inputs: local date, requested line items (`regularSim`, `proSim`, or `ps5` quantities), and a duration of 30, 60, 90, or 120 minutes.
 
-The endpoint validates the three-day horizon and one-hour notice, builds the relevant Asia/Kuala_Lumpur interval, applies opening/control-calendar constraints, queries FreeBusy for all candidate resources, and returns start times with aggregate capacity by tier. It returns no event metadata or personal data.
+The endpoint validates the rolling 72-hour horizon and one-hour notice, builds the relevant Asia/Kuala_Lumpur interval, applies opening/control-calendar constraints, queries FreeBusy for all candidate resources, and returns start times with aggregate capacity by tier. It returns no event metadata or personal data.
 
 ### `POST /api/bookings`
 
-Inputs: selected line items, duration, start time, customer name, mobile number, optional email, optional notes, PS5 additional-controller quantity where applicable, Turnstile token, and idempotency key.
+Inputs: selected line items, duration, start time, customer name, mobile number, optional email, PS5 additional-controller quantity where applicable, Turnstile token, and idempotency key. Public bookings do not accept free-text notes; Race Control staff may add internal notes.
 
 The endpoint enforces request size and content type, validates/sanitizes fields, verifies same-origin policy where applicable, verifies Turnstile, derives authoritative price and end time, and forwards a normalized command to the booking coordinator. The coordinator rechecks all calendars, allocates resources, and creates events.
 
@@ -63,7 +63,7 @@ Responses:
 ## Availability and allocation
 
 1. Convert the requested local start to an absolute instant using `Asia/Kuala_Lumpur`; never calculate rules from the edge location’s timezone.
-2. Require start at least one hour from now and no more than three calendar days ahead under the final owner-approved horizon convention.
+2. Require start at least one hour from now and no more than 72 rolling hours ahead in `Asia/Kuala_Lumpur`.
 3. Confirm the complete 30-, 60-, 90-, or 120-minute interval lies inside the overnight business window.
 4. Reject any overlap with the Booking Control calendar.
 5. Query busy intervals for all candidate calendars.
@@ -76,7 +76,7 @@ Overlap uses half-open intervals: `[start, end)`. Therefore an event ending at 8
 
 ### Booking duration policy update — 2026-09-22
 
-Public and Race Control bookings support 30, 60, 90 and 120 minutes. Public availability starts remain aligned to 30-minute increments and retain the one-hour notice floor. Race Control/manual owner requests use the same Calendar authority, serialization, resource allocation and three-day horizon, but may start at any future minute without the public notice floor. Every request must fit configured opening hours and cannot overlap busy resource or Booking Control events.
+Public and Race Control bookings support 30, 60, 90 and 120 minutes. Public availability starts remain aligned to 30-minute increments and retain the one-hour notice floor. Race Control/manual owner requests use the same Calendar authority, serialization, resource allocation and rolling 72-hour horizon, but may start at any future minute without the public notice floor. Every request must fit configured opening hours and cannot overlap busy resource or Booking Control events.
 
 ## Concurrency strategy
 
@@ -145,7 +145,7 @@ The server derives price from versioned configuration:
 - PS5: RM18 per lounge-hour including two controllers.
 - PS5 includes two controllers. Up to six additional controllers may be selected at RM3 each per booking, independent of duration.
 
-The total is the sum of each line item multiplied by duration hours, plus configured add-ons, followed by an explicitly active promotion rule. The browser never submits a trusted total. A booking event records both the amount and a pricing-configuration version so later price edits do not obscure what the customer saw.
+The total is the sum of each line item multiplied by duration hours, plus configured add-ons, followed by any explicitly active promotion rule. No discounts or compare-at prices are currently active. The browser never submits a trusted total. A booking event records both the amount and a pricing-configuration version so later price edits do not obscure what the customer saw.
 
 ## Authentication and secrets
 
@@ -164,14 +164,14 @@ Expected names will be finalized during implementation and documented in `.dev.v
 
 ## Cancellation and rescheduling
 
-MVP cancellation/rescheduling happens through WhatsApp. Staff search the private calendars using the booking ID and update or delete every event sharing that ID. No public mutation endpoint is required. Future signed management links may be added without changing the Calendar record model.
+Cancellation/rescheduling happens through WhatsApp. Staff use the booking ID to update every linked Calendar event through Race Control. The published customer policy allows a 15-minute late-arrival grace period; the scheduled end time does not extend automatically. No public mutation endpoint is required.
 
 ## Required acceptance tests
 
 - Regular, Pro, PS5, mixed-tier, multi-resource, and two-hour bookings.
 - Manual event, maintenance event, and full-venue closure blocking.
 - Overnight hours and Asia/Kuala_Lumpur boundary behavior.
-- One-hour notice and three-day horizon edges.
+- One-hour notice and rolling 72-hour horizon edges.
 - Exact adjacency allowed; partial overlap rejected.
 - Two simultaneous requests for the final resource: exactly one `201`, one `409`.
 - Duplicate submit and lost-response retry create no additional events.

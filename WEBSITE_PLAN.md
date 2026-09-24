@@ -1,6 +1,6 @@
 # Xerom Website Plan
 
-Status: planning baseline with approved homepage visual direction and responsive mockup.
+Status: client-owned Workers staging is implemented and connected to live Google Calendars. The current social hero/OG photos and canonical domain remain owner inputs; see `CONTENT_TODO.md`.
 
 Mobile is a first-class authored surface. The mobile concept must preserve the social-first story and booking clarity rather than merely stacking a desktop layout.
 
@@ -17,7 +17,8 @@ The site will use a small number of focused routes rather than duplicating every
 - `/pricing` — current rates and promotions sourced from centralized configuration.
 - `/book` — the complete booking flow and confirmation state.
 - `/visit` — address, hours, directions, phone, WhatsApp, Instagram, and practical visit information.
-- Legal/privacy content may be a compact dedicated route or footer disclosure after requirements are confirmed.
+- `/events` and `/whats-new` — direct visitors to Instagram for current announcements until a website announcement feature is implemented.
+- `/booking-policy` and `/privacy` — customer-facing booking and data-use notices linked from the booking flow and footer.
 
 This information architecture is a planning baseline. The approved visual concept may combine or re-sequence marketing content, but it must preserve clear entry points for pricing, booking, and visiting.
 
@@ -25,11 +26,11 @@ This information architecture is a planning baseline. The approved visual concep
 
 1. Choose Regular Sim, Pro Sim, PS5, or a mixed Regular + Pro group.
 2. Choose quantity by tier. Never display quantities beyond configured capacity.
-3. Choose one or two hours.
-4. Choose a date within the three-day horizon and at least one hour ahead.
+3. Choose 30, 60, 90, or 120 minutes.
+4. Choose a date within the rolling 72-hour horizon and at least one hour ahead.
 5. Load server-calculated start times.
 6. Choose an available time.
-7. Enter name and mobile/WhatsApp number; notes are optional.
+7. Enter name and mobile/WhatsApp number; email is optional. Public free-text notes are not collected.
 8. Review service, resources, duration, start/end, and authoritative price.
 9. Complete Turnstile and submit once with an idempotency key.
 10. Server serializes, revalidates, allocates, and creates every Calendar event.
@@ -44,10 +45,10 @@ Business data will be typed and centralized, likely under:
 - `src/config/business.ts` — name, address, timezone, contact, coordinates, social and map links.
 - `src/config/resources.ts` — resource types and server-side calendar environment keys.
 - `src/config/services.ts` — tier selection, capacities, duration options, controller rules, and display copy.
-- `src/config/pricing.ts` — base prices, optional compare-at prices, promotion records, and controller add-ons.
+- `src/config/pricing.ts` — base prices, no active discounts/compare-at prices, and PS5 controller add-ons.
 - `src/config/booking.ts` — hours, notice, horizon, slot interval, duration limits, and buffer.
 
-Promotion records should have an identifier, label, terms, start/end timestamps when applicable, applicability, and active flag. The server calculates totals from configuration; the browser only displays returned totals. Equipment copy is content configuration, not embedded in components.
+Future promotion records should have an identifier, label, terms, start/end timestamps when applicable, applicability, and active flag. No promotion is active now. The server calculates totals from configuration; the browser only displays returned totals. Equipment copy is content configuration, not embedded in components.
 
 ## Visual design sequence
 

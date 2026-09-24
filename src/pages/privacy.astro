@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { business } from "@/config/business";
+---
+
+<BaseLayout title="Privacy Notice | Xerom SimRacing & Cafe" description="How Xerom uses information provided with an online booking.">
+  <header class="section-shell page-hero">
+    <h1 class="display">Privacy <span class="red">notice</span></h1>
+    <p class="lede">This notice covers information submitted through Xerom’s online booking flow.</p>
+  </header>
+  <section class="section-shell policy-content">
+    <article>
+      <h2>What a booking collects</h2>
+      <p>The booking form asks for your name and mobile or WhatsApp number. Email is optional. It also records the chosen service, resources, session time and duration, and booking total. Online bookings do not collect free-text notes.</p>
+    </article>
+    <article>
+      <h2>How it is used</h2>
+      <p>Xerom uses these details to create, find and manage your reservation. Staff may use your contact details to follow up about it. Booking records are kept in private Google Calendar resources used by Xerom staff. Staff may add operational notes when managing a reservation. The website does not currently send email confirmations.</p>
+    </article>
+    <article>
+      <h2>Service providers and analytics</h2>
+      <p>Cloudflare hosts the website and provides security and bot checks. Google Calendar stores the booking record. Booking names, contact details, booking IDs, dates, times and resource selections are not sent to analytics.</p>
+    </article>
+    <article>
+      <h2>Questions or requests</h2>
+      <p>For a question or request about booking information, contact Xerom by WhatsApp or phone at <a href={`tel:${business.phoneInternational}`}>{business.phoneDisplay}</a>.</p>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  .policy-content { display: grid; gap: 1rem; padding-bottom: var(--section); }
+  .policy-content article { padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--line); background: var(--panel); }
+  .policy-content h2 { margin-top: 0; font-family: "Barlow Condensed", sans-serif; font-size: 1.6rem; text-transform: uppercase; }
+  .policy-content p:last-child { margin-bottom: 0; }
+</style>

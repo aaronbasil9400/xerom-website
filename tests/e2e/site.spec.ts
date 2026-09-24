@@ -28,7 +28,8 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(page.locator("[data-session-card]").nth(1)).toContainText("Regular Rig");
   await expect(page.locator('a[href="/events"]')).not.toHaveCount(0);
   await expect(page.locator('a[href="/whats-new"]')).not.toHaveCount(0);
-  await expect(page.locator('a[href="/membership"]')).not.toHaveCount(0);
+  await expect(page.locator('a[href="/membership"]')).toHaveCount(0);
+  await expect(page.locator(".header-social")).toHaveAttribute("href", "https://www.instagram.com/xerom.my");
   await expect(page.getByRole("heading", { level: 2, name: "Choose your setup", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Compare experiences", exact: true })).toHaveAttribute("href", "/experiences");
   await expect(page.getByRole("heading", { name: /more than racing/i })).toHaveCount(0);
@@ -242,13 +243,17 @@ test("core routes render without console errors or broken images", async ({ page
   const failedRequests: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   page.on("requestfailed", (request) => failedRequests.push(`${request.method()} ${request.url()}`));
-  for (const route of ["/", "/experiences", "/pricing", "/book", "/visit", "/events", "/whats-new", "/membership"]) {
+  for (const route of ["/", "/experiences", "/pricing", "/book", "/visit", "/events", "/whats-new", "/membership", "/booking-policy", "/privacy"]) {
     const response = await page.goto(route);
     expect(response?.ok(), `${route} should load`).toBe(true);
     await expect(page.locator("main h1")).toBeVisible();
     const broken = await page.locator("img").evaluateAll((images) => images.filter((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth === 0).length);
     expect(broken, `${route} should have no broken images`).toBe(0);
   }
+  await page.goto("/booking-policy");
+  await expect(page.getByText(/15-minute grace period/i)).toBeVisible();
+  await page.goto("/privacy");
+  await expect(page.getByText(/does not currently send email confirmations/i)).toBeVisible();
   expect(consoleErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
 });

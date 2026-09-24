@@ -1,5 +1,27 @@
 # QA Report
 
+## Owner configuration close-out — 2026-09-24
+
+Environment: local Astro 7.3.2 / Cloudflare Workers adapter using the mock booking mode for browser tests. No customer Calendar booking was submitted during this close-out.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro diagnostics / lint | Pass | `npm run lint`: 0 errors, 0 warnings, 0 hints across 135 files. |
+| Unit and contract tests | Pass | `npm test`: 128 passed across 24 files, including public-note rejection, rolling-horizon text and the 15-minute no-show threshold. |
+| Production build | Pass | `npm run build`: Cloudflare server output completed. |
+| Media provenance | Pass | `npm run assets:verify`: 21 manifested derivatives verified; owner photos and placeholders were not changed. |
+| Wrangler deployment dry-run | Pass | `npx wrangler deploy --dry-run` packaged the Worker with coordinator, both private R2 buckets, all five rate-limit bindings and assets. |
+| Coordinator dry-run | Pass | `npx wrangler deploy --dry-run --config coordinator/wrangler.jsonc` compiled the booking coordinator and its Durable Object binding. |
+| No-show grace enforcement | Pass | Unit coverage checks the 15-minute boundary and invalid start values; Race Control disables the action until the grace ends and the coordinator independently returns 409 before then. |
+| Responsive/browser checks | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4321 npm run test:e2e`: 70 passed, 38 intentional viewport/project skips, 0 failures across 375, 390, 430, 768, 1024 and 1440 CSS px. |
+| New owner-facing pages | Pass | `/booking-policy`, `/privacy`, `/events`, and `/whats-new` returned 200 with visible headings and no broken images or browser errors in the route suite. |
+| Visual inspection | Pass | Reviewed `.impeccable/review/homepage-upgrade/after/mobile-390.png` and `desktop-1440.png`; header, temporary hero, pricing cards, visit details and policy footer links render without horizontal overflow. |
+| Calendar side effects | None | No booking, Calendar event, or event deletion was performed in this close-out. The previously approved race test was already cleaned up as recorded below. |
+
+The first Playwright startup attempts collided with stale local Astro dev processes and a stale Vite optimized-SSR cache, which returned HTTP 500. Those repo-local processes were stopped; the suite was rerun against a fresh verified `200` server and passed in full. This startup issue did not affect the production build or Wrangler dry-run.
+
+The owner directed us to keep the current social-group hero and social-share images until replacement photos are supplied. The canonical hostname and those photos remain pending. The current workers.dev deployment stays `noindex`; domain cutover and Turnstile hostname updates are not included in this verification.
+
 ## Client-owned staging rebuild — 2026-09-24
 
 Environment: the transferred repository checked out locally and pointed at `xerombookings-dev/xerom-website`; Cloudflare account owned by the client; Google Calendar project and calendars owned by the client. Temporary public URL: `https://xerom-website.xerombookings.workers.dev`.

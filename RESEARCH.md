@@ -111,3 +111,13 @@ Reviewed primary documentation to support the proposed dashboard architecture (n
 - [Owner web-server OAuth](https://developers.google.com/identity/protocols/oauth2/web-server) and [Access JWT validation](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/): proposed setup and origin-authentication basis.
 
 Owner answers dated 2026-09-15 authorize the expanded front-desk/editing feature scope recorded in PRODUCT.md. Storage selection, no-stacking pricing and deletion-retention guard details are proposed engineering defaults in `docs/RACE_CONTROL_PLAN.md`, not additional confirmed business facts.
+
+## Owner close-out — 2026-09-24
+
+- The owner set the public booking window to rolling 72 hours. The seed uses 4,320 minutes and the deployed policy message now says 72 hours.
+- No discounts or previous/compare-at prices are active. Keep the base prices from the supplied current pricing image and the separately confirmed PS5 controller terms.
+- The owner confirmed `012-940 1440` as the public phone/WhatsApp. The owner directed us to adopt the existing project address and Maps URL for the current release; they have not been independently verified against the live map listing.
+- Weekly hours remain owner-confirmed. Date exceptions in Race Control control booking availability; the owner will announce closures/hour changes on Instagram until a website announcement feature is built.
+- Customer policy uses WhatsApp for change/cancellation requests, a 15-minute no-contact late grace period, and the original scheduled end time. No fee, refund, or deposit terms are advertised.
+- Use the Regular and Pro equipment wording present in the supplied pricing image. Do not list game titles, menu/prices, amenities, or testimonials without evidence.
+- The owner asked to leave the current hero and social-share images in place while replacement photos are pending. These and the canonical domain are the only remaining owner launch inputs.

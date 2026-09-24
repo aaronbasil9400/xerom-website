@@ -13,6 +13,11 @@ const valid = {
 
 describe("booking validation", () => {
   it("accepts a minimal booking", () => expect(bookingRequestSchema.safeParse(valid).success).toBe(true));
+  it("keeps staff notes available for owner bookings but does not accept notes online", () => {
+    const request = { ...valid, customer: { ...valid.customer, notes: "Call on arrival" } };
+    expect(bookingRequestSchema.safeParse(request).success).toBe(true);
+    expect(publicBookingRequestSchema.safeParse(request).success).toBe(false);
+  });
   it("accepts a 30-minute owner booking structurally", () => expect(bookingRequestSchema.safeParse({ ...valid, durationMinutes: 30 }).success).toBe(true));
   it.each([30, 60, 90, 120])("accepts %i-minute public bookings", (durationMinutes) => expect(publicBookingRequestSchema.safeParse({ ...valid, durationMinutes }).success).toBe(true));
   it("requires public bookings to identify the reviewed configuration", () => expect(publicBookingRequestSchema.safeParse({ ...valid, configRevision: undefined }).success).toBe(false));

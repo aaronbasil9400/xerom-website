@@ -18,7 +18,7 @@ try {
   const candidate = runtimeConfig.websiteContent.homepage.heroAssetId;
   if (candidate?.startsWith("hero-")) publishedHeroAssetId = candidate;
 } catch {
-  // Compiled placeholder remains the explicit fallback until R2 is activated and a draft is published.
+  // The approved group hero is still pending; keep the current placeholder until it is supplied.
 }
 const runtimeService = Object.fromEntries(runtimeConfig.services.map((service) => [service.serviceId, service]));
 const runtimeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (runtimeConfig.rates.find((rate) => rate.serviceId === serviceId && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)))?.amountSenPerResourceHour ?? 0) / 100;

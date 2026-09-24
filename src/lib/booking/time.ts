@@ -110,7 +110,7 @@ export function validateBookingWindow(start: string, durationMinutes: number, no
   if (!Number.isFinite(startMs)) return "Invalid start time.";
   if (startMs <= now.getTime()) return "Bookings must start in the future.";
   if (startMs < now.getTime() + policy.minimumNoticeMinutes * 60_000) return "Bookings need at least one hour of notice.";
-  if (startMs > now.getTime() + policy.maximumAdvanceMinutes * 60_000) return "Bookings open up to three days ahead.";
+  if (startMs > now.getTime() + policy.maximumAdvanceMinutes * 60_000) return "Bookings open up to 72 hours ahead.";
   if (!policy.allowedDurationsMinutes.includes(durationMinutes)) return policy.durationErrorMessage ?? "Choose a valid session duration.";
 
   return validateBookingOperatingWindow(

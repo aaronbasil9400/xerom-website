@@ -1,13 +1,11 @@
 ---
-import ContentPlaceholder from "@/components/ContentPlaceholder.astro";
-import { media } from "@/config/media";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { business } from "@/config/business";
 ---
-
-<ContentPlaceholder
-  title="What’s new!"
-  description="Temporary updates page for Xerom SimRacing & Cafe."
-  hero={media.ps5Lounge}
-  heroAlt="Xerom’s PS5 Lounge setup"
-  secondary={media.cafe}
-  secondaryAlt="Drinks from the Xerom cafe"
-/>
+<BaseLayout title="What’s New | Xerom SimRacing & Cafe" description="Find the latest Xerom announcements on Instagram.">
+  <section class="page-hero section-shell">
+    <h1 class="display">What’s <span class="red">new</span></h1>
+    <p class="lede">Xerom shares current announcements on Instagram. A dedicated website updates feature will be added later.</p>
+    <a class="button button-primary" href={business.instagramUrl}>Follow @{business.instagramHandle}</a>
+  </section>
+</BaseLayout>

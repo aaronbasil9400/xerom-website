@@ -105,10 +105,10 @@ const runtimeVenue = runtimeConfig.websiteContent.venue;
         <label class="field"><span>Mobile / WhatsApp</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="012-345 6789" aria-describedby="phone-hint" required /><small id="phone-hint">Use 012-345 6789 or +60 12 345 6789.</small></label>
         <label class="field"><span>Email address <small>Optional</small></span><input type="email" name="email" autocomplete="email" maxlength="254" placeholder="driver@example.com" /></label>
       </div>
-      <label class="field"><span>Notes <small>Optional</small></span><textarea name="notes" rows="3" maxlength="300"></textarea></label>
       <div class="booking-review" data-review></div>
       {turnstileSiteKey && <div class="cf-turnstile" data-sitekey={turnstileSiteKey}></div>}
       <p class="form-error" role="alert" data-error="details"></p>
+      <p class="booking-legal">Before confirming, read the <a href="/booking-policy">booking policy</a> and <a href="/privacy">privacy notice</a>.</p>
       <div class="booking-actions"><button class="button" type="button" data-back="2">Back</button><button class="button button-primary" type="submit" data-submit>Confirm booking <ArrowIcon /></button></div>
     </section>
   </form>
@@ -376,7 +376,6 @@ const runtimeVenue = runtimeConfig.websiteContent.venue;
         name: (form.elements.namedItem("name") as HTMLInputElement).value,
         phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
         email: (form.elements.namedItem("email") as HTMLInputElement).value || undefined,
-        notes: (form.elements.namedItem("notes") as HTMLTextAreaElement).value || undefined,
       },
       idempotencyKey: attemptKey,
       configRevision: app?.dataset.configRevision,

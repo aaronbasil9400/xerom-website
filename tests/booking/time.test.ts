@@ -24,7 +24,7 @@ describe("booking time rules", () => {
   it("enforces notice and the rolling horizon for public bookings", () => {
     const now = new Date("2026-09-09T10:00:00+08:00");
     expect(validateBookingWindow("2026-09-09T10:30:00+08:00", 60, now)).toMatch(/one hour/i);
-    expect(validateBookingWindow("2026-09-13T10:00:00+08:00", 60, now)).toMatch(/three days/i);
+    expect(validateBookingWindow("2026-09-13T10:00:00+08:00", 60, now)).toMatch(/72 hours/i);
     expect(validateBookingWindow("2026-09-10T14:00:00+08:00", 60, now)).toBeNull();
   });
 

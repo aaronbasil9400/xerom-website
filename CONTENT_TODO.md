@@ -1,64 +1,37 @@
 # Content and Owner TODO
 
-Only unresolved or replaceable items belong here. Remove an item only after its replacement is verified and its source is recorded in `RESEARCH.md` or configuration. Engineering and security follow-ups from the 2026-09-12 test are tracked in `docs/agent/ENGINEERING_TODO.md`.
+Only owner-supplied inputs that cannot be safely chosen from the existing business profile remain here. The owner asked to keep the current site photos while replacement photos are pending. Engineering work is tracked separately in `docs/agent/ENGINEERING_TODO.md`.
 
-## Blocking production launch
+## Remaining owner inputs
 
-- [ ] Confirm the full official address and exact Google Maps place/directions URL.
-- [x] Owner-confirmed opening hours (2026-09-12): Monday–Thursday 2:00 PM–1:00 AM, Friday–Sunday 12:00 PM–1:00 AM. Resolves the earlier pricing-image/Instagram conflict in favour of the Instagram weekday schedule.
-- [x] Publish the confirmed hours from centralized config (`src/config/booking.ts` via `src/config/hours.ts`) on the homepage and the Visit page.
-- [ ] Define public-holiday and shortened-hour handling, and how closures are announced.
-- [ ] Confirm whether the advertised 5% Instagram follow-and-tag discount is currently active, how staff verify it, whether it applies during booking or at the venue, which services/add-ons it covers, and whether it can combine with sales.
-- [ ] Confirm the displayed previous/compare-at prices (Regular RM22, Pro RM35, PS5 RM20) are currently valid and may be shown as struck-through anchors on `/pricing`; otherwise remove them.
-- [x] Owner-confirmed in the 2026-09-22 upgrade brief: each PS5 booking includes 2 controllers and may add 0–6 additional controllers at RM3 each.
-- [ ] Confirm whether `012-940 1440` is both the public call and WhatsApp number, and provide the preferred international display/link format.
-- [x] Official logo supplied and converted to a transparent two-color SVG; original retained at `src/assets/brand/xerom-logo-source.png`.
-- [x] Supply owner-approved Regular Rig, Pro Rig, PS5 Lounge, and cafe photography.
-- [ ] Supply the final owner-approved social-group hero/venue photograph with usage rights.
-- [ ] Supply an owner-approved social share/OG image to replace `public/og-placeholder.jpg`, which is currently used as `og:image` on every page.
-- [ ] Confirm the cancellation/no-show/late-arrival wording customers should see.
-- [ ] Confirm the precise three-day horizon rule: rolling 72 hours or through the third local calendar day.
-- [ ] Confirm the current domain and preferred canonical hostname.
-- [ ] Provide a privacy contact and approve the short booking/privacy notice.
+- [ ] Provide the canonical domain and preferred hostname for production cutover. Until then, keep `https://xerom-website.xerombookings.workers.dev`, `noindex`, and the hostname-scoped Turnstile widget.
+- [ ] Provide final owner-approved social-group hero and social-share/OG photography with usage rights. Keep the current clearly labelled hero placeholder and OG image until supplied.
 
-## Required before booking integration
+## Closed business configuration
 
-- [x] Create and share the 3 Regular Sim, 1 Pro Sim, 2 PS5 Lounge, and Booking Control calendars (created in client-owned project/account on 2026-09-24; all seven are private, `Asia/Kuala_Lumpur`, and shared with the coordinator at Make changes and see all event details).
-- [x] Provide server-side calendar IDs through encrypted Worker secrets; never paste them into documentation or client code.
-- [x] Create the dedicated Google service account and agree on its calendar permissions (client-owned Xerom Booking project and coordinator identity created on 2026-09-24; event-writer access verified).
-- [ ] **Add the final domain to Turnstile before domain cutover.** The always-pass demo pair has been replaced by a real managed widget scoped to `xerom-website.xerombookings.workers.dev`; deployed booking submissions pass real Siteverify. When the owner supplies the canonical hostname, add it to the widget and update the `PUBLIC_TURNSTILE_SITE_KEY` build variable and encrypted `TURNSTILE_SECRET_KEY` if the widget is replaced. The original unused widget whose secret appeared in Wrangler output was deleted.
-- [ ] Confirm whether optional customer notes should be collected.
-- [ ] Confirm event reminder behavior and whether staff want a Calendar event color convention.
-- [ ] Confirm the staff-readable booking-title format.
+- [x] Address and directions: adopt the existing business profile in `src/config/business.ts` — 30-1, 3/KS06, Jalan Batu Nilam, Bandar Bukit Tinggi 1, 41200 Klang, Selangor, Malaysia; `https://maps.app.goo.gl/aPavdDoFPr1ywc9W8`. Accepted under the owner's 2026-09-24 close-out direction; not independently reverified.
+- [x] Public phone and WhatsApp: `012-940 1440` / `+60129401440`, owner-confirmed 2026-09-24.
+- [x] Weekly opening hours: Monday–Thursday 2:00 PM–1:00 AM; Friday–Sunday 12:00 PM–1:00 AM, owner-confirmed 2026-09-12.
+- [x] Public-holiday, short-hour, and closure handling: weekly hours apply unless a date-specific exception is configured in Race Control; announce changes on Instagram `@xerom.my` until the website announcement feature is built.
+- [x] Booking window: rolling 72 hours (4,320 minutes), owner-confirmed 2026-09-24. Public bookings retain 60-minute minimum notice; owner bookings may start at any future minute.
+- [x] Public durations and slots: 30/60/90/120-minute sessions on 30-minute start intervals.
+- [x] Prices: Regular RM20/hour; Pro RM30/hour; PS5 RM18/lounge-hour with two included controllers; extra controllers RM3 each once per booking, maximum six.
+- [x] Discounts and compare-at prices: none active or displayed. The advertised follow-and-tag discount and previous prices RM22/RM35/RM20 are not used.
+- [x] Cancellation and late arrival: request changes/cancellations on WhatsApp with the booking ID as early as possible; staff confirmation completes the change. Race Control disables no-show until the 15-minute grace ends and the coordinator enforces the same boundary. Booked end time stays fixed; extensions depend on availability and staff confirmation. No fee/refund claims are made.
+- [x] Privacy contact and notice: WhatsApp/phone at `012-940 1440`; public notes are not collected, email remains optional, and the notice describes private Calendar storage, Cloudflare security, and the current absence of email confirmations.
+- [x] Staff titles and reminders: event titles use `{bookingId} | {SERVICE} | {customerName} | {duration}m`; the system sends no customer reminders and uses no special Calendar color convention.
+- [x] Resource/history policy: retain historical Calendar records; permanent deletion remains blocked for non-empty calendars.
+- [x] Operation journal retention: completed operation records may be retained for 30 days; unresolved recovery records and fences remain until reconciled. Enforcement is tracked as engineering work.
+- [x] Equipment: use the current Regular/Pro equipment wording recorded in the supplied pricing image and `RESEARCH.md`.
+- [x] Cafe, games, accessibility, parking/transit, gallery and testimonials: publish no unverified menu, game, amenity, social-photo or review claims. Add them only when sourced material is supplied.
+- [x] Membership: no membership program is offered or promoted in the current release.
 
-## Content enrichment
+## Connected business systems
 
-- [ ] Confirm the exact Regular and Pro equipment wording from the current pricing image.
-- [ ] Provide verified PS5 game titles only if the site should list them.
-- [ ] Provide verified sim titles only if the site should list them.
-- [ ] Provide cafe menu/highlights and current prices, or approve cafe as atmosphere-only copy with no menu claims.
-- [ ] Provide accessibility/parking/transit/landmark information for the Visit page.
-- [ ] Select owner-approved Instagram posts or original photos for gallery use.
-- [ ] Provide real testimonials only if permission and wording can be verified.
+- [x] Seven private client-owned Google Calendars (three Regular Sim, one Pro Sim, two PS5 Lounge, one Booking Control) use `Asia/Kuala_Lumpur` and are shared with the client-owned booking service account.
+- [x] Calendar IDs and service-account credentials are stored only in encrypted Worker configuration.
+- [x] Real managed Turnstile is restricted to the current Workers hostname. Add the future hostname to the widget and update the build/secret configuration during domain cutover.
+- [x] Cloudflare R2 is enabled for private versioned Race Control configuration and media. `r2.dev` and custom bucket domains remain disabled.
+- [x] Five Cloudflare Rate Limiting bindings are configured for public booking/availability and owner mutations.
 
-## Temporary asset policy
-
-Mockups and early builds may use clearly labeled placeholders. Placeholder filenames, alt text, and component boundaries must make replacement easy. Do not publish scraped Instagram images or the supplied pricing screenshot as final production assets.
-
-## Race Control owner/setup inputs — 2026-09-15
-
-Scope answers are recorded in PRODUCT.md; do not ask them again. The implementation plan can proceed with draft fields and isolated synthetic fixtures while these remain unresolved.
-
-- [ ] Supply/authorize owner login identity, venue Google account/account type and owner OAuth connection for automated calendar lifecycle. Keep credentials out of documents.
-- [ ] Enter actual percentage offer amounts, selected weekday/weekend days, active dates/windows, package durations/prices and eligible services. Support is approved; real offers are not yet supplied.
-- [ ] Confirm resource-calendar history retention/export policy before allowing permanent deletion of a calendar containing historical events. Empty retired test calendars can exercise the confirmed deletion flow.
-- [ ] Confirm proposed completed operation-journal retention (30 days); unresolved recovery data must remain until reconciled.
-- [x] Owner-confirmed 2026-09-22: the RM3 additional-controller charge applies once per controller per booking, not per hour.
-
-## Explicitly deferred engineering
-
-- [ ] TODO: Implement booking confirmation email backend. The current upgrade captures, validates and stores optional email only; no email provider or delivery path is approved.
-- [x] R2 enabled on 2026-09-22. Private APAC buckets `xerom-race-control-config` and `xerom-race-control-media` are bound to the deployed Worker. `r2.dev` is disabled, no custom domains exist, and no browser CORS is configured.
-- [x] Configure five Cloudflare Rate Limiting bindings on the client Worker using the documented route limits and unique account namespace IDs.
-
-Holiday editing and conflict review are approved features; actual holiday dates/hours still require owner input. Current confirmed booking durations are 30/60/90/120 minutes.
+Engineering and email-delivery follow-ups remain separate; see `docs/agent/ENGINEERING_TODO.md`.

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { applyGroupedMutation, GroupedMutationError, lifecycleTransitionAllowed, type GroupedMutationStep } from "../../coordinator/src/grouped-mutation";
+import { noShowGraceElapsed } from "@/lib/race-control/no-show";
 import type { CalendarEventRecord } from "@/lib/google/calendar";
 import { CalendarMutationUncertainError } from "@/lib/google/calendar";
 
@@ -31,11 +32,21 @@ function steps(): GroupedMutationStep[] {
 }
 
 describe("grouped Calendar mutation compensation", () => {
+  it("enforces the published no-show grace at the coordinator boundary", () => {
+    const start = "2026-09-20T18:00:00+08:00";
+    const startMs = Date.parse(start);
+    expect(noShowGraceElapsed(start, startMs + 14 * 60_000 + 59_999)).toBe(false);
+    expect(noShowGraceElapsed(start, startMs + 15 * 60_000)).toBe(true);
+    expect(noShowGraceElapsed("invalid", startMs + 60 * 60_000)).toBe(false);
+  });
+
   it("enforces lifecycle transitions on the coordinator side", () => {
     expect(lifecycleTransitionAllowed("confirmed", "check-in")).toBe(true);
     expect(lifecycleTransitionAllowed("cancelled", "check-in")).toBe(false);
     expect(lifecycleTransitionAllowed("confirmed", "complete")).toBe(false);
     expect(lifecycleTransitionAllowed("checked_in", "complete")).toBe(true);
+    expect(lifecycleTransitionAllowed("confirmed", "no-show")).toBe(true);
+    expect(lifecycleTransitionAllowed("checked_in", "no-show")).toBe(false);
     expect(lifecycleTransitionAllowed("completed", "cancel")).toBe(false);
   });
 

@@ -10,7 +10,7 @@ const configuredServices = Object.values(services).map((service) => ({ ...servic
 const activeRate = (serviceId: "regular-sim" | "pro-sim" | "ps5") => (config.rates.find((rate) => rate.serviceId === serviceId && Date.parse(rate.effectiveFrom) <= Date.now() && (!rate.effectiveUntil || Date.now() < Date.parse(rate.effectiveUntil)))?.amountSenPerResourceHour ?? 0) / 100;
 ---
 <BaseLayout runtimeConfig={config} title="Pricing | Xerom SimRacing & Cafe" description="Current hourly pricing for Regular Sim, Pro Sim and PS5 lounge sessions at Xerom in Klang.">
-  <header class="section-shell page-hero"><h1 class="display">Clear pace. <span class="red">Clear price.</span></h1><p class="lede">Book one or two hours. Your total is calculated from current configuration when you confirm.</p></header>
+  <header class="section-shell page-hero"><h1 class="display">Clear pace. <span class="red">Clear price.</span></h1><p class="lede">Book a session from 30 minutes to two hours. Your total is calculated from current configuration when you confirm.</p></header>
   <section class="section-shell pricing-table" aria-label="Current prices">
     {configuredServices.filter((service) => service.enabled).map((service) => {
       return <article class="price-row"><div><h2>{service.name}</h2><p>{service.description}</p></div><div class="price-stack"><strong>{formatMoney(activeRate(service.id))}/hr</strong></div><a class="button button-primary" href={`/book?service=${service.id}`}>Book <ArrowIcon /></a></article>;

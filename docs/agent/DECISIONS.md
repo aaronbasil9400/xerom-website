@@ -237,3 +237,13 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 - Include the exact `/race-control` redirect entry in the existing owner-only Cloudflare Access application alongside `/race-control/*` and `/api/admin/*`.
 - The site middleware rejects owner routes without a verified Access identity; protecting the exact entry path sends an unauthenticated owner to Access before the redirect to the live schedule.
+
+## 2026-09-24 — Owner business configuration close-out
+
+- Set customer bookings to a rolling 72-hour horizon, with one-hour minimum notice and 30/60/90/120-minute durations on 30-minute starts. Manual Race Control bookings may start at any future minute within the same horizon.
+- Keep only the published base prices; do not activate discounts or display compare-at amounts. Preserve the existing private Calendar inventory and use explicit date exceptions for holiday/short-hour changes.
+- Announce closures and other updates through `@xerom.my` until a site announcement feature is implemented. Add booking-policy and privacy pages; use WhatsApp/phone for policy requests.
+- Do not collect free-text notes in public booking. Email remains optional; the website sends no email confirmation.
+- Use a 15-minute no-contact late grace period with no automatic extension; retain the session's original end. Race Control now gates the action in the UI and coordinator. Do not publish fees, refunds or deposits.
+- Preserve the current hero and share-image placeholders while final owner photos are pending. The canonical domain and those photos remain owner launch inputs.
+- Publish the connection and Race Control notices as live/accurate status. The activity-history page explicitly reports its remaining engineering limitation rather than showing fixture events.

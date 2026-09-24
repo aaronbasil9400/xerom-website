@@ -1,13 +1,11 @@
 ---
-import ContentPlaceholder from "@/components/ContentPlaceholder.astro";
-import { media } from "@/config/media";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { business } from "@/config/business";
 ---
-
-<ContentPlaceholder
-  title="Events"
-  description="Temporary event information for Xerom SimRacing & Cafe."
-  hero={media.proRig}
-  heroAlt="Close-up of Xerom’s Pro Rig"
-  secondary={media.regularRig}
-  secondaryAlt="Close-up of Xerom’s Regular Rig"
-/>
+<BaseLayout title="Events | Xerom SimRacing & Cafe" description="Find Xerom event announcements on Instagram.">
+  <section class="page-hero section-shell">
+    <h1 class="display">Events at <span class="red">Xerom</span></h1>
+    <p class="lede">Event announcements and details are shared on Instagram for now. A site announcement feature is planned.</p>
+    <a class="button button-primary" href={business.instagramUrl}>See Xerom on Instagram</a>
+  </section>
+</BaseLayout>

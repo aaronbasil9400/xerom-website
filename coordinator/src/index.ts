@@ -8,6 +8,7 @@ import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
 import { blockTimeRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
 import { applyGroupedMutation, GroupedMutationError, lifecycleTransitionAllowed, type GroupedMutationStep } from "./grouped-mutation";
+import { NO_SHOW_GRACE_MINUTES, noShowGraceElapsed } from "../../src/lib/race-control/no-show";
 import { SerializedExecutor } from "./serialized-executor";
 import { operationCommandSchema } from "../../src/lib/race-control/contracts";
 import { R2ConfigRepository, ConfigConflictError, ConfigUnavailableError } from "../../src/lib/config/repository";
@@ -307,6 +308,9 @@ export class BookingCoordinator extends DurableObject<Env> {
         const targetStatus = action.action === "check-in" ? "checked_in" : action.action === "complete" ? "completed" : action.action === "no-show" ? "no_show" : action.action === "cancel" ? "cancelled" : undefined;
         const currentStart = events[0].event.start;
         const currentEnd = events[0].event.end;
+        if (action.action === "no-show" && !noShowGraceElapsed(currentStart)) {
+          return reply({ error: `A no-show may be recorded after the ${NO_SHOW_GRACE_MINUTES}-minute grace period.` }, 409);
+        }
         const currentResourceIds = events.map(({ resourceId }) => resourceId).sort();
         let fenceStart = currentStart;
         let fenceEnd = currentEnd;
