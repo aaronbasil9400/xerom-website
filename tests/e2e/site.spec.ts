@@ -28,8 +28,10 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(page.locator("[data-session-card]").nth(1)).toContainText("Regular Rig");
   await expect(page.locator('a[href="/events"]')).not.toHaveCount(0);
   await expect(page.locator('a[href="/whats-new"]')).not.toHaveCount(0);
-  await expect(page.locator('a[href="/membership"]')).toHaveCount(0);
-  await expect(page.locator(".header-social")).toHaveAttribute("href", "https://www.instagram.com/xerom.my");
+  await expect(page.locator('a[href="/membership"]')).toHaveCount(1);
+  await expect(page.locator(".header-membership")).toHaveAttribute("href", "/membership");
+  await expect(page.locator(".header-cta")).toHaveAttribute("href", "/book");
+  await expect(page.locator(".header-cta")).toContainText("BOOK A SESSION");
   await expect(page.getByRole("heading", { level: 2, name: "Choose your setup", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Compare experiences", exact: true })).toHaveAttribute("href", "/experiences");
   await expect(page.getByRole("heading", { name: /more than racing/i })).toHaveCount(0);
@@ -43,6 +45,19 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test("membership header CTA opens its explicit placeholder", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) <= 900, "Desktop header only");
+  await page.goto("/");
+  const membershipCta = page.getByRole("link", { name: "BECOME A MEMBER!", exact: true });
+  await expect(membershipCta).toBeVisible();
+  await expect(membershipCta).toHaveAttribute("href", "/membership");
+  await membershipCta.click();
+  await expect(page).toHaveURL(/\/membership$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Become a member" })).toBeVisible();
+  await expect(page.getByText(/No membership purchase or registration is available/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Book a session", exact: true })).toHaveAttribute("href", "/book");
 });
 
 test("mobile header keeps booking visible and menu keyboard-safe", async ({ page }) => {

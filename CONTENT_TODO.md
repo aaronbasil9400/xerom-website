@@ -24,7 +24,7 @@ Only owner-supplied inputs that cannot be safely chosen from the existing busine
 - [x] Operation journal retention: completed operation records may be retained for 30 days; unresolved recovery records and fences remain until reconciled. Enforcement is tracked as engineering work.
 - [x] Equipment: keep the existing general Regular/Pro descriptions. Omit part/model-level hardware claims until current equipment is confirmed.
 - [x] Cafe, games, accessibility, parking/transit, gallery and testimonials: publish no unverified menu, game, amenity, social-photo or review claims. Add them only when sourced material is supplied.
-- [x] Membership: the membership program/site is not set up. Per owner direction on 2026-09-25, label the white header button “BECOME A MEMBER!” and retain its existing Instagram destination. Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`; do not add membership terms or a membership page as part of this copy change.
+- [x] Membership: the program and registration are not set up. Per owner direction on 2026-09-25, the white header button says “BECOME A MEMBER!” and links to `/membership`, a placeholder that clearly states registration and purchase are unavailable. Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`; do not invent membership terms.
 
 ## Connected business systems
 

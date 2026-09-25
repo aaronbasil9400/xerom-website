@@ -248,7 +248,7 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Preserve the current hero and share-image placeholders while final owner photos are pending. The canonical domain and those photos remain owner launch inputs.
 - Publish the connection and Race Control notices as live/accurate status. The activity-history page explicitly reports its remaining engineering limitation rather than showing fixture events.
 
-## 2026-09-25 — Header CTA copy while membership is unconfigured
+## 2026-09-25 — Membership CTA placeholder
 
-- Per owner direction, label the white header button “BECOME A MEMBER!” even though the membership program/site is not set up. Keep its existing Instagram destination; do not add membership terms or a membership page as part of this copy change.
+- Per owner direction, label the white header button “BECOME A MEMBER!” and link it to `/membership`. The route is a clear placeholder because the membership program and registration are not set up; do not invent membership terms or imply purchase/registration is available.
 - Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`.

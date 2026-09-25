@@ -18,6 +18,7 @@ The site will use a small number of focused routes rather than duplicating every
 - `/book` — the complete booking flow and confirmation state.
 - `/visit` — address, hours, directions, phone, WhatsApp, Instagram, and practical visit information.
 - `/events` and `/whats-new` — direct visitors to Instagram for current announcements until a website announcement feature is implemented.
+- `/membership` — explicit placeholder for membership information; membership terms, purchase, and registration remain unavailable until supplied and implemented.
 - `/booking-policy` and `/privacy` — customer-facing booking and data-use notices linked from the booking flow and footer.
 
 This information architecture is a planning baseline. The approved visual concept may combine or re-sequence marketing content, but it must preserve clear entry points for pricing, booking, and visiting.
