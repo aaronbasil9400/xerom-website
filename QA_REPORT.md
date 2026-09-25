@@ -10,6 +10,7 @@ Environment: local Astro / Cloudflare adapter in mock booking mode at `http://12
 | Unit and contract tests | Pass | `npm test`: 128 passed across 24 files. |
 | Production build | Pass | `npm run build`: Cloudflare server output completed. |
 | Responsive frame and overflow | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 npm run test:e2e -- --grep "homepage presents the approved story without overflow"`: 6 passed across 375, 390, 430, 768, 1024, and 1440px. Each viewport keeps the frame at 5:4 with no horizontal overflow. |
+| Deployed responsive homepage | Pass | `PLAYWRIGHT_BASE_URL=https://xerom-website.xerombookings.workers.dev npm run test:e2e -- --grep "homepage presents the approved story without overflow"`: 6 passed across the same six widths; the live 390px frame measures 374×299px. |
 | Mobile visual inspection | Pass | At 390px, the frame measures 374×299px and fits the page. Updated capture: `.impeccable/review/homepage-upgrade/setup-slideshow/mobile-390.png`. |
 
 ## Choose Your Setup swipe-only slideshow — 2026-09-25
