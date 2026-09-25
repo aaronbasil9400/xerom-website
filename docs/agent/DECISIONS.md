@@ -252,3 +252,9 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 - Per owner direction, label the white header button “BECOME A MEMBER!” and link it to `/membership`. The route is a clear placeholder because the membership program and registration are not set up; do not invent membership terms or imply purchase/registration is available.
 - Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`.
+
+## 2026-09-25 — Choose Your Setup temporary photo slideshow
+
+- Use the existing owner-supplied Pro Rig, Regular Rig, and PS5 Lounge photos as temporary slides in one fixed 4:3 frame. Replace the slide sources when the owner supplies the next photo set.
+- Advance every 3.5 seconds with a short opacity crossfade. Preload and decode the slide images before autoplay starts and keep the frame dimensions fixed. Provide touch swipe and left/right arrow-key navigation without visible slideshow controls.
+- Pause rotation when the frame is offscreen, the document is hidden, a mouse hovers over the frame, or keyboard focus enters it; resume when those conditions end. Reduced-motion preference disables autoplay by default and removes the crossfade.

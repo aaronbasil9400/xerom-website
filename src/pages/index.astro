@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ExperienceDock from "@/components/home/ExperienceDock.astro";
+import SetupSlideshow from "@/components/home/SetupSlideshow.astro";
 import SessionCard from "@/components/home/SessionCard.astro";
 import { services } from "@/config/services";
 import { formatMoney } from "@/config/pricing";
@@ -28,6 +29,12 @@ const runtimeHours = Object.entries(runtimeConfig.hours.weekly).map(([day, inter
 const todayHours = todayOpeningHours(runtimeConfig.hours);
 const activeCount = (serviceId: "regular-sim" | "pro-sim" | "ps5") => runtimeConfig.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active").length;
 const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/);
+// Temporary slideshow images: replace these existing owner photos when the next photo set arrives.
+const setupSlides = [
+  { title: "Pro Rig", image: media.proRig, alt: services["pro-sim"].imageAlt },
+  { title: "Regular Rig", image: media.regularRig, alt: services["regular-sim"].imageAlt, className: "setup-slideshow-slide--regular" },
+  { title: "PS5 Lounge", image: media.ps5Lounge, alt: services.ps5.imageAlt },
+] as const;
 ---
 
 <BaseLayout runtimeConfig={runtimeConfig}>
@@ -81,7 +88,7 @@ const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/
 
     <section class="section-shell section-space split-section" id="about" aria-labelledby="setup-title">
       <div class="hardware-frame">
-        <Image src={media.proRig} alt="Close-up of the Porsche-branded wheel centre on Xerom’s Pro Rig" widths={[480, 800, 1200]} sizes="(max-width: 900px) 100vw, 50vw" format="webp" loading="lazy" />
+        <SetupSlideshow slides={setupSlides} intervalMs={3500} />
       </div>
       <div>
         <h2 class="section-title" id="setup-title">Choose your <span class="red">setup</span></h2>

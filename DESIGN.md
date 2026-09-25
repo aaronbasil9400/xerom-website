@@ -254,6 +254,10 @@ The route is a three-cell experience dock. Each cell pairs owner service imagery
 
 Price proof lives in the Pick Your Pace section immediately after the hero on phones and after the overlapping dock on desktop. Four semantic cards present Regular Rig, Pro Rig, PS5 Lounge, and Cafe using centralized price/service configuration and owner-supplied imagery. Cards stay compact on phones so users see real choices quickly. Cafe remains a service route rather than an invented menu or price claim.
 
+### Choose Your Setup
+
+The split section keeps the existing fixed 4:3 hardware frame and cycles the current Pro Rig, Regular Rig, and PS5 Lounge photos until the next owner photo set arrives. It advances every 3.5 seconds without visible controls; touch users can swipe, and keyboard users can use the left/right arrow keys. Images are decoded before autoplay, and the frame keeps its dimensions at every breakpoint. Rotation stops offscreen, when the document is hidden, on hover or keyboard focus, and by default for reduced-motion users; the fade is removed for reduced motion.
+
 ### Opening Hours
 
 The homepage presents opening hours beside the verified Klang location cue in a dedicated practical-information section after Choose Your Setup. Hours derive from the same centralized `bookingRules.weeklyHours` configuration that drives availability, so published hours and bookable slots cannot drift. The Visit page renders the same configuration as a compact row list.

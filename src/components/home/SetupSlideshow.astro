@@ -1,0 +1,235 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Slide {
+  title: string;
+  image: ImageMetadata;
+  alt: string;
+  className?: string;
+}
+
+interface Props {
+  slides: readonly Slide[];
+  intervalMs?: number;
+}
+
+const { slides, intervalMs = 3500 } = Astro.props;
+---
+
+<div
+  class="setup-slideshow"
+  data-setup-slideshow
+  data-interval={intervalMs}
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="Choose your setup photos"
+  aria-describedby="setup-slideshow-instructions"
+  tabindex="0"
+>
+  <div class="setup-slideshow-viewport">
+    {slides.map((slide, index) => (
+      <div
+        class:list={["setup-slideshow-slide", slide.className]}
+        data-slideshow-slide
+        data-slide-index={index}
+        data-active={index === 0 ? "true" : "false"}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${index + 1} of ${slides.length}: ${slide.title}`}
+        aria-hidden={index === 0 ? "false" : "true"}
+      >
+        <Image
+          class="setup-slideshow-image"
+          src={slide.image}
+          alt={slide.alt}
+          widths={[480, 800, 1200]}
+          sizes="(max-width: 900px) 100vw, 50vw"
+          format="webp"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    ))}
+  </div>
+
+  <span id="setup-slideshow-instructions" class="sr-only">Swipe left or right, or use the left and right arrow keys, to view the setup photos.</span>
+  <p class="sr-only" data-slideshow-status aria-live="polite" aria-atomic="true"></p>
+</div>
+
+<script>
+  const slideshows = document.querySelectorAll<HTMLElement>("[data-setup-slideshow]");
+
+  slideshows.forEach((slideshow) => {
+    if (slideshow.dataset.enhanced === "true") return;
+    slideshow.dataset.enhanced = "true";
+
+    const slides = Array.from(slideshow.querySelectorAll<HTMLElement>("[data-slideshow-slide]"));
+    const images = slides.map((slide) => slide.querySelector<HTMLImageElement>("img"));
+    const status = slideshow.querySelector<HTMLElement>("[data-slideshow-status]");
+    if (slides.length < 2 || images.some((image) => image === null) || !status) return;
+
+    const validImages = images as HTMLImageElement[];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const intervalMs = Math.max(3000, Math.min(4000, Number(slideshow.dataset.interval) || 3500));
+    let activeIndex = Math.max(0, slides.findIndex((slide) => slide.dataset.active === "true"));
+    let timer: number | undefined;
+    let imagesReady = false;
+    let inView = false;
+    let userPaused = reducedMotion.matches;
+    let focusPaused = false;
+    let pointerPaused = false;
+    let pointerStart: { id: number; x: number; y: number } | undefined;
+    let imagePreparation: Promise<void> | undefined;
+
+    const stopTimer = () => {
+      if (timer === undefined) return;
+      window.clearTimeout(timer);
+      timer = undefined;
+    };
+
+    const canRotate = () => imagesReady
+      && inView
+      && document.visibilityState === "visible"
+      && !userPaused
+      && !focusPaused
+      && !pointerPaused;
+
+    const showSlide = (nextIndex: number, announce: boolean) => {
+      activeIndex = (nextIndex + slides.length) % slides.length;
+      slides.forEach((slide, index) => {
+        const active = index === activeIndex;
+        slide.dataset.active = String(active);
+        slide.setAttribute("aria-hidden", String(!active));
+      });
+      if (announce) {
+        status.textContent = slides[activeIndex].getAttribute("aria-label") ?? `Photo ${activeIndex + 1} of ${slides.length}`;
+      }
+    };
+
+    const scheduleNext = () => {
+      stopTimer();
+      if (canRotate()) {
+        timer = window.setTimeout(() => {
+          timer = undefined;
+          void advanceAutomatically();
+        }, intervalMs);
+      }
+    };
+
+    const advanceAutomatically = async () => {
+      if (!canRotate()) {
+        scheduleNext();
+        return;
+      }
+      const nextIndex = (activeIndex + 1) % slides.length;
+      await validImages[nextIndex].decode().catch(() => undefined);
+      if (!canRotate()) {
+        scheduleNext();
+        return;
+      }
+      showSlide(nextIndex, false);
+      scheduleNext();
+    };
+
+    const prepareImages = () => {
+      if (imagePreparation) return imagePreparation;
+      validImages.forEach((image) => { image.loading = "eager"; });
+      imagePreparation = Promise.all(validImages.map((image) => image.decode().catch(() => undefined))).then(() => {
+        imagesReady = true;
+        scheduleNext();
+      });
+      return imagePreparation;
+    };
+
+    const navigate = (direction: number) => {
+      showSlide(activeIndex + direction, true);
+      scheduleNext();
+    };
+
+    slideshow.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        navigate(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        navigate(1);
+      }
+    });
+    slideshow.addEventListener("focusin", () => {
+      focusPaused = true;
+      scheduleNext();
+    });
+    slideshow.addEventListener("focusout", (event) => {
+      const nextTarget = event.relatedTarget;
+      if (nextTarget instanceof Node && slideshow.contains(nextTarget)) return;
+      focusPaused = false;
+      scheduleNext();
+    });
+    slideshow.addEventListener("pointerenter", (event) => {
+      if (event.pointerType !== "mouse") return;
+      pointerPaused = true;
+      scheduleNext();
+    });
+    slideshow.addEventListener("pointerleave", (event) => {
+      if (event.pointerType !== "mouse") return;
+      pointerPaused = false;
+      scheduleNext();
+    });
+    slideshow.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse") return;
+      pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      pointerPaused = true;
+      scheduleNext();
+      try {
+        slideshow.setPointerCapture(event.pointerId);
+      } catch {
+        // Swipe still works without pointer capture if the browser declines it.
+      }
+    });
+    slideshow.addEventListener("pointerup", (event) => {
+      if (!pointerStart || pointerStart.id !== event.pointerId) return;
+      const deltaX = event.clientX - pointerStart.x;
+      const deltaY = event.clientY - pointerStart.y;
+      pointerStart = undefined;
+      pointerPaused = false;
+      if (Math.abs(deltaX) >= 44 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+        navigate(deltaX < 0 ? 1 : -1);
+      } else {
+        scheduleNext();
+      }
+    });
+    slideshow.addEventListener("pointercancel", (event) => {
+      if (!pointerStart || pointerStart.id !== event.pointerId) return;
+      pointerStart = undefined;
+      pointerPaused = false;
+      scheduleNext();
+    });
+    document.addEventListener("visibilitychange", scheduleNext);
+    reducedMotion.addEventListener("change", (event) => {
+      userPaused = event.matches;
+      scheduleNext();
+    });
+
+    if ("IntersectionObserver" in window) {
+      const preloadObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        preloadObserver.disconnect();
+        void prepareImages();
+      }, { rootMargin: "800px 0px" });
+      const visibilityObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        inView = Boolean(entry?.isIntersecting && entry.intersectionRatio >= 0.1);
+        scheduleNext();
+      }, { threshold: [0, 0.1] });
+      preloadObserver.observe(slideshow);
+      visibilityObserver.observe(slideshow);
+    } else {
+      inView = true;
+      void prepareImages();
+    }
+
+    window.addEventListener("pagehide", stopTimer);
+    window.addEventListener("pageshow", scheduleNext);
+  });
+</script>

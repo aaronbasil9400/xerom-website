@@ -1,5 +1,19 @@
 # QA Report
 
+## Choose Your Setup swipe-only slideshow — 2026-09-25
+
+Environment: local Astro / Cloudflare adapter in mock booking mode at `http://127.0.0.1:4323`. No live booking backend or Google Calendar state was touched.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro diagnostics, lint, and typecheck | Pass | `npm run check` and `npm run lint`: 0 errors, 0 warnings, 0 hints across 136 files. |
+| Unit and contract tests | Pass | `npm test`: 128 passed across 24 files. |
+| Production build | Pass | `npm run build`: Cloudflare server output completed. |
+| Responsive homepage checks | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 npm run test:e2e -- tests/e2e/site.spec.ts`: 37 passed, 41 expected viewport skips across 375, 390, 430, 768, 1024, and 1440px. The 4:3 frame stayed fixed and the homepage had no horizontal overflow. |
+| Slideshow interaction | Pass | The 1024px E2E check confirmed 3.5-second advance, image readiness before rotation, keyboard focus pause/resume, arrow-key navigation, and reduced-motion pause. The 390px touch test swiped to the next photo. |
+| Visual inspection | Pass | Reviewed the 390px mobile homepage capture at `.impeccable/review/homepage-upgrade/setup-slideshow/mobile-390.png`; no visible slideshow controls, and the fixed image frame fits the viewport. |
+| Public-site effects | None | Validation used the local mock booking server. No live booking or Calendar event was created. |
+
 ## Membership CTA placeholder route — 2026-09-25
 
 Environment: local Astro 7.3.2 checks and the deployed Workers site at `https://xerom-website.xerombookings.workers.dev`. Live browser checks only opened public pages; no booking was submitted.

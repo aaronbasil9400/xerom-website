@@ -9,6 +9,13 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   const experienceDock = page.locator("[data-experience-dock]");
   await expect(page.getByRole("link", { name: /book a session/i }).first()).toBeVisible();
   await expect(page.locator("[data-session-card]")).toHaveCount(4);
+  const setupSlideshow = page.locator("[data-setup-slideshow]");
+  await expect(setupSlideshow).toBeVisible();
+  await expect(setupSlideshow).toHaveAttribute("data-interval", "3500");
+  await expect(setupSlideshow.locator("button")).toHaveCount(0);
+  const setupFrame = await setupSlideshow.locator(".setup-slideshow-viewport").boundingBox();
+  if (!setupFrame) throw new Error("Choose Your Setup slideshow frame is missing");
+  expect(setupFrame.width / setupFrame.height).toBeCloseTo(4 / 3, 2);
   const hoursSummary = page.locator(".hours-chip");
   await expect(hoursSummary).toContainText(/Today · (Mon|Tue|Wed|Thu|Fri|Sat|Sun)/);
   await expect(hoursSummary.locator("span")).toHaveCount(1);
@@ -36,7 +43,7 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(page.getByRole("link", { name: "Compare experiences", exact: true })).toHaveAttribute("href", "/experiences");
   await expect(page.getByRole("heading", { name: /more than racing/i })).toHaveCount(0);
   await expect(page.locator("[data-home-hero] img")).toHaveAttribute("loading", "eager");
-  expect(await page.locator("main img[loading='eager']").count()).toBe(1);
+  expect(await page.locator("main img[loading='eager']:not(.setup-slideshow-image)").count()).toBe(1);
   const sessionHeights = await page.locator("[data-session-card]").evaluateAll((cards) => cards.map((card) => card.getBoundingClientRect().height));
   expect(Math.max(...sessionHeights)).toBeLessThan(400);
   if (viewportWidth >= 1024) {
@@ -58,6 +65,59 @@ test("membership header CTA opens its explicit placeholder", async ({ page }) =>
   await expect(page.getByRole("heading", { level: 1, name: "Become a member" })).toBeVisible();
   await expect(page.getByText(/No membership purchase or registration is available/i)).toBeVisible();
   await expect(page.getByRole("link", { name: "Book a session", exact: true })).toHaveAttribute("href", "/book");
+});
+
+test("Choose Your Setup slideshow advances, supports keyboard navigation, and respects reduced motion", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-1024", "Single timer and keyboard interaction audit");
+  await page.goto("/");
+  const slideshow = page.locator("[data-setup-slideshow]");
+  await slideshow.scrollIntoViewIfNeeded();
+  await expect(slideshow.locator('[data-slide-index="1"]')).toHaveAttribute("data-active", "true", { timeout: 5000 });
+
+  const before = await slideshow.locator(".setup-slideshow-viewport").boundingBox();
+  if (!before) throw new Error("Choose Your Setup slideshow frame is missing");
+  const imagesReady = await slideshow.locator("img").evaluateAll((images) => images.every((image) => {
+    const candidate = image as HTMLImageElement;
+    return candidate.complete && candidate.naturalWidth > 0;
+  }));
+  expect(imagesReady).toBe(true);
+
+  await slideshow.focus();
+  const focusPausedAt = await slideshow.locator('.setup-slideshow-slide[data-active="true"]').getAttribute("data-slide-index");
+  await page.waitForTimeout(3600);
+  expect(await slideshow.locator('.setup-slideshow-slide[data-active="true"]').getAttribute("data-slide-index")).toBe(focusPausedAt);
+
+  await page.keyboard.press("ArrowRight");
+  await expect(slideshow.locator('[data-slide-index="2"]')).toHaveAttribute("data-active", "true");
+  await page.getByRole("link", { name: "Compare experiences", exact: true }).focus();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const reducedMotionPausedAt = await slideshow.locator('.setup-slideshow-slide[data-active="true"]').getAttribute("data-slide-index");
+  await page.waitForTimeout(3600);
+  expect(await slideshow.locator('.setup-slideshow-slide[data-active="true"]').getAttribute("data-slide-index")).toBe(reducedMotionPausedAt);
+
+  await slideshow.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(slideshow.locator('[data-slide-index="1"]')).toHaveAttribute("data-active", "true");
+  const after = await slideshow.locator(".setup-slideshow-viewport").boundingBox();
+  if (!after) throw new Error("Choose Your Setup slideshow frame disappeared");
+  expect(after.width).toBeCloseTo(before.width, 0);
+  expect(after.height).toBeCloseTo(before.height, 0);
+});
+
+test("Choose Your Setup slideshow responds to touch swipes", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-390", "Single mobile swipe audit");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const slideshow = page.locator("[data-setup-slideshow]");
+  await slideshow.scrollIntoViewIfNeeded();
+  await expect(slideshow.locator('[data-slide-index="0"]')).toHaveAttribute("data-active", "true");
+  await expect(slideshow).toHaveAttribute("aria-describedby", "setup-slideshow-instructions");
+
+  await slideshow.dispatchEvent("pointerdown", { pointerId: 7, pointerType: "touch", clientX: 300, clientY: 300 });
+  await slideshow.dispatchEvent("pointerup", { pointerId: 7, pointerType: "touch", clientX: 220, clientY: 302 });
+  await expect(slideshow.locator('[data-slide-index="1"]')).toHaveAttribute("data-active", "true");
+  await expect(slideshow.locator("[data-slideshow-status]")).toHaveText("2 of 3: Regular Rig");
+  await expect(slideshow.locator("button")).toHaveCount(0);
 });
 
 test("mobile header keeps booking visible and menu keyboard-safe", async ({ page }) => {
