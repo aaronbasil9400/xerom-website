@@ -250,7 +250,7 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 
 ## 2026-09-25 — Membership CTA placeholder
 
-- Per owner direction, label the white header button “BECOME A MEMBER!” and link it to `/membership`. The route is a clear placeholder because the membership program and registration are not set up; do not invent membership terms or imply purchase/registration is available.
+- Per owner direction, label the white desktop header button and matching mobile menu item “BECOME A MEMBER!” and link both to `/membership`. The route is a clear placeholder because the membership program and registration are not set up; do not invent membership terms or imply purchase/registration is available.
 - Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`.
 
 ## 2026-09-25 — Choose Your Setup temporary photo slideshow

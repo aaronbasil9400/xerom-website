@@ -35,8 +35,8 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(page.locator("[data-session-card]").nth(1)).toContainText("Regular Rig");
   await expect(page.locator('a[href="/events"]')).not.toHaveCount(0);
   await expect(page.locator('a[href="/whats-new"]')).not.toHaveCount(0);
-  await expect(page.locator('a[href="/membership"]')).toHaveCount(1);
   await expect(page.locator(".header-membership")).toHaveAttribute("href", "/membership");
+  await expect(page.locator('#mobile-nav a[href="/membership"]')).toHaveCount(1);
   await expect(page.locator(".header-cta")).toHaveAttribute("href", "/book");
   await expect(page.locator(".header-cta")).toContainText("BOOK A SESSION");
   await expect(page.getByRole("heading", { level: 2, name: "Choose your setup", exact: true })).toBeVisible();
@@ -137,10 +137,22 @@ test("mobile header keeps booking visible and menu keyboard-safe", async ({ page
   await expect(toggle).toHaveAccessibleName("Close menu");
   await expect(page.locator("#mobile-nav")).toBeVisible();
   await expect(page.locator("#mobile-nav a").first()).toBeFocused();
+  const membershipLink = page.getByRole("link", { name: "BECOME A MEMBER!", exact: true });
+  await expect(membershipLink).toHaveAttribute("href", "/membership");
   await page.keyboard.press("Escape");
   await expect(page.locator("#mobile-nav")).toBeHidden();
   await expect(toggle).toHaveAccessibleName("Open menu");
   await expect(toggle).toBeFocused();
+});
+
+test("mobile membership menu link opens the shared placeholder", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) > 900, "Mobile and tablet navigation only");
+  await page.goto("/");
+  await page.locator("[data-menu-toggle]").click();
+  await page.getByRole("link", { name: "BECOME A MEMBER!", exact: true }).click();
+  await expect(page).toHaveURL(/\/membership$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Become a member" })).toBeVisible();
+  await expect(page.getByText(/No membership purchase or registration is available/i)).toBeVisible();
 });
 
 test("mock booking flow reaches confirmation", async ({ page }) => {
