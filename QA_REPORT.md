@@ -1,5 +1,14 @@
 # QA Report
 
+## Mobile membership menu parity — 2026-09-25
+
+Environment: local Astro mock-mode E2E at `http://127.0.0.1:4323` and deployed Workers site at `https://xerom-website.xerombookings.workers.dev`. Browser checks only opened public pages; no booking was submitted.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Mobile menu behavior | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 npm run test:e2e -- tests/e2e/site.spec.ts`: 41 passed, 43 expected viewport skips across six widths. At 375, 390, 430, and 768px, the mobile menu's “BECOME A MEMBER!” link points to `/membership` and opens the same placeholder page as the desktop CTA. |
+| Deployed mobile click-through | Pass | `PLAYWRIGHT_BASE_URL=https://xerom-website.xerombookings.workers.dev npm run test:e2e -- --project=mobile-390 --grep "mobile membership menu link opens the shared placeholder"`: 1 passed. |
+
 ## Choose Your Setup frame height adjustment — 2026-09-25
 
 Environment: local Astro / Cloudflare adapter in mock booking mode at `http://127.0.0.1:4323`.
