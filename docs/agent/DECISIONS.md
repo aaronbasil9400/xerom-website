@@ -247,3 +247,8 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Use a 15-minute no-contact late grace period with no automatic extension; retain the session's original end. Race Control now gates the action in the UI and coordinator. Do not publish fees, refunds or deposits.
 - Preserve the current hero and share-image placeholders while final owner photos are pending. The canonical domain and those photos remain owner launch inputs.
 - Publish the connection and Race Control notices as live/accurate status. The activity-history page explicitly reports its remaining engineering limitation rather than showing fixture events.
+
+## 2026-09-25 — Header CTA copy while membership is unconfigured
+
+- Per owner direction, label the white header button “BECOME A MEMBER!” even though the membership program/site is not set up. Keep its existing Instagram destination; do not add membership terms or a membership page as part of this copy change.
+- Keep the red booking button labeled “BOOK A SESSION” and routed to `/book`.
