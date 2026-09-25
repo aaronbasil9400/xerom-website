@@ -1,5 +1,17 @@
 # QA Report
 
+## Choose Your Setup frame height adjustment — 2026-09-25
+
+Environment: local Astro / Cloudflare adapter in mock booking mode at `http://127.0.0.1:4323`.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Astro diagnostics / lint | Pass | `npm run check` and `npm run lint`: 0 errors, 0 warnings, 0 hints across 136 files. |
+| Unit and contract tests | Pass | `npm test`: 128 passed across 24 files. |
+| Production build | Pass | `npm run build`: Cloudflare server output completed. |
+| Responsive frame and overflow | Pass | `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4323 npm run test:e2e -- --grep "homepage presents the approved story without overflow"`: 6 passed across 375, 390, 430, 768, 1024, and 1440px. Each viewport keeps the frame at 5:4 with no horizontal overflow. |
+| Mobile visual inspection | Pass | At 390px, the frame measures 374×299px and fits the page. Updated capture: `.impeccable/review/homepage-upgrade/setup-slideshow/mobile-390.png`. |
+
 ## Choose Your Setup swipe-only slideshow — 2026-09-25
 
 Environment: local Astro / Cloudflare adapter in mock booking mode at `http://127.0.0.1:4323`. No live booking backend or Google Calendar state was touched.

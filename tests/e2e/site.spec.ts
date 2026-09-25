@@ -15,7 +15,7 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(setupSlideshow.locator("button")).toHaveCount(0);
   const setupFrame = await setupSlideshow.locator(".setup-slideshow-viewport").boundingBox();
   if (!setupFrame) throw new Error("Choose Your Setup slideshow frame is missing");
-  expect(setupFrame.width / setupFrame.height).toBeCloseTo(4 / 3, 2);
+  expect(setupFrame.width / setupFrame.height).toBeCloseTo(5 / 4, 2);
   const hoursSummary = page.locator(".hours-chip");
   await expect(hoursSummary).toContainText(/Today · (Mon|Tue|Wed|Thu|Fri|Sat|Sun)/);
   await expect(hoursSummary.locator("span")).toHaveCount(1);

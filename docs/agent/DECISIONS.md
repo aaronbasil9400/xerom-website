@@ -258,3 +258,11 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Use the existing owner-supplied Pro Rig, Regular Rig, and PS5 Lounge photos as temporary slides in one fixed 4:3 frame. Replace the slide sources when the owner supplies the next photo set.
 - Advance every 3.5 seconds with a short opacity crossfade. Preload and decode the slide images before autoplay starts and keep the frame dimensions fixed. Provide touch swipe and left/right arrow-key navigation without visible slideshow controls.
 - Pause rotation when the frame is offscreen, the document is hidden, a mouse hovers over the frame, or keyboard focus enters it; resume when those conditions end. Reduced-motion preference disables autoplay by default and removes the crossfade.
+
+## 2026-09-25 — Slightly taller setup slideshow frame
+
+- Per owner direction, change the fixed image frame from 4:3 to 5:4. This adds about 19px of height at a 390px viewport while preserving a consistent crop across desktop and mobile.
+
+## 2026-09-25 — Taller Choose Your Setup image frame
+
+- Per owner direction, change the slideshow frame from 4:3 to 5:4 to make the images slightly taller while preserving a fixed ratio across desktop and mobile widths.
