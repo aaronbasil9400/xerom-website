@@ -1,5 +1,19 @@
 # QA Report
 
+## Membership CTA placeholder route — 2026-09-25
+
+Environment: local Astro 7.3.2 checks and the deployed Workers site at `https://xerom-website.xerombookings.workers.dev`. Live browser checks only opened public pages; no booking was submitted.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Git history | Pass | `git show 8850d13^:src/layouts/BaseLayout.astro` confirms the white `.header-membership` CTA linked to `/membership`; commit `a1958dc` introduced the explicit no-registration placeholder. |
+| Astro diagnostics, lint, and typecheck | Pass | `npm run check` and `npm run lint`: 0 errors, 0 warnings, 0 hints across 135 files. |
+| Unit and contract tests | Pass | `npm test`: 128 passed across 24 files. |
+| Production build | Pass | `npm run build`: Cloudflare server output completed. |
+| Membership CTA click-through | Pass | `PLAYWRIGHT_BASE_URL=https://xerom-website.xerombookings.workers.dev npm run test:e2e -- --grep "membership header CTA opens its explicit placeholder"`: 2 passed at desktop 1024/1440px; 4 expected mobile/tablet skips. The CTA opens `/membership`; the placeholder states registration and purchase are unavailable and retains a `/book` action. |
+| Live visual inspection | Pass | Clicked the white CTA in the live desktop header at 1080px. Captured and reviewed `.impeccable/review/homepage-upgrade/membership-cta/desktop-1024.png`. |
+| Full local Playwright suite | Environment blocked | `npm run test:e2e` could not start the configured Astro dev web server (`Process from config.webServer exited early`). The focused deployed click-through test above passed. |
+
 ## Owner configuration close-out — 2026-09-24
 
 Environment: local Astro 7.3.2 / Cloudflare Workers adapter using the mock booking mode for browser tests. No customer Calendar booking was submitted during this close-out.
