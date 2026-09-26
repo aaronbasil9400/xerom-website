@@ -6,7 +6,7 @@ import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
 export const prerender = false;
 const headers = { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" };
 
-export const POST: APIRoute = async ({ request, params }) => {
+export const POST: APIRoute = async ({ request, params, locals }) => {
   if (!verifyOwnerMutationOrigin(request)) return new Response(JSON.stringify({ error: { code: "CSRF_REJECTED", message: "Refresh Race Control and try again.", retryable: false } }), { status: 403, headers });
   if (!request.headers.get("content-type")?.includes("application/json")) return new Response(JSON.stringify({ error: { code: "CONTENT_TYPE", message: "Send JSON.", retryable: false } }), { status: 415, headers });
   if (Number(request.headers.get("content-length") ?? 0) > 12_000) return new Response(JSON.stringify({ error: { code: "TOO_LARGE", message: "The action request is too large.", retryable: false } }), { status: 413, headers });
@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request, params }) => {
   const id = coordinator.idFromName("xerom-global-booking-coordinator");
   const response = await coordinator.get(id).fetch("https://coordinator.internal/booking-action", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-xerom-command": "booking-action" },
+    headers: { "content-type": "application/json", "x-xerom-command": "booking-action", "x-xerom-actor-id": locals.owner!.actorId },
     body: JSON.stringify({ action: action.data, idempotencyKey: body.idempotencyKey }),
   });
   return new Response(response.body, { status: response.status, headers });

@@ -23,7 +23,20 @@ import { heroImageRequirements } from '@/lib/media/image-validation';
       <div class="rc-form-actions"><button class="rc-button rc-button-primary" type="submit">Upload to private draft</button><output data-hero-upload-result aria-live="polite"></output></div>
     </form>
   </section>
-  <section class="rc-panel rc-empty"><h2>Publication status</h2><p>Uploading stores an immutable private media object and updates the configuration draft. The homepage changes only after the separate review and publication gate succeeds.</p></section>
+  <section class="rc-panel rc-hero-publication" data-hero-publication aria-labelledby="hero-publication-title">
+    <div class="rc-panel-head"><h2 id="hero-publication-title">Publish Hero image</h2><span class="rc-draft-pill">Review required</span></div>
+    <div class="rc-hero-publication-body">
+      <p data-hero-publication-state aria-live="polite">Checking the saved Hero image…</p>
+      <p class="rc-helper">Review checks future bookings before publication. Publishing applies all saved Business Settings and Website Content changes in this draft, not only the Hero image.</p>
+      <div class="rc-form-actions">
+        <button class="rc-button" type="button" data-hero-review disabled>Review changes</button>
+        <button class="rc-button rc-button-primary" type="button" data-hero-publish disabled>Publish reviewed draft</button>
+        <a class="rc-button" href="/" target="_blank" rel="noreferrer">View live homepage</a>
+      </div>
+      <p data-hero-impact hidden></p>
+      <output data-hero-publish-result aria-live="polite"></output>
+    </div>
+  </section>
 </RaceControlLayout>
 
 <script>
@@ -33,7 +46,44 @@ import { heroImageRequirements } from '@/lib/media/image-validation';
   const preview = form?.querySelector<HTMLElement>("[data-hero-preview]");
   const details = form?.querySelector<HTMLElement>("[data-hero-file-details]");
   const result = form?.querySelector<HTMLOutputElement>("[data-hero-upload-result]");
+  const publicationState = document.querySelector<HTMLElement>("[data-hero-publication-state]");
+  const reviewButton = document.querySelector<HTMLButtonElement>("[data-hero-review]");
+  const publishButton = document.querySelector<HTMLButtonElement>("[data-hero-publish]");
+  const impact = document.querySelector<HTMLElement>("[data-hero-impact]");
+  const publishResult = document.querySelector<HTMLOutputElement>("[data-hero-publish-result]");
   let previewUrl = "";
+  let pendingReview: { draftHash: string; baseRevision: string; reviewToken: string; draftEtag: string } | null = null;
+  let hasUnsavedSelection = false;
+  const setPublishResult = (message: string, error = false) => { if (!publishResult) return; publishResult.className = error ? "rc-output-error" : "rc-output-success"; publishResult.textContent = message; };
+  const invalidatePublicationReview = () => { pendingReview = null; if (publishButton) publishButton.disabled = true; if (impact) impact.hidden = true; };
+  async function loadHeroPublicationState() {
+    if (!publicationState || !reviewButton || !publishButton) return;
+    invalidatePublicationReview();
+    reviewButton.disabled = true;
+    try {
+      const [draftResponse, liveResponse] = await Promise.all([
+        fetch("/api/admin/config/draft", { cache: "no-store" }),
+        fetch("/api/public-config", { cache: "no-store" }),
+      ]);
+      const draft = await draftResponse.json() as { data?: { websiteContent?: { homepage?: { heroAssetId?: string | null } } }; etag?: string | null; draftHash?: string; seeded?: boolean; error?: { message?: string } };
+      const live = await liveResponse.json() as { data?: { websiteContent?: { homepage?: { heroAssetId?: string | null } } }; error?: { message?: string } };
+      if (!draftResponse.ok || !draft.data || !liveResponse.ok || !live.data) throw new Error(draft.error?.message ?? live.error?.message ?? "Hero publication status could not be loaded.");
+      const pendingHero = draft.data.websiteContent?.homepage?.heroAssetId !== live.data.websiteContent?.homepage?.heroAssetId;
+      if (!pendingHero) {
+        publicationState.textContent = "The published Hero image matches the saved draft.";
+        return;
+      }
+      if (hasUnsavedSelection) {
+        publicationState.textContent = "Upload the selected image to the private draft before reviewing publication.";
+        return;
+      }
+      publicationState.textContent = "A new Hero image is saved in the private draft and waiting for review.";
+      reviewButton.disabled = !draft.etag || !draft.draftHash || Boolean(draft.seeded);
+    } catch (error) {
+      publicationState.textContent = error instanceof Error ? error.message : "Hero publication status could not be loaded.";
+    }
+  }
+
   const inspect = async (file: File) => {
     if (!["image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Use a JPEG, PNG, or WebP image.");
     if (file.size > 8 * 1024 * 1024) throw new Error("The hero image must be no larger than 8 MB.");
@@ -44,14 +94,17 @@ import { heroImageRequirements } from '@/lib/media/image-validation';
     return dimensions;
   };
   fileInput?.addEventListener("change", async () => {
-    const file = fileInput.files?.[0]; if (!file || !preview || !details) return;
+    const file = fileInput.files?.[0];
+    if (!file) { hasUnsavedSelection = false; void loadHeroPublicationState(); return; }
+    if (!preview || !details) return;
+    hasUnsavedSelection = true; invalidatePublicationReview(); if (reviewButton) reviewButton.disabled = true;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    preview.replaceChildren(); result && (result.textContent = "");
+    preview.replaceChildren(); result && (result.textContent = ""); setPublishResult("");
     try { const dimensions = await inspect(file); previewUrl = URL.createObjectURL(file); const image = document.createElement("img"); image.src = previewUrl; image.alt = "Selected homepage hero preview"; preview.appendChild(image); details.textContent = `${file.name} · ${dimensions.width} × ${dimensions.height}px · ${(file.size / 1024 / 1024).toFixed(2)} MB`; }
-    catch (error) { fileInput.value = ""; const message = error instanceof Error ? error.message : "The image could not be read."; preview.innerHTML = "<span>Invalid image</span>"; details.textContent = message; }
+    catch (error) { fileInput.value = ""; hasUnsavedSelection = false; const message = error instanceof Error ? error.message : "The image could not be read."; preview.innerHTML = "<span>Invalid image</span>"; details.textContent = message; void loadHeroPublicationState(); }
   });
   form?.addEventListener("submit", async (event) => {
-    event.preventDefault(); const file = fileInput?.files?.[0]; if (!file || !result) return; const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]'); if (submit) submit.disabled = true; result.className = ""; result.textContent = "Validating and uploading the private media object…";
+    event.preventDefault(); const file = fileInput?.files?.[0]; if (!file || !result) return; const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]'); if (submit) submit.disabled = true; invalidatePublicationReview(); if (reviewButton) reviewButton.disabled = true; result.className = ""; result.textContent = "Validating and uploading the private media object…";
     try {
       await inspect(file);
       const uploadBody = new FormData(); uploadBody.set("image", file);
@@ -61,9 +114,69 @@ import { heroImageRequirements } from '@/lib/media/image-validation';
       draft.data.websiteContent.homepage.heroAssetId = upload.data.assetId; draft.data.publishedAt = null;
       const saveResponse = await fetch("/api/admin/config/draft", { method: "PUT", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ config: draft.data, expectedEtag: draft.etag ?? null }) });
       const saved = await saveResponse.json() as { error?: {message?:string} }; if (!saveResponse.ok) throw new Error(saved.error?.message ?? "The image uploaded, but the draft could not be updated.");
-      result.className = "rc-output-success"; result.textContent = "Hero image saved to the private draft. Review and publish the draft before the homepage changes.";
+      hasUnsavedSelection = false; result.className = "rc-output-success"; result.textContent = "Hero image saved to the private draft."; setPublishResult(""); await loadHeroPublicationState();
     } catch (error) { result.className = "rc-output-error"; result.textContent = error instanceof Error ? error.message : "The hero image could not be uploaded."; }
     finally { if (submit) submit.disabled = false; }
   });
+
+  reviewButton?.addEventListener("click", async () => {
+    if (!reviewButton || !publishButton || !impact) return;
+    reviewButton.disabled = true; publishButton.disabled = true; invalidatePublicationReview();
+    if (publicationState) publicationState.textContent = "Reviewing the saved draft and checking future bookings…";
+    try {
+      const [draftResponse, liveResponse] = await Promise.all([
+        fetch("/api/admin/config/draft", { cache: "no-store" }),
+        fetch("/api/public-config", { cache: "no-store" }),
+      ]);
+      const draft = await draftResponse.json() as { data?: { websiteContent?: { homepage?: { heroAssetId?: string | null } } }; etag?: string | null; draftHash?: string; error?: { message?: string } };
+      const live = await liveResponse.json() as { data?: { websiteContent?: { homepage?: { heroAssetId?: string | null } } }; error?: { message?: string } };
+      if (!draftResponse.ok || !draft.data || !liveResponse.ok || !live.data || !draft.etag || !draft.draftHash) throw new Error(draft.error?.message ?? live.error?.message ?? "The saved draft could not be loaded for review.");
+      if (draft.data.websiteContent?.homepage?.heroAssetId === live.data.websiteContent?.homepage?.heroAssetId) throw new Error("There is no unpublished Hero image to publish.");
+      const response = await fetch("/api/admin/config/review", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ draftHash: draft.draftHash }) });
+      const payload = await response.json() as { data?: { draftHash: string; baseRevision: string; reviewToken: string | null; publishable: boolean; scannedEventCount: number; affectedBookingIds: string[]; validationErrors: Array<{ message: string }> }; error?: { message?: string; detail?: string } };
+      if (!response.ok || !payload.data) throw new Error(`${payload.error?.message ?? "Publication review failed."}${payload.error?.detail ? ` (${payload.error.detail})` : ""}`);
+      const review = payload.data;
+      impact.hidden = false;
+      impact.textContent = review.publishable
+        ? `Review passed. ${review.scannedEventCount} future Calendar entries checked; no conflicts found. Publish within five minutes.`
+        : `Publication is blocked by ${review.validationErrors.length} issue(s) affecting ${review.affectedBookingIds.length} booking(s). ${review.validationErrors.map((item) => item.message).join(" ")}`;
+      if (review.publishable && review.reviewToken) {
+        pendingReview = { draftHash: review.draftHash, baseRevision: review.baseRevision, reviewToken: review.reviewToken, draftEtag: draft.etag };
+        publishButton.disabled = false;
+        if (publicationState) publicationState.textContent = "Review passed. The saved Hero image is ready to publish.";
+      } else {
+        if (publicationState) publicationState.textContent = "Review found issues. Resolve them before publishing.";
+      }
+      reviewButton.disabled = false;
+      setPublishResult(review.publishable ? "The reviewed draft is ready for publication." : "The draft was not published.", !review.publishable);
+    } catch (error) {
+      if (publicationState) publicationState.textContent = error instanceof Error ? error.message : "Publication review failed.";
+      setPublishResult(error instanceof Error ? error.message : "Publication review failed.", true);
+      reviewButton.disabled = false;
+    }
+  });
+
+  publishButton?.addEventListener("click", async () => {
+    if (!publishButton || !reviewButton || !pendingReview) return;
+    if (!window.confirm("Publish all saved Business Settings and Website Content changes in this reviewed draft, including the Hero image? The public site will change only after the Calendar recheck succeeds.")) return;
+    publishButton.disabled = true; reviewButton.disabled = true;
+    if (publicationState) publicationState.textContent = "Rechecking Calendar and publishing the reviewed draft…";
+    try {
+      const response = await fetch("/api/admin/config/publish", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify(pendingReview) });
+      const payload = await response.json() as { revisionId?: string; error?: string | { message?: string } };
+      if (!response.ok || !payload.revisionId) throw new Error(typeof payload.error === "string" ? payload.error : payload.error?.message ?? "The reviewed draft was not published.");
+      pendingReview = null;
+      impact && (impact.hidden = true);
+      setPublishResult("Hero image and reviewed draft are now live.");
+      if (publicationState) publicationState.textContent = "The Hero image is published on the live homepage.";
+      await loadHeroPublicationState();
+    } catch (error) {
+      if (publicationState) publicationState.textContent = error instanceof Error ? error.message : "The reviewed draft was not published.";
+      setPublishResult(error instanceof Error ? error.message : "The reviewed draft was not published.", true);
+      reviewButton.disabled = false;
+    }
+  });
+
+  void loadHeroPublicationState();
   window.addEventListener("beforeunload", () => { if (previewUrl) URL.revokeObjectURL(previewUrl); });
 </script>

@@ -6,7 +6,7 @@ import { verifyOwnerMutationOrigin } from "@/lib/security/owner";
 export const prerender = false;
 const headers = { "content-type": "application/json; charset=utf-8", "cache-control": "private, no-store" };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   if (!verifyOwnerMutationOrigin(request)) return new Response(JSON.stringify({ error: { code: "CSRF_REJECTED", message: "Refresh Race Control and try again.", retryable: false } }), { status: 403, headers });
   if (!request.headers.get("content-type")?.includes("application/json")) return new Response(JSON.stringify({ error: { code: "CONTENT_TYPE", message: "Send JSON.", retryable: false } }), { status: 415, headers });
   if (Number(request.headers.get("content-length") ?? 0) > 12_000) return new Response(JSON.stringify({ error: { code: "TOO_LARGE", message: "The block request is too large.", retryable: false } }), { status: 413, headers });
@@ -18,7 +18,7 @@ export const POST: APIRoute = async ({ request }) => {
   const id = coordinator.idFromName("xerom-global-booking-coordinator");
   const response = await coordinator.get(id).fetch("https://coordinator.internal/block-time", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-xerom-command": "block-time" },
+    headers: { "content-type": "application/json", "x-xerom-command": "block-time", "x-xerom-actor-id": locals.owner!.actorId },
     body: JSON.stringify(parsed.data),
   });
   return new Response(response.body, { status: response.status, headers });

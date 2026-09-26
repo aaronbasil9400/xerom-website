@@ -271,3 +271,9 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 - Use the supplied September 2026 Regular Rig, Pro Rig, and PS5 photos in the centralized media configuration so all live card, dock, experience, and CTA placements update together. Keep the existing hero and cafe images until the owner supplies final replacements.
 - Use all four supplied Xerom Experience photos in the fixed 5:4 Choose Your Setup slideshow, preserving the existing timing and accessible navigation.
 - Produce subject-focused 4:3 and 5:4 JPEG derivatives with deterministic Lanczos resampling. A modest 1200px upscale supports high-density delivery without inventing photographic detail; the original upload hashes and crop coordinates are recorded in the media manifest.
+## 2026-09-26 — Race Control activity history
+
+- Record a small privacy-safe operation summary in the existing serialized booking coordinator when a booking, booking action, block, or settings publication begins and completes. Store only category/action/state, owner/public actor label, opaque booking or revision ID, and affected resource IDs/times. Never store customer names, contact details, free-text notes, Calendar IDs, or mutation reasons in the activity record.
+- Keep the activity feed and recovery holds in the coordinator's existing Durable Object storage; do not add a database or separate event service. Show the most recent operation records first and link recovery items to the existing Schedule or Bookings workflow.
+- Retain completed/failed summaries for 30 days and keep `running` / `needs_review` entries beyond that window. Keep published-settings history by walking the existing immutable R2 revision parent chain; those non-PII revisions retain the authoritative record.
+- Older booking actions are not reconstructed from the current Calendar state. Calendar remains the booking record and the Activity page states this historical boundary.

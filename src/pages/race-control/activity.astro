@@ -1,4 +1,208 @@
 ---
-import RaceControlLayout from '../../layouts/RaceControlLayout.astro'; import DemoNotice from '../../components/race-control/DemoNotice.astro';
+import RaceControlLayout from '../../layouts/RaceControlLayout.astro';
+import DemoNotice from '../../components/race-control/DemoNotice.astro';
 ---
-<RaceControlLayout title="Changes & Activity" section="activity"><DemoNotice /><section class="rc-panel rc-empty"><h2>Activity history is not available in this release</h2><p>The Google Calendar remains the record for reservations, walk-ins, maintenance blocks and closures. Use the Schedule or Bookings view to review current entries.</p><p>Pending configuration changes are shown in the Business Settings editor before publication.</p></section></RaceControlLayout>
+<RaceControlLayout title="Changes & Activity" section="activity">
+  <DemoNotice />
+  <section class="rc-notice rc-notice-live" aria-label="Activity history privacy note">
+    <strong>Private owner history</strong>
+    <span>Activity records include actions, status and affected resources. Customer names, phone numbers, email addresses and notes are not shown here. Older Calendar activity remains available in Bookings, but its full action history cannot be reconstructed.</span>
+  </section>
+
+  <section class="rc-panel rc-activity-panel" aria-labelledby="activity-history-title">
+    <div class="rc-panel-head">
+      <div><h2 id="activity-history-title">Recent activity</h2><span>Booking actions, blocks and settings publications</span></div>
+      <button class="rc-button" type="button" data-activity-refresh>Refresh</button>
+    </div>
+    <div class="rc-activity-filters">
+      <label>Type<select data-activity-category><option value="all">All activity</option><option value="booking">Bookings</option><option value="block">Blocks</option><option value="settings">Settings</option></select></label>
+      <label>State<select data-activity-state><option value="all">All states</option><option value="running">Running</option><option value="succeeded">Completed</option><option value="failed">Failed</option><option value="needs_review">Needs review</option></select></label>
+      <output data-activity-status aria-live="polite">Loading activity…</output>
+    </div>
+    <div class="rc-activity-feed" data-activity-feed aria-live="polite"></div>
+    <div class="rc-activity-more"><button class="rc-button" type="button" data-activity-more hidden>Load older activity</button></div>
+  </section>
+
+  <section class="rc-panel rc-recovery-panel" aria-labelledby="recovery-holds-title">
+    <div class="rc-panel-head"><div><h2 id="recovery-holds-title">Recovery holds</h2><span>Capacity stays blocked until each uncertain operation is reconciled</span></div><span class="rc-warning-pill" data-recovery-count>Checking</span></div>
+    <div class="rc-recovery-feed" data-recovery-feed><p class="rc-helper">Checking the coordinator for unresolved recovery holds…</p></div>
+  </section>
+</RaceControlLayout>
+
+<script>
+  import { activityNeedsAttention, type ActivityRecord } from "@/lib/race-control/activity";
+
+  type RecoveryHold = { operationId: string; resourceIds: string[]; start: string; end: string; createdAt: string };
+  type ActivityResponse = { data?: ActivityRecord[]; nextCursor?: string | null; recoveryHolds?: RecoveryHold[]; recoveryHoldsTruncated?: boolean; publicationHistoryUnavailable?: boolean; error?: { message?: string } };
+  type UiElement = Element & { className: string; href: string; dateTime: string; type: string; classList: { toggle(name: string, force?: boolean): void }; appendChild(child: UiElement): UiElement };
+  type SelectControl = { value: string; addEventListener(type: string, listener: () => void): void };
+  const uiElement = (tagName: string) => document.createElement(tagName) as unknown as UiElement;
+  const querySelect = (selector: string) => document.querySelector(selector) as unknown as SelectControl | null;
+
+  const feed = document.querySelector<HTMLElement>("[data-activity-feed]");
+  const recoveryFeed = document.querySelector<HTMLElement>("[data-recovery-feed]");
+  const status = document.querySelector<HTMLOutputElement>("[data-activity-status]");
+  const recoveryCount = document.querySelector<HTMLElement>("[data-recovery-count]");
+  const refreshButton = document.querySelector<HTMLButtonElement>("[data-activity-refresh]");
+  const moreButton = document.querySelector<HTMLButtonElement>("[data-activity-more]");
+  const categoryFilter = querySelect("[data-activity-category]");
+  const stateFilter = querySelect("[data-activity-state]");
+  const records = new Map<string, ActivityRecord>();
+  let nextCursor: string | null = null;
+  let recoveryHolds: RecoveryHold[] = [];
+  let recoveryHoldsTruncated = false;
+  let publicationHistoryUnavailable = false;
+
+  const dateTime = (value: string) => {
+    const date = new Date(value);
+    return Number.isFinite(date.getTime())
+      ? new Intl.DateTimeFormat("en-MY", { timeZone: "Asia/Kuala_Lumpur", dateStyle: "medium", timeStyle: "short" }).format(date)
+      : "Time unavailable";
+  };
+  const titleFor = (record: ActivityRecord) => {
+    if (record.category === "booking") return record.action === "create" ? "Booking created" : `Booking ${record.action.replaceAll("_", " ")}`;
+    if (record.category === "block") return record.action === "venue-closure" ? "Venue closure created" : "Maintenance block created";
+    return record.action === "publish" ? "Business settings published" : record.action.replaceAll("_", " ");
+  };
+  const stateLabel = (state: ActivityRecord["state"]) => state === "succeeded" ? "Completed" : state === "needs_review" ? "Needs review" : state === "running" ? "Running" : "Failed";
+  const actorLabel = (actorId: string) => actorId.startsWith("public:") ? "Website booking" : actorId.startsWith("access:") ? "Owner" : actorId === "owner:unknown" ? "Owner" : actorId;
+  const actionHref = (record: ActivityRecord) => record.category === "settings" ? "/race-control/content" : record.category === "block" ? "/race-control/schedule" : "/race-control/bookings";
+
+  function renderActivity() {
+    if (!feed || !status || !moreButton) return;
+    const category = categoryFilter?.value ?? "all";
+    const state = stateFilter?.value ?? "all";
+    const filtered = [...records.values()]
+      .filter((record) => (category === "all" || record.category === category) && (state === "all" || record.state === state))
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+    feed.replaceChildren();
+    if (publicationHistoryUnavailable) {
+      const warning = uiElement("p");
+      warning.className = "rc-activity-warning";
+      warning.textContent = "Published settings history could not be loaded. Booking actions and recovery state are still shown.";
+      feed.appendChild(warning);
+    }
+    if (filtered.length === 0) {
+      const empty = uiElement("p");
+      empty.className = "rc-activity-empty";
+      empty.textContent = records.size === 0 ? "No activity has been recorded since this feature was enabled. Older Calendar entries remain available in Bookings." : "No activity matches these filters.";
+      feed.appendChild(empty);
+    }
+    for (const record of filtered) {
+      const article = uiElement("article");
+      article.className = "rc-activity-item";
+      const date = uiElement("time");
+      date.dateTime = record.updatedAt;
+      date.textContent = dateTime(record.updatedAt);
+      const main = uiElement("div");
+      main.className = "rc-activity-main";
+      const heading = uiElement("strong");
+      heading.textContent = titleFor(record);
+      const details = uiElement("span");
+      const detailParts = [
+        record.bookingId ? `Booking ${record.bookingId}` : "",
+        record.resourceIds?.length ? `Experiences: ${record.resourceIds.join(", ")}` : "",
+        record.start && record.end ? `For ${dateTime(record.start)}–${dateTime(record.end)}` : "",
+        record.revisionId ? `Revision ${record.revisionId}` : "",
+        `By ${actorLabel(record.actorId)}`,
+      ].filter(Boolean);
+      details.textContent = detailParts.join(" · ");
+      main.appendChild(heading); main.appendChild(details);
+      const state = uiElement("span");
+      state.className = `rc-activity-state rc-activity-state--${record.state.replaceAll("_", "-")}`;
+      state.textContent = stateLabel(record.state);
+      article.appendChild(date); article.appendChild(main); article.appendChild(state);
+      if (activityNeedsAttention(record)) {
+        const link = uiElement("a");
+        link.className = "rc-button rc-activity-action";
+        link.href = actionHref(record);
+        link.textContent = "Review";
+        article.appendChild(link);
+      }
+      feed.appendChild(article);
+    }
+    const attention = [...records.values()].filter((record) => activityNeedsAttention(record)).length;
+    status.textContent = `${filtered.length} shown · ${attention} need attention`;
+    moreButton.hidden = !nextCursor;
+  }
+
+  function renderRecoveryHolds() {
+    if (!recoveryFeed || !recoveryCount) return;
+    recoveryFeed.replaceChildren();
+    recoveryCount.textContent = recoveryHolds.length ? `${recoveryHolds.length} open` : "Clear";
+    recoveryCount.classList.toggle("rc-warning-pill", recoveryHolds.length > 0);
+    recoveryCount.classList.toggle("rc-status", recoveryHolds.length === 0);
+    if (recoveryHolds.length === 0) {
+      const empty = uiElement("p");
+      empty.className = "rc-activity-empty";
+      empty.textContent = recoveryHoldsTruncated ? "No holds were returned in the visible batch; additional holds may exist." : "No unresolved capacity holds.";
+      recoveryFeed.appendChild(empty);
+      return;
+    }
+    for (const hold of recoveryHolds) {
+      const article = uiElement("article");
+      article.className = "rc-recovery-item";
+      const heading = uiElement("strong");
+      heading.textContent = `Recovery hold · ${hold.resourceIds.join(", ") || "resource details unavailable"}`;
+      const details = uiElement("span");
+      details.textContent = `${dateTime(hold.start)}–${dateTime(hold.end)} · created ${dateTime(hold.createdAt)}`;
+      const link = uiElement("a");
+      link.className = "rc-button";
+      link.href = "/race-control/schedule";
+      link.textContent = "Open schedule";
+      article.appendChild(heading); article.appendChild(details); article.appendChild(link);
+      recoveryFeed.appendChild(article);
+    }
+    if (recoveryHoldsTruncated) {
+      const warning = uiElement("p");
+      warning.className = "rc-activity-warning";
+      warning.textContent = "More than 500 recovery holds exist; only the first 500 are shown.";
+      recoveryFeed.appendChild(warning);
+    }
+  }
+
+  async function loadActivity(append = false) {
+    if (!status || !feed) return;
+    if (!append) {
+      records.clear();
+      nextCursor = null;
+    }
+    status.textContent = append ? "Loading older activity…" : "Loading activity…";
+    if (refreshButton) refreshButton.disabled = true;
+    if (moreButton) moreButton.disabled = true;
+    try {
+      const params = new URLSearchParams({ limit: "50" });
+      if (append && nextCursor) params.set("cursor", nextCursor);
+      const response = await fetch(`/api/admin/activity?${params}`, { cache: "no-store" });
+      const payload = await response.json() as ActivityResponse;
+      if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Activity history could not be loaded.");
+      for (const record of payload.data) records.set(record.id, record);
+      nextCursor = payload.nextCursor ?? null;
+      recoveryHolds = payload.recoveryHolds ?? [];
+      recoveryHoldsTruncated = Boolean(payload.recoveryHoldsTruncated);
+      publicationHistoryUnavailable = Boolean(payload.publicationHistoryUnavailable);
+      renderActivity();
+      renderRecoveryHolds();
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : "Activity history could not be loaded.";
+      if (!append && records.size === 0) {
+        feed.replaceChildren();
+        const retry = uiElement("button");
+        retry.type = "button";
+        retry.className = "rc-button";
+        retry.textContent = "Retry";
+        retry.addEventListener("click", () => { void loadActivity(); });
+        feed.appendChild(retry);
+      }
+    } finally {
+      if (refreshButton) refreshButton.disabled = false;
+      if (moreButton) moreButton.disabled = false;
+    }
+  }
+
+  refreshButton?.addEventListener("click", () => { void loadActivity(); });
+  moreButton?.addEventListener("click", () => { void loadActivity(true); });
+  categoryFilter?.addEventListener("change", renderActivity);
+  stateFilter?.addEventListener("change", renderActivity);
+  void loadActivity();
+</script>

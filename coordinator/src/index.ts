@@ -18,6 +18,7 @@ import { resolveRuntimeConfig } from "../../src/lib/config/runtime";
 import { validateRuntimeBookingWindow } from "../../src/lib/booking/runtime-time";
 import { calculateRuntimeQuote } from "../../src/lib/race-control/pricing";
 import { ConfigPublicationRejectedError, executeConfigPublication, recoverActivatedConfigPublication } from "../../src/lib/race-control/config-publication";
+import { activityExpired, activityStorageKey, type ActivityRecord, type ActivityState } from "../../src/lib/race-control/activity";
 
 type Env = CloudflareEnv & { BOOKING_COORDINATOR: DurableObjectNamespace<BookingCoordinator> };
 type Attempt = { hash: string; status: "pending" | "complete" | "failed"; response?: unknown; createdEvents?: Array<{ calendarId: string; eventId: string }> };
@@ -25,7 +26,7 @@ type MutationStatus = "running" | "complete" | "failed" | "needs_review";
 type ActionAttempt = { hash: string; status: MutationStatus; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 type BlockAttempt = { hash: string; status: MutationStatus; response?: unknown; eventIds?: Array<{ calendarId: string; eventId: string }> };
 type RecoveryFence = { operationId: string; resourceId: string; start: string; end: string; reason: string; createdAt: string };
-type ConfigAttempt = { hash: string; status: MutationStatus; response?: unknown; revisionId?: string; publishedAt?: string };
+type ConfigAttempt = { hash: string; status: MutationStatus; response?: unknown; revisionId?: string; publishedAt?: string; activityKey?: string };
 
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
@@ -34,6 +35,7 @@ export class BookingCoordinator extends DurableObject<Env> {
 
   async fetch(request: Request): Promise<Response> {
     if (request.method !== "POST") return reply({ error: "Method not allowed." }, 405);
+    if (request.headers.get("x-xerom-command") === "activity-history") return this.handleActivityHistory(request);
     if (request.headers.get("x-xerom-command") === "recovery-fences") return this.handleRecoveryFences(request);
     if (request.headers.get("x-xerom-command") === "booking-action") return this.handleBookingAction(request);
     if (request.headers.get("x-xerom-command") === "block-time") return this.handleBlockTime(request);
@@ -72,6 +74,7 @@ export class BookingCoordinator extends DurableObject<Env> {
         return reply({ error: "The requested resource quantities are not allowed by current settings." }, 409);
       }
       const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
+      let activityKey: string | undefined;
       const customerName = sanitizeCalendarText(booking.customer.name);
       const customerPhone = sanitizeCalendarText(booking.customer.phone);
       const customerEmail = booking.customer.email ? sanitizeCalendarText(booking.customer.email) : "";
@@ -107,6 +110,7 @@ export class BookingCoordinator extends DurableObject<Env> {
         }
 
         const bookingId = createBookingId();
+        activityKey = await this.beginActivity({ id: `booking:${booking.idempotencyKey}`, category: "booking", action: "create", actorId: ownerBooking ? request.headers.get("x-xerom-actor-id")?.slice(0, 256) || "owner:unknown" : "public:website", resourceIds: [...allocations.values()].flat().map((calendarId) => runtimeResourceIdForCalendar(config, calendarId)).filter((resourceId): resourceId is string => Boolean(resourceId)), start: booking.start, end });
         const price = calculateRuntimeQuote(config, { items: booking.items.filter((item) => item.quantity > 0), start: booking.start, durationMinutes: booking.durationMinutes, channel: ownerBooking ? "owner" : "public" });
         for (const [serviceId, calendarIds] of allocations) {
           const selectedItem = booking.items.find((item) => item.serviceId === serviceId);
@@ -175,12 +179,14 @@ export class BookingCoordinator extends DurableObject<Env> {
           currency: "MYR",
         };
         await this.ctx.storage.put(key, { hash, status: "complete", response: confirmation, createdEvents } satisfies Attempt);
+        if (activityKey) await this.finishActivity(activityKey, "succeeded", { bookingId });
         return reply(confirmation, 201);
       } catch (error) {
         const rollback = await Promise.allSettled(createdEvents.map((event) => deleteEvent(env, event.calendarId, event.eventId)));
         const rollbackFailed = error instanceof CalendarMutationUncertainError || rollback.some((result) => result.status === "rejected");
         await this.ctx.storage.put(key, { hash, status: rollbackFailed ? "failed" : "pending", createdEvents: rollbackFailed ? createdEvents : [] } satisfies Attempt);
         if (!rollbackFailed) await this.ctx.storage.delete(key);
+        if (activityKey) await this.finishActivity(activityKey, rollbackFailed ? "needs_review" : "failed");
         console.error(JSON.stringify({ message: "booking_create_failed", attempt: booking.idempotencyKey, createdCount: createdEvents.length, rollbackFailed, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: rollbackFailed ? "Booking could not be completed and needs staff review. Please contact Xerom." : "Booking could not be completed. Please try again." }, 503);
       }
@@ -202,7 +208,8 @@ export class BookingCoordinator extends DurableObject<Env> {
         if (prior.hash !== command.payloadHash) return reply({ error: "This publication operation was already used with different details." }, 409);
         if (prior.status === "complete") return reply({ ...(prior.response as object), replayed: true }, 200);
       }
-      await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId: prior?.revisionId, publishedAt: prior?.publishedAt } satisfies ConfigAttempt);
+      const activityKey = prior?.activityKey ?? await this.beginActivity({ id: `config:${command.opId}`, category: "settings", action: "publish", actorId });
+      await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId: prior?.revisionId, publishedAt: prior?.publishedAt, activityKey } satisfies ConfigAttempt);
       try {
         if (!this.env.RACE_CONTROL_CONFIG_BUCKET || !this.env.RACE_CONTROL_TOKEN_ENCRYPTION_KEY) throw new ConfigUnavailableError("Configuration publication is not configured.");
         const repository = new R2ConfigRepository(this.env.RACE_CONTROL_CONFIG_BUCKET);
@@ -212,7 +219,8 @@ export class BookingCoordinator extends DurableObject<Env> {
           if (!published) throw new ConfigUnavailableError("The activated configuration revision is unavailable.");
           await this.rollPublishedDraft(repository, published, command.draftEtag);
           const response = recovered;
-          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId: prior.revisionId, publishedAt: prior.publishedAt } satisfies ConfigAttempt);
+          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId: prior.revisionId, publishedAt: prior.publishedAt, activityKey } satisfies ConfigAttempt);
+          await this.finishActivity(activityKey, "succeeded", { revisionId: prior.revisionId });
           return reply(response, 200);
         }
         const publishedAt = intendedPublishedAt ?? new Date().toISOString();
@@ -235,22 +243,25 @@ export class BookingCoordinator extends DurableObject<Env> {
           onIntent: async (revisionId, intentPublishedAt) => {
             intendedRevisionId = revisionId;
             intendedPublishedAt = intentPublishedAt;
-            await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId, publishedAt: intentPublishedAt } satisfies ConfigAttempt);
+            await this.ctx.storage.put(key, { hash: command.payloadHash, status: "running", revisionId, publishedAt: intentPublishedAt, activityKey } satisfies ConfigAttempt);
           },
         });
         const revisionId = revision.revisionId;
         await this.rollPublishedDraft(repository, revision, command.draftEtag);
         const response = { revisionId, activatedAt: pointer.activatedAt };
-        await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId, publishedAt } satisfies ConfigAttempt);
+        await this.ctx.storage.put(key, { hash: command.payloadHash, status: "complete", response, revisionId, publishedAt, activityKey } satisfies ConfigAttempt);
+        await this.finishActivity(activityKey, "succeeded", { revisionId });
         return reply(response, 201);
       } catch (error) {
         if (error instanceof ConfigPublicationRejectedError) {
           const response = { error: error.message, ...(error.conflicts ? { conflicts: error.conflicts } : {}) };
-          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "failed", response, revisionId: intendedRevisionId, publishedAt: intendedPublishedAt } satisfies ConfigAttempt);
+          await this.ctx.storage.put(key, { hash: command.payloadHash, status: "failed", response, revisionId: intendedRevisionId, publishedAt: intendedPublishedAt, activityKey } satisfies ConfigAttempt);
+          await this.finishActivity(activityKey, "failed");
           return reply(response, 409);
         }
         const uncertain = error instanceof ConfigConflictError || error instanceof ConfigUnavailableError;
-        await this.ctx.storage.put(key, { hash: command.payloadHash, status: uncertain ? "needs_review" : "failed", revisionId: intendedRevisionId, publishedAt: intendedPublishedAt } satisfies ConfigAttempt);
+        await this.ctx.storage.put(key, { hash: command.payloadHash, status: uncertain ? "needs_review" : "failed", revisionId: intendedRevisionId, publishedAt: intendedPublishedAt, activityKey } satisfies ConfigAttempt);
+        await this.finishActivity(activityKey, uncertain ? "needs_review" : "failed");
         console.error(JSON.stringify({ message: "config_activation_failed", operationId: command.opId, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: uncertain ? "Configuration publication needs review before retrying." : "Configuration publication failed." }, 503);
       }
@@ -288,6 +299,7 @@ export class BookingCoordinator extends DurableObject<Env> {
         return reply({ error: "This action needs staff review before retrying." }, 503);
       }
       const env = this.env;
+      let activityKey: string | undefined;
       try {
         const { config } = await resolveRuntimeConfig(env);
         const searchableCalendarIds = [...new Set([...allCalendarIds(env), ...config.resources.flatMap((resource) => resource.calendarRef ? [resource.calendarRef] : [])])].filter((calendarId) => calendarId !== env.BOOKING_CONTROL_CALENDAR_ID);
@@ -382,21 +394,25 @@ export class BookingCoordinator extends DurableObject<Env> {
           return reply({ error: "A previous operation affecting this time needs staff review." }, 409);
         }
 
+        activityKey = await this.beginActivity({ id: `action:${idempotencyKey}`, category: "booking", action: action.action, actorId: request.headers.get("x-xerom-actor-id")?.slice(0, 256) || "owner:unknown", bookingId: action.expected.bookingId, resourceIds: currentResourceIds, start: fenceStart, end: fenceEnd });
         await this.ctx.storage.put(key, { hash, status: "running", eventIds: events.map(({ calendarId, event }) => ({ calendarId, eventId: event.id })) } satisfies ActionAttempt);
         await this.putRecoveryFences(idempotencyKey, currentResourceIds, fenceStart, fenceEnd, action.action);
         try {
           const changed = await applyGroupedMutation(steps, (calendarId, eventId, patch, etag) => patchCalendarEvent(env, calendarId, eventId, patch, etag));
           await this.clearRecoveryFences(idempotencyKey, currentResourceIds);
           await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: changed.map((event, index) => ({ calendarId: steps[index].calendarId, eventId: event.id })) } satisfies ActionAttempt);
+          await this.finishActivity(activityKey, "succeeded");
           return reply(response, 200);
         } catch (error) {
           const compensationFailed = error instanceof GroupedMutationError && error.compensationFailed;
           if (!compensationFailed) await this.clearRecoveryFences(idempotencyKey, currentResourceIds);
           await this.ctx.storage.put(key, { hash, status: compensationFailed ? "needs_review" : "failed", eventIds: events.map(({ calendarId, event }) => ({ calendarId, eventId: event.id })) } satisfies ActionAttempt);
+          await this.finishActivity(activityKey, compensationFailed ? "needs_review" : "failed");
           console.error(JSON.stringify({ message: "booking_action_failed", bookingId: action.expected.bookingId, action: action.action, compensationFailed, error: error instanceof Error ? error.message : "unknown" }));
           return reply({ error: compensationFailed ? "Booking action partially changed Calendar and needs staff review." : "Booking action failed; any Calendar changes were rolled back." }, 503);
         }
       } catch (error) {
+        if (activityKey) await this.finishActivity(activityKey, "needs_review");
         console.error(JSON.stringify({ message: "booking_action_failed", bookingId: action.expected.bookingId, action: action.action, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: "Booking action could not be completed and needs staff review." }, 503);
       }
@@ -421,12 +437,14 @@ export class BookingCoordinator extends DurableObject<Env> {
       const calendarIds = block.resourceIds.map((resourceId) => resourceId === "booking-control" ? env.BOOKING_CONTROL_CALENDAR_ID ?? null : runtimeCalendarIdForResource(config, resourceId) ?? calendarIdForResource(env, resourceId));
       if (calendarIds.some((calendarId): calendarId is null => calendarId === null)) return reply({ error: "A requested resource is not configured." }, 409);
       const createdEvents: Array<{ calendarId: string; eventId: string }> = [];
+      let activityKey: string | undefined;
       try {
         const overlapsExisting = await this.listBlockingEvents(calendarIds as string[], block.start, block.end);
         const existingFences = await this.activeFenceResourceIds(block.start, block.end);
         if (overlapsExisting.length > 0 || block.resourceIds.some((resourceId) => existingFences.has(resourceId)) || existingFences.has("booking-control")) {
           return reply({ error: "The block overlaps an existing Calendar reservation or recovery hold." }, 409);
         }
+        activityKey = await this.beginActivity({ id: `block:${block.idempotencyKey}`, category: "block", action: block.blockType, actorId: request.headers.get("x-xerom-actor-id")?.slice(0, 256) || "owner:unknown", resourceIds: block.resourceIds, start: block.start, end: block.end });
         await this.ctx.storage.put(key, { hash, status: "running" } satisfies BlockAttempt);
         await this.putRecoveryFences(block.idempotencyKey, block.resourceIds, block.start, block.end, block.blockType);
         for (const calendarId of calendarIds) {
@@ -446,12 +464,14 @@ export class BookingCoordinator extends DurableObject<Env> {
         const response = { blockType: block.blockType, start: block.start, end: block.end, resourceIds: block.resourceIds, eventCount: createdEvents.length };
         await this.clearRecoveryFences(block.idempotencyKey, block.resourceIds);
         await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: createdEvents } satisfies BlockAttempt);
+        await this.finishActivity(activityKey, "succeeded");
         return reply(response, 201);
       } catch (error) {
         const rollback = await Promise.allSettled(createdEvents.map((event) => deleteEvent(env, event.calendarId, event.eventId)));
         const rollbackFailed = error instanceof CalendarMutationUncertainError || rollback.some((result) => result.status === "rejected");
         if (!rollbackFailed) await this.clearRecoveryFences(block.idempotencyKey, block.resourceIds);
         await this.ctx.storage.put(key, { hash, status: rollbackFailed ? "needs_review" : "failed", eventIds: createdEvents } satisfies BlockAttempt);
+        if (activityKey) await this.finishActivity(activityKey, rollbackFailed ? "needs_review" : "failed");
         console.error(JSON.stringify({ message: "block_time_failed", blockType: block.blockType, createdCount: createdEvents.length, rollbackFailed, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: rollbackFailed ? "The block failed and needs staff review." : "The block could not be created." }, 503);
       }
@@ -467,6 +487,53 @@ export class BookingCoordinator extends DurableObject<Env> {
     }
     const fences = await this.activeRecoveryFences(start, end);
     return reply({ fences: fences.map(({ resourceId, start: fenceStart, end: fenceEnd }) => ({ resourceId, start: fenceStart, end: fenceEnd })) });
+  }
+
+  private async beginActivity(input: Pick<ActivityRecord, "id" | "category" | "action" | "actorId"> & Pick<ActivityRecord, "bookingId" | "resourceIds" | "start" | "end">): Promise<string> {
+    const now = new Date().toISOString();
+    const key = activityStorageKey(now, input.id);
+    await this.ctx.storage.put(key, { ...input, state: "running", createdAt: now, updatedAt: now } satisfies ActivityRecord);
+    return key;
+  }
+
+  private async finishActivity(key: string, state: ActivityState, details: Pick<ActivityRecord, "bookingId" | "resourceIds" | "revisionId"> = {}): Promise<void> {
+    try {
+      const record = await this.ctx.storage.get<ActivityRecord>(key);
+      if (!record) return;
+      await this.ctx.storage.put(key, { ...record, ...details, state, updatedAt: new Date().toISOString() } satisfies ActivityRecord);
+    } catch {
+      // A running record remains visible for owner review if its final audit update cannot be verified.
+      console.error(JSON.stringify({ message: "activity_record_update_failed", state }));
+    }
+  }
+
+  private async handleActivityHistory(request: Request): Promise<Response> {
+    const input = await request.json().catch(() => null) as { cursor?: unknown; limit?: unknown } | null;
+    const limit = typeof input?.limit === "number" && Number.isInteger(input.limit) ? Math.max(1, Math.min(input.limit, 100)) : 50;
+    const cursor = typeof input?.cursor === "string" && /^activity:\d{13}:[A-Za-z0-9:_-]{1,180}$/.test(input.cursor) ? input.cursor : undefined;
+    if (input?.cursor && !cursor) return reply({ error: "Invalid activity cursor." }, 400);
+    await this.pruneActivityHistory();
+    const rows = await this.ctx.storage.list<ActivityRecord>({ prefix: "activity:", limit: limit + 1, ...(cursor ? { startAfter: cursor } : {}) });
+    const entries = [...rows.entries()];
+    const page = entries.slice(0, limit);
+    const fences = await this.ctx.storage.list<RecoveryFence>({ prefix: "recovery-fence:", limit: 501 });
+    const grouped = new Map<string, { operationId: string; resourceIds: string[]; start: string; end: string; createdAt: string }>();
+    for (const fence of [...fences.values()].slice(0, 500)) {
+      const item = grouped.get(fence.operationId) ?? { operationId: fence.operationId, resourceIds: [], start: fence.start, end: fence.end, createdAt: fence.createdAt };
+      item.resourceIds.push(fence.resourceId);
+      if (fence.start < item.start) item.start = fence.start;
+      if (fence.end > item.end) item.end = fence.end;
+      grouped.set(fence.operationId, item);
+    }
+    return reply({ data: page.map(([, record]) => record), nextCursor: entries.length > limit ? page.at(-1)?.[0] : null, recoveryHolds: [...grouped.values()], recoveryHoldsTruncated: fences.size > 500 });
+  }
+
+  private async pruneActivityHistory(now = Date.now()): Promise<void> {
+    const cutoff = now - 30 * 24 * 60 * 60_000;
+    const start = `activity:${String(9_999_999_999_999 - cutoff).padStart(13, "0")}:`;
+    const expired = await this.ctx.storage.list<ActivityRecord>({ prefix: "activity:", start, limit: 1_000 });
+    const keys = [...expired.entries()].filter(([, record]) => activityExpired(record, now)).map(([key]) => key);
+    if (keys.length) await Promise.all(keys.map((key) => this.ctx.storage.delete(key)));
   }
 
   private async listBlockingEvents(

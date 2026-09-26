@@ -31,7 +31,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let decision = { allowed: true, configured: false };
   if (url.pathname === "/api/availability") decision = await checkRateLimit(env.PUBLIC_AVAILABILITY_RATE_LIMIT, `availability:${clientKey}`);
   else if (url.pathname === "/api/bookings") decision = await checkRateLimit(env.PUBLIC_BOOKING_RATE_LIMIT, `booking:${clientKey}`);
-  else if (url.pathname === "/api/admin/bookings" && context.request.method === "GET") decision = await checkRateLimit(env.OWNER_READ_RATE_LIMIT, `bookings-read:${context.locals.owner?.actorId ?? "unknown-owner"}`);
+  else if ((url.pathname === "/api/admin/bookings" || url.pathname === "/api/admin/activity") && context.request.method === "GET") decision = await checkRateLimit(env.OWNER_READ_RATE_LIMIT, `owner-read:${context.locals.owner?.actorId ?? "unknown-owner"}`);
   else if (url.pathname.startsWith("/api/admin/media/")) decision = await checkRateLimit(env.OWNER_UPLOAD_RATE_LIMIT, `media:${context.locals.owner?.actorId ?? "unknown-owner"}`);
   else if (url.pathname.startsWith("/api/admin/") && context.request.method !== "GET") decision = await checkRateLimit(env.OWNER_MUTATION_RATE_LIMIT, `admin-mutation:${context.locals.owner?.actorId ?? "unknown-owner"}`);
   if (!decision.allowed) return rateLimitResponse();

@@ -27,7 +27,7 @@ Tracked from the 2026-09-12 local security/consistency test (mock mode, Astro 7.
 - [x] **Remove dead configuration.** The unused `bookingMode` export was removed so the coordinator bundle does not evaluate `import.meta.env` at Worker runtime.
 - [x] **Make the additional-controller charge reachable.** The public PS5 booking step collects 0–6 additional controllers and prices RM3 once per booking.
 - [ ] **Replace the placeholder OG/social image.** The current image remains in place per the owner's 2026-09-24 direction while final approved photos are pending. See `CONTENT_TODO.md`.
-- [ ] **Implement Race Control activity history.** The current page now states that the feature is unavailable; show audited owner actions and mutation recovery state before relying on it for incident review.
+- [x] **Implement Race Control activity history.** Owner-only history now records booking creates/actions, maintenance and closure blocks, settings publications, failures and recovery state in the existing serialized coordinator. The feed omits customer contact details and keeps unresolved operations until reconciled.
 - [ ] **Enforce operation-journal retention.** Prune succeeded/failed operation records after the owner-approved 30 days; never expire pending, review-required, or fenced recovery records.
 
 ## Verification gate
