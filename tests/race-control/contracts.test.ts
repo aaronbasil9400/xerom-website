@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createSeedConfig } from "@/lib/config/seed";
 import { configRevisionSchema } from "@/lib/config/schema";
 import { publicConfigSchema, toPublicConfig } from "@/lib/config/public-projection";
-import { blockTimeRequestSchema, bookingActionSchema, operationCommandSchema, quoteRequestSchema } from "@/lib/race-control/contracts";
+import { blockTimeRequestSchema, blockRemovalRequestSchema, bookingActionSchema, operationCommandSchema, quoteRequestSchema } from "@/lib/race-control/contracts";
 
 const syntheticCalendarRefs = {
   resources: {
@@ -53,5 +53,12 @@ describe("Race Control shared contracts", () => {
     expect(operationCommandSchema.safeParse({ type: "activate-config", opId: "operation_123", idempotencyKey: "attempt_123", expectedRevision: "rev-1", draftEtag: "draft-etag-1", reviewToken: "review-token-12345", payloadHash: "a".repeat(64) }).success).toBe(true);
     expect(blockTimeRequestSchema.safeParse({ blockType: "maintenance", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", reason: "Fixture maintenance", idempotencyKey: "attempt_123" }).success).toBe(true);
     expect(blockTimeRequestSchema.safeParse({ blockType: "venue-closure", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", reason: "Fixture closure", idempotencyKey: "attempt_123" }).success).toBe(false);
+  });
+
+  it("accepts block removals with an optional block id and rejects venue closures off the control calendar", () => {
+    expect(blockRemovalRequestSchema.safeParse({ blockId: "attempt_123", blockType: "maintenance", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", idempotencyKey: "attempt_456" }).success).toBe(true);
+    expect(blockRemovalRequestSchema.safeParse({ blockType: "maintenance", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", idempotencyKey: "attempt_456" }).success).toBe(true);
+    expect(blockRemovalRequestSchema.safeParse({ blockType: "venue-closure", resourceIds: ["regular-01"], start: "2026-09-16T20:00:00+08:00", end: "2026-09-16T21:00:00+08:00", idempotencyKey: "attempt_456" }).success).toBe(false);
+    expect(blockRemovalRequestSchema.safeParse({ blockType: "maintenance", resourceIds: ["regular-01"], start: "2026-09-16T21:00:00+08:00", end: "2026-09-16T20:00:00+08:00", idempotencyKey: "attempt_456" }).success).toBe(false);
   });
 });

@@ -6,7 +6,7 @@ import { CalendarMutationUncertainError, queryFreeBusy, insertEvent, deleteEvent
 import { createBookingId, hashPayload } from "../../src/lib/booking/id";
 import { serviceCore, type ServiceId } from "../../src/config/service-core";
 import { sanitizeCalendarText } from "../../src/lib/booking/text";
-import { blockTimeRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
+import { blockTimeRequestSchema, blockRemovalRequestSchema, bookingActionSchema } from "../../src/lib/race-control/contracts";
 import { applyGroupedMutation, GroupedMutationError, lifecycleTransitionAllowed, type GroupedMutationStep } from "./grouped-mutation";
 import { NO_SHOW_GRACE_MINUTES, noShowGraceElapsed } from "../../src/lib/race-control/no-show";
 import { SerializedExecutor } from "./serialized-executor";
@@ -39,6 +39,7 @@ export class BookingCoordinator extends DurableObject<Env> {
     if (request.headers.get("x-xerom-command") === "recovery-fences") return this.handleRecoveryFences(request);
     if (request.headers.get("x-xerom-command") === "booking-action") return this.handleBookingAction(request);
     if (request.headers.get("x-xerom-command") === "block-time") return this.handleBlockTime(request);
+    if (request.headers.get("x-xerom-command") === "remove-block") return this.handleRemoveBlock(request);
     if (request.headers.get("x-xerom-command") === "activate-config") return this.handleActivateConfig(request);
     const parsed = bookingRequestSchema.safeParse(await request.json().catch(() => null));
     if (!parsed.success) return reply({ error: "Invalid booking command." }, 400);
@@ -457,7 +458,7 @@ export class BookingCoordinator extends DurableObject<Env> {
             description: `Race Control ${block.blockType}\nReason: ${sanitizeCalendarText(block.reason)}`,
             start: block.start,
             end: block.end,
-            privateProperties: { source: "race-control-owner", blockType: block.blockType, resourceId, status: "blocked", createdAt: new Date().toISOString() },
+            privateProperties: { source: "race-control-owner", blockType: block.blockType, blockId: block.idempotencyKey, resourceId, status: "blocked", createdAt: new Date().toISOString() },
           });
           createdEvents.push({ calendarId: calendarId!, eventId });
         }
@@ -474,6 +475,60 @@ export class BookingCoordinator extends DurableObject<Env> {
         if (activityKey) await this.finishActivity(activityKey, rollbackFailed ? "needs_review" : "failed");
         console.error(JSON.stringify({ message: "block_time_failed", blockType: block.blockType, createdCount: createdEvents.length, rollbackFailed, error: error instanceof Error ? error.message : "unknown" }));
         return reply({ error: rollbackFailed ? "The block failed and needs staff review." : "The block could not be created." }, 503);
+      }
+    });
+  }
+
+  private async handleRemoveBlock(request: Request): Promise<Response> {
+    const parsed = blockRemovalRequestSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) return reply({ error: "Invalid block removal command." }, 400);
+    const removal = parsed.data;
+    return this.mutations.run(async () => {
+      const hash = await hashPayload(removal);
+      const key = `block-removal:${removal.idempotencyKey}`;
+      const prior = await this.ctx.storage.get<BlockAttempt>(key);
+      if (prior) {
+        if (prior.hash !== hash) return reply({ error: "This removal attempt was already used with different details." }, 409);
+        if (prior.status === "complete") return reply({ ...(prior.response as object), replayed: true }, 200);
+        return reply({ error: "This block removal needs staff review before retrying." }, 503);
+      }
+      const env = this.env;
+      const { config } = await resolveRuntimeConfig(env);
+      // Search every resource calendar so a multi-resource block is removed in full, regardless of which row was opened.
+      const searchableCalendarIds = [...new Set([...allCalendarIds(env), ...config.resources.flatMap((resource) => resource.calendarRef ? [resource.calendarRef] : [])])];
+      const startMs = Date.parse(removal.start);
+      const endMs = Date.parse(removal.end);
+      let activityKey: string | undefined;
+      const removedEvents: Array<{ calendarId: string; eventId: string }> = [];
+      try {
+        const candidates = (await Promise.all(searchableCalendarIds.map(async (calendarId) => {
+          const events = await listCalendarEvents(env, calendarId, new Date(startMs - 60_000).toISOString(), new Date(endMs + 60_000).toISOString());
+          const matched = events.filter((event) =>
+            event.status !== "cancelled"
+            && event.privateProperties.source === "race-control-owner"
+            && event.privateProperties.blockType === removal.blockType
+            && Date.parse(event.start) === startMs
+            && Date.parse(event.end) === endMs
+            && (removal.blockId ? event.privateProperties.blockId === removal.blockId : true));
+          return matched.map((event) => ({ calendarId, eventId: event.id, resourceId: event.privateProperties.resourceId ?? null }));
+        }))).flat();
+        if (candidates.length === 0) return reply({ error: "The block could not be found. Refresh the schedule and try again." }, 404);
+        activityKey = await this.beginActivity({ id: `block-removal:${removal.idempotencyKey}`, category: "block", action: removal.blockType, actorId: request.headers.get("x-xerom-actor-id")?.slice(0, 256) || "owner:unknown", resourceIds: removal.resourceIds, start: removal.start, end: removal.end });
+        await this.ctx.storage.put(key, { hash, status: "running" } satisfies BlockAttempt);
+        for (const candidate of candidates) {
+          await deleteEvent(env, candidate.calendarId, candidate.eventId);
+          removedEvents.push({ calendarId: candidate.calendarId, eventId: candidate.eventId });
+        }
+        const response = { blockType: removal.blockType, start: removal.start, end: removal.end, resourceIds: removal.resourceIds, eventCount: removedEvents.length };
+        await this.ctx.storage.put(key, { hash, status: "complete", response, eventIds: removedEvents } satisfies BlockAttempt);
+        await this.finishActivity(activityKey, "succeeded", { resourceIds: removal.resourceIds });
+        return reply(response, 200);
+      } catch (error) {
+        const uncertain = error instanceof CalendarMutationUncertainError;
+        await this.ctx.storage.put(key, { hash, status: uncertain ? "needs_review" : "failed", eventIds: removedEvents } satisfies BlockAttempt);
+        if (activityKey) await this.finishActivity(activityKey, uncertain ? "needs_review" : "failed");
+        console.error(JSON.stringify({ message: "block_removal_failed", blockType: removal.blockType, removedCount: removedEvents.length, error: error instanceof Error ? error.message : "unknown" }));
+        return reply({ error: uncertain ? "The block removal outcome is uncertain and needs staff review." : "The block could not be removed." }, 503);
       }
     });
   }

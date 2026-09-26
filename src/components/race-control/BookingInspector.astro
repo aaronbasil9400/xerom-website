@@ -32,6 +32,13 @@ const { live = false } = Astro.props;
       </div>
       <output data-live-action-result aria-live="polite"></output>
     </div>
+    <div class="rc-live-actions" data-rc-live-block-actions hidden>
+      <p>This Calendar event is a Race Control block. Removing it frees the capacity across every affected resource.</p>
+      <div class="rc-live-action-buttons">
+        <button class="rc-button rc-button-small rc-button-danger" type="button" data-live-remove-block>Remove block</button>
+      </div>
+      <output data-live-block-result aria-live="polite"></output>
+    </div>
     <div class="rc-note" data-rc-live-note hidden><strong>Calendar is authoritative</strong><p>Lifecycle actions remain conditional on the latest grouped Calendar version.</p></div>
   </div> : <div class="rc-inspector-body"><dl><div><dt>Booking ID</dt><dd class="rc-mono">XR-DEMO-42</dd></div><div><dt>Status</dt><dd><span class="rc-status">Confirmed · fixture</span></dd></div><div><dt>When</dt><dd>Sun, 13 Sep · 6–7 PM MYT</dd></div><div><dt>Experience</dt><dd><span class="rc-chip">Regular 01</span> <span class="rc-chip">Pro 01</span></dd></div><div><dt>Customer</dt><dd>Demo customer · synthetic</dd></div></dl><button class="rc-button rc-button-primary" type="button">View actions (demo)</button><button class="rc-button" type="button">Copy fixture ID</button><div class="rc-note"><strong>Calendar is authoritative</strong><p>Live mutation actions will be enabled only after owner authentication and contract-backed Calendar reads.</p></div></div>}
 </aside>
@@ -40,12 +47,15 @@ const { live = false } = Astro.props;
   import { normalizeMalaysianMobile } from "@/lib/booking/phone";
   import { NO_SHOW_GRACE_MINUTES } from "@/lib/race-control/no-show";
   type BookingDetails = { customerName: string; customerPhone: string; customerEmail?: string; durationMinutes: number; includedControllers: number; additionalControllers: number; totalControllers: number; priceTotal: number | null; createdAt: string | null };
-  type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; serviceId: string; start: string; end: string; bookingDetails: BookingDetails };
+  type SelectedEvent = { bookingId: string | null; version: number; status: string; summary: string; resourceName: string; serviceId: string; start: string; end: string; bookingDetails: BookingDetails; blockType?: string | null; blockResourceId?: string | null; blockId?: string | null };
   const inspectorHeading = document.querySelector<HTMLElement>("#selected-booking");
   const inspectorEmpty = document.querySelector<HTMLElement>("[data-rc-live-empty]");
   const inspectorDetails = document.querySelector<HTMLElement>("[data-rc-live-details]");
   const inspectorNote = document.querySelector<HTMLElement>("[data-rc-live-note]");
   const inspectorActions = document.querySelector<HTMLElement>("[data-rc-live-actions]");
+  const blockActions = document.querySelector<HTMLElement>("[data-rc-live-block-actions]");
+  const removeBlockButton = document.querySelector<HTMLButtonElement>("[data-live-remove-block]");
+  const blockResult = document.querySelector<HTMLOutputElement>("[data-live-block-result]");
   const releaseInput = document.querySelector<HTMLInputElement>("[data-live-release]");
   const actionResult = document.querySelector<HTMLOutputElement>("[data-live-action-result]");
   const whatsappLink = document.querySelector<HTMLAnchorElement>("[data-live-whatsapp]");
@@ -61,8 +71,10 @@ const { live = false } = Astro.props;
     if (inspectorEmpty) inspectorEmpty.hidden = false;
     if (inspectorDetails) inspectorDetails.hidden = true;
     if (inspectorActions) inspectorActions.hidden = true;
+    if (blockActions) blockActions.hidden = true;
     if (inspectorNote) inspectorNote.hidden = true;
     if (actionResult) actionResult.textContent = "";
+    if (blockResult) blockResult.textContent = "";
     if (whatsappLink) whatsappLink.hidden = true;
   };
   const setInspectorValue = (selector: string, value: string) => { const target = document.querySelector<HTMLElement>(selector); if (target) target.textContent = value; };
@@ -100,6 +112,10 @@ const { live = false } = Astro.props;
     if (inspectorDetails) inspectorDetails.hidden = false;
     if (inspectorNote) inspectorNote.hidden = false;
     if (actionResult) actionResult.textContent = "";
+    if (blockResult) blockResult.textContent = "";
+    const isBlock = Boolean(selectedEvent.blockType) || selectedEvent.status === "blocked";
+    if (blockActions) blockActions.hidden = !isBlock;
+    if (isBlock && removeBlockButton) removeBlockButton.disabled = false;
     setInspectorValue("[data-live-booking-id]", selectedEvent.bookingId ?? "Calendar block");
     setInspectorValue("[data-live-status]", selectedEvent.status);
     setInspectorValue("[data-live-when]", formatInspectorWhen(selectedEvent.start, selectedEvent.end));
@@ -147,4 +163,33 @@ const { live = false } = Astro.props;
       inspectorActions.querySelectorAll<HTMLButtonElement>("[data-live-action]").forEach((item) => { item.disabled = false; });
     }
   }));
+  removeBlockButton?.addEventListener("click", async () => {
+    if (!selectedEvent || !selectedEvent.blockType) return;
+    const label = selectedEvent.blockType === "venue-closure" ? "venue closure" : "maintenance block";
+    if (!window.confirm(`Remove this ${label}? This deletes the block from every affected Calendar and frees the capacity.`)) return;
+    removeBlockButton.disabled = true;
+    if (blockResult) blockResult.textContent = "Removing the block and verifying Calendar events…";
+    try {
+      const response = await fetch("/api/admin/blocks", {
+        method: "DELETE",
+        headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" },
+        body: JSON.stringify({
+          blockId: selectedEvent.blockId ?? null,
+          blockType: selectedEvent.blockType,
+          resourceIds: [selectedEvent.blockResourceId ?? "booking-control"],
+          start: selectedEvent.start,
+          end: selectedEvent.end,
+          idempotencyKey: crypto.randomUUID(),
+        }),
+      });
+      const payload = await response.json() as { eventCount?: number; error?: { message?: string } | string };
+      if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : payload.error?.message ?? "The block could not be removed.");
+      // Dispatch the refresh first: it clears the inspector, so the confirmation is set afterwards to remain visible.
+      window.dispatchEvent(new CustomEvent("race-control:refresh"));
+      if (blockResult) blockResult.textContent = `Block removed across ${payload.eventCount ?? 0} Calendar event(s).`;
+    } catch (error) {
+      if (blockResult) blockResult.textContent = error instanceof Error ? error.message : "The block could not be removed.";
+      removeBlockButton.disabled = false;
+    }
+  });
 </script>}

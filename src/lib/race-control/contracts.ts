@@ -98,3 +98,17 @@ export const blockTimeRequestSchema = z.object({
 });
 
 export type BlockTimeRequest = z.infer<typeof blockTimeRequestSchema>;
+
+export const blockRemovalRequestSchema = z.object({
+  blockId: z.string().min(1).max(128).nullable().optional(),
+  blockType: z.enum(["maintenance", "venue-closure"]),
+  resourceIds: z.array(z.string().min(1).max(96)).min(1).max(64),
+  start: isoInstant,
+  end: isoInstant,
+  idempotencyKey: opaqueId,
+}).strict().superRefine((value, context) => {
+  if (Date.parse(value.end) <= Date.parse(value.start)) context.addIssue({ code: "custom", path: ["end"], message: "End must be after start." });
+  if (value.blockType === "venue-closure" && !value.resourceIds.includes("booking-control")) context.addIssue({ code: "custom", path: ["resourceIds"], message: "Venue closures must target the Booking Control calendar." });
+});
+
+export type BlockRemovalRequest = z.infer<typeof blockRemovalRequestSchema>;

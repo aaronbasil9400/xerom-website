@@ -61,7 +61,10 @@ import DemoNotice from '../../components/race-control/DemoNotice.astro';
   };
   const titleFor = (record: ActivityRecord) => {
     if (record.category === "booking") return record.action === "create" ? "Booking created" : `Booking ${record.action.replaceAll("_", " ")}`;
-    if (record.category === "block") return record.action === "venue-closure" ? "Venue closure created" : "Maintenance block created";
+    if (record.category === "block") {
+      const kind = record.action === "venue-closure" ? "Venue closure" : "Maintenance block";
+      return record.id.startsWith("block-removal:") ? `${kind} removed` : `${kind} created`;
+    }
     return record.action === "publish" ? "Business settings published" : record.action.replaceAll("_", " ");
   };
   const stateLabel = (state: ActivityRecord["state"]) => state === "succeeded" ? "Completed" : state === "needs_review" ? "Needs review" : state === "running" ? "Running" : "Failed";

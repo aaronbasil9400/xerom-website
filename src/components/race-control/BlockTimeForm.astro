@@ -1,9 +1,23 @@
+---
+import type { ConfigRevision } from "@/lib/config/schema";
+import { activeBlockResources } from "@/lib/race-control/block-form";
+interface Props { config: ConfigRevision }
+const { config } = Astro.props;
+const resources = activeBlockResources(config);
+---
 <section id="block-time" class="rc-panel rc-booking-form">
   <div class="rc-panel-head"><h2>Block time</h2><span>Maintenance or venue closure · shared Calendar</span></div>
   <form data-rc-block-form>
     <div class="rc-form-grid">
-      <label>Block type<select name="blockType"><option value="maintenance">Maintenance</option><option value="venue-closure">Venue closure</option></select></label>
-      <label>Resources<select name="resourceIds" multiple size="3"><option value="regular-01">Regular 01</option><option value="regular-02">Regular 02</option><option value="regular-03">Regular 03</option><option value="pro-01">Pro 01</option><option value="ps5-01">PS5 01</option><option value="ps5-02">PS5 02</option><option value="booking-control">Booking Control</option></select></label>
+      <label>Block type<select name="blockType" data-rc-block-type><option value="maintenance">Maintenance</option><option value="venue-closure">Venue closure</option></select><small data-rc-block-type-hint>A venue closure blocks the whole venue for the entire interval.</small></label>
+      <div class="rc-wide rc-resource-picker" data-rc-resource-picker>
+        <div class="rc-resource-picker-head"><span>Resources</span><div class="rc-resource-picker-tools"><button class="rc-button rc-button-small" type="button" data-rc-resource-all>Select all</button><button class="rc-button rc-button-small" type="button" data-rc-resource-none>Unselect all</button></div></div>
+        <div class="rc-resource-choices" role="group" aria-label="Affected resources">
+          {resources.map((resource) => <label class="rc-resource-choice"><input type="checkbox" name="resourceIds" value={resource.resourceId} /><span>{resource.displayName}</span></label>)}
+        </div>
+        <p class="rc-helper" data-rc-resource-empty hidden>No active resources are configured yet. Add resources in Business Settings before creating a block.</p>
+      </div>
+      <p class="rc-wide rc-helper" data-rc-venue-closure-note hidden>This closure targets the shared booking-control calendar and blocks every resource.</p>
       <label>Start<input name="start" type="datetime-local" required /></label>
       <label>End<input name="end" type="datetime-local" required /></label>
       <label class="rc-wide">Reason<input name="reason" maxlength="500" required /></label>
@@ -13,26 +27,60 @@
 </section>
 
 <script>
+  import { buildBlockDraft } from "@/lib/race-control/block-form";
+
   const blockForm = document.querySelector<HTMLFormElement>("[data-rc-block-form]");
   const blockOutput = document.querySelector<HTMLOutputElement>("[data-rc-block-result]");
+  const blockTypeSelect = blockForm?.querySelector<HTMLElement>('[name="blockType"]') as (HTMLInputElement | null);
+  const resourcePicker = document.querySelector<HTMLElement>("[data-rc-resource-picker]");
+  const venueNote = document.querySelector<HTMLElement>("[data-rc-venue-closure-note]");
+  const emptyNote = document.querySelector<HTMLElement>("[data-rc-resource-empty]");
+  const resourceBoxes = (): HTMLInputElement[] => [...(blockForm?.querySelectorAll<HTMLInputElement>('input[name="resourceIds"]') ?? [])];
+  const selectedBlockType = () => blockTypeSelect?.value ?? "maintenance";
+  const isVenueClosure = () => selectedBlockType() === "venue-closure";
+
+  // A venue closure ignores the per-resource selection, so the picker is hidden while it is chosen.
+  const syncBlockType = () => {
+    const closure = isVenueClosure();
+    resourcePicker?.toggleAttribute("hidden", closure);
+    venueNote?.toggleAttribute("hidden", !closure);
+  };
+
+  if (emptyNote && resourceBoxes().length === 0) emptyNote.hidden = false;
+  syncBlockType();
+
+  blockTypeSelect?.addEventListener("change", syncBlockType);
+  document.querySelector("[data-rc-resource-all]")?.addEventListener("click", () => resourceBoxes().forEach((box) => { box.checked = true; }));
+  document.querySelector("[data-rc-resource-none]")?.addEventListener("click", () => resourceBoxes().forEach((box) => { box.checked = false; }));
+
   blockForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!blockOutput) return;
+    const values = new FormData(blockForm);
+    const draft = buildBlockDraft({
+      blockType: selectedBlockType(),
+      selectedResourceIds: resourceBoxes().filter((box) => box.checked).map((box) => box.value),
+      start: String(values.get("start") ?? ""),
+      end: String(values.get("end") ?? ""),
+      reason: String(values.get("reason") ?? ""),
+    });
+    if (!draft.ok) { blockOutput.className = "rc-output-error"; blockOutput.textContent = draft.message; return; }
     const submit = blockForm.querySelector<HTMLButtonElement>('button[type="submit"]');
     submit?.setAttribute("disabled", "");
+    blockOutput.className = "";
     blockOutput.textContent = "Checking every affected Calendar…";
-    const values = new FormData(blockForm);
-    const start = String(values.get("start") ?? "");
-    const end = String(values.get("end") ?? "");
-    const resourceIds = [...blockForm.querySelectorAll('select[name="resourceIds"] option:checked')].map((option) => option.getAttribute("value") ?? "");
+    const { blockType, resourceIds, start, end, reason } = draft.request;
     try {
-      const response = await fetch("/api/admin/blocks", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ blockType: values.get("blockType"), resourceIds, start: `${start}:00+08:00`, end: `${end}:00+08:00`, reason: values.get("reason"), idempotencyKey: crypto.randomUUID() }) });
-      const result = await response.json() as { error?: { message?: string }; eventCount?: number };
-      if (!response.ok) throw new Error(result.error?.message ?? "The block could not be created.");
+      const response = await fetch("/api/admin/blocks", { method: "POST", headers: { "content-type": "application/json", "X-Xerom-CSRF": "race-control-v1" }, body: JSON.stringify({ blockType, resourceIds, start: `${start}:00+08:00`, end: `${end}:00+08:00`, reason, idempotencyKey: crypto.randomUUID() }) });
+      const result = await response.json() as { error?: { message?: string } | string; eventCount?: number };
+      if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : result.error?.message ?? "The block could not be created.");
+      blockOutput.className = "rc-output-success";
       blockOutput.textContent = `Block created across ${result.eventCount ?? 0} Calendar event(s). Refreshing…`;
       window.dispatchEvent(new CustomEvent("race-control:refresh"));
       blockForm.reset();
+      syncBlockType();
     } catch (error) {
+      blockOutput.className = "rc-output-error";
       blockOutput.textContent = error instanceof Error ? error.message : "The block could not be created.";
     } finally {
       submit?.removeAttribute("disabled");

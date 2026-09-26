@@ -67,6 +67,9 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
      end: event.end,
      serviceId: event.serviceId,
      bookingDetails: event.bookingDetails,
+     blockType: event.privateProperties?.blockType ?? null,
+     blockResourceId: event.privateProperties?.resourceId ?? event.resourceId ?? null,
+     blockId: event.privateProperties?.blockId ?? null,
    } }));
   const buildAxisTicks = (window: ScheduleWindow) => {
     const start = Date.parse(window.start);

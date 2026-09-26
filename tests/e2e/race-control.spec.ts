@@ -36,6 +36,7 @@ test("Activity history separates audited actions from recovery holds without cus
       { id: "action:test-action", category: "booking", action: "check-in", state: "succeeded", actorId: "access:owner-subject", createdAt: "2026-09-26T10:00:00.000Z", updatedAt: "2026-09-26T10:00:01.000Z", bookingId: "XR-ACTIVITY01", resourceIds: ["regular-01"] },
       { id: "config:test-publish", category: "settings", action: "publish", state: "succeeded", actorId: "access:owner-subject", createdAt: "2026-09-26T09:00:00.000Z", updatedAt: "2026-09-26T09:00:00.000Z", revisionId: "rev-activity01" },
       { id: "block:test-block", category: "block", action: "maintenance", state: "needs_review", actorId: "access:owner-subject", createdAt: "2026-09-26T08:00:00.000Z", updatedAt: "2026-09-26T08:00:00.000Z", resourceIds: ["pro-01"], start: "2026-09-27T08:00:00.000Z", end: "2026-09-27T09:00:00.000Z" },
+      { id: "block-removal:test-removal", category: "block", action: "venue-closure", state: "succeeded", actorId: "access:owner-subject", createdAt: "2026-09-26T07:00:00.000Z", updatedAt: "2026-09-26T07:00:00.000Z", resourceIds: ["booking-control"], start: "2026-09-27T08:00:00.000Z", end: "2026-09-27T09:00:00.000Z" },
     ],
     nextCursor: null,
     recoveryHolds: [{ operationId: "block:test-block", resourceIds: ["pro-01"], start: "2026-09-27T08:00:00.000Z", end: "2026-09-27T09:00:00.000Z", createdAt: "2026-09-26T08:00:00.000Z" }],
@@ -47,6 +48,7 @@ test("Activity history separates audited actions from recovery holds without cus
   await expect(page.getByText("Booking check-in", { exact: true })).toBeVisible();
   await expect(page.getByText("Business settings published", { exact: true })).toBeVisible();
   await expect(page.getByText("Maintenance block created", { exact: true })).toBeVisible();
+  await expect(page.getByText("Venue closure removed", { exact: true })).toBeVisible();
   await expect(page.getByText("Recovery hold · pro-01", { exact: true })).toBeVisible();
   await expect(page.getByText(/By Owner/).first()).toBeVisible();
   await expect(page.locator("body")).not.toContainText("Test Customer");
@@ -173,4 +175,30 @@ test("Hero upload page reviews and publishes the saved draft", async ({ page }) 
   await page.getByRole("button", { name: "Publish reviewed draft" }).click();
   await expect(page.locator("[data-hero-publish-result]")).toContainText("now live");
   expect(publishCount).toBe(1);
+});
+
+test("Block time lists every active resource alphabetically with select and unselect all", async ({ page }) => {
+  await page.goto("/race-control/schedule");
+  const section = page.locator("#block-time");
+  await expect(section.getByRole("heading", { name: "Block time" })).toBeVisible();
+  const resourceLabels = section.locator(".rc-resource-choice span");
+  await expect(resourceLabels).toHaveText(["Pro Rig 01", "PS5 Lounge 01", "PS5 Lounge 02", "Regular Rig 01", "Regular Rig 02", "Regular Rig 03"]);
+
+  const boxes = section.locator('input[name="resourceIds"]');
+  await expect(boxes).toHaveCount(6);
+  await expect(boxes.first()).not.toBeChecked();
+
+  await section.getByRole("button", { name: "Select all", exact: true }).click();
+  for (let index = 0; index < 6; index += 1) await expect(boxes.nth(index)).toBeChecked();
+
+  await section.getByRole("button", { name: "Unselect all", exact: true }).click();
+  for (let index = 0; index < 6; index += 1) await expect(boxes.nth(index)).not.toBeChecked();
+
+  // A venue closure targets the booking-control calendar, so the per-resource picker is replaced.
+  await section.getByLabel("Block type").selectOption("venue-closure");
+  await expect(section.locator("[data-rc-resource-picker]")).toBeHidden();
+  await expect(section.locator("[data-rc-venue-closure-note]")).toBeVisible();
+  await section.getByLabel("Block type").selectOption("maintenance");
+  await expect(section.locator("[data-rc-resource-picker]")).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 });

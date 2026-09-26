@@ -29,5 +29,5 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
   </div>
   <div class="rc-schedule-grid"><Agenda liveEnabled={liveEnabled} businessDate={malaysiaToday} /><BookingInspector live={liveEnabled} /></div>
   <BookingCreateForm config={config} />
-  <BlockTimeForm />
+  <BlockTimeForm config={config} />
 </RaceControlLayout>
