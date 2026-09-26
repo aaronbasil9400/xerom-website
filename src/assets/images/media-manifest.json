@@ -1,7 +1,7 @@
 {
   "$schema": "./media-manifest.schema-note",
   "manifestVersion": 2,
-  "updatedAt": "2026-09-12",
+  "updatedAt": "2026-09-26",
   "status": "OWNER_MEDIA_WITH_PLACEHOLDER_HERO",
   "globalUsage": {
     "replacementGate": "Only the social-group hero remains AI placeholder media and must be replaced with an owner-approved Xerom photograph before production launch.",
@@ -18,18 +18,75 @@
       "status": "PLACEHOLDER_AI_GENERATED",
       "alt": "Illustrative placeholder of friends enjoying a sim-racing session; replace with approved Xerom photography before launch.",
       "aspectRatio": "16:9",
-      "focalPoint": { "x": 0.58, "y": 0.48 },
+      "focalPoint": {
+        "x": 0.58,
+        "y": 0.48
+      },
       "cropGuidance": "Keep all five faces and the driver's hands visible. Trim peripheral venue detail first on narrow crops.",
       "sources": [
-        { "path": "social-group-hero.placeholder-ai.640x360.avif", "width": 640, "height": 360, "format": "avif", "sha256": "a4c3ff7a9abfd3905fa05ce0474580ac8c0e38c0e9f3894a8ef50f12678c9c68" },
-        { "path": "social-group-hero.placeholder-ai.640x360.webp", "width": 640, "height": 360, "format": "webp", "sha256": "93f814fa57cc6114523d6d7bc5dbe8703df557abfa08ee459aed47aa12fa0daf" },
-        { "path": "social-group-hero.placeholder-ai.640x360.jpg", "width": 640, "height": 360, "format": "jpeg", "sha256": "6074e5df5d7c28b2ab75f085a4d03c225180ed51f7e3d804a7f1df9f1b849dbd" },
-        { "path": "social-group-hero.placeholder-ai.960x540.avif", "width": 960, "height": 540, "format": "avif", "sha256": "690c2685758fdac0c3ba8f3ec0eefe6c7e80f0f49956a4a677941b5665174802" },
-        { "path": "social-group-hero.placeholder-ai.960x540.webp", "width": 960, "height": 540, "format": "webp", "sha256": "ddbf9c822e6cc48574dd7f1a759fe6e54c9b1df0cf1bd48aadcd63185f76d72d" },
-        { "path": "social-group-hero.placeholder-ai.960x540.jpg", "width": 960, "height": 540, "format": "jpeg", "sha256": "03dbc468f5b2a1f45c0ae84bb61432ff0901c225dc6abb81d664b3757fe6fb69" },
-        { "path": "social-group-hero.placeholder-ai.1600x900.avif", "width": 1600, "height": 900, "format": "avif", "sha256": "7dab2a82045f766d2dda2bc189adbd6c7e1d84c1140e9e1ce609c89c93910f59" },
-        { "path": "social-group-hero.placeholder-ai.1600x900.webp", "width": 1600, "height": 900, "format": "webp", "sha256": "9c5be952600a66e7899d63d5768ae3f4dc841a4d94bad00c539f5bb23e781e2f" },
-        { "path": "social-group-hero.placeholder-ai.1600x900.jpg", "width": 1600, "height": 900, "format": "jpeg", "sha256": "a2c973f72b2f03b9bbbdbec83359088fb6ceb7796da43b5bc53a39e370490b5d" }
+        {
+          "path": "social-group-hero.placeholder-ai.640x360.avif",
+          "width": 640,
+          "height": 360,
+          "format": "avif",
+          "sha256": "a4c3ff7a9abfd3905fa05ce0474580ac8c0e38c0e9f3894a8ef50f12678c9c68"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.640x360.webp",
+          "width": 640,
+          "height": 360,
+          "format": "webp",
+          "sha256": "93f814fa57cc6114523d6d7bc5dbe8703df557abfa08ee459aed47aa12fa0daf"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.640x360.jpg",
+          "width": 640,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "6074e5df5d7c28b2ab75f085a4d03c225180ed51f7e3d804a7f1df9f1b849dbd"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.960x540.avif",
+          "width": 960,
+          "height": 540,
+          "format": "avif",
+          "sha256": "690c2685758fdac0c3ba8f3ec0eefe6c7e80f0f49956a4a677941b5665174802"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.960x540.webp",
+          "width": 960,
+          "height": 540,
+          "format": "webp",
+          "sha256": "ddbf9c822e6cc48574dd7f1a759fe6e54c9b1df0cf1bd48aadcd63185f76d72d"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.960x540.jpg",
+          "width": 960,
+          "height": 540,
+          "format": "jpeg",
+          "sha256": "03dbc468f5b2a1f45c0ae84bb61432ff0901c225dc6abb81d664b3757fe6fb69"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.1600x900.avif",
+          "width": 1600,
+          "height": 900,
+          "format": "avif",
+          "sha256": "7dab2a82045f766d2dda2bc189adbd6c7e1d84c1140e9e1ce609c89c93910f59"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.1600x900.webp",
+          "width": 1600,
+          "height": 900,
+          "format": "webp",
+          "sha256": "9c5be952600a66e7899d63d5768ae3f4dc841a4d94bad00c539f5bb23e781e2f"
+        },
+        {
+          "path": "social-group-hero.placeholder-ai.1600x900.jpg",
+          "width": 1600,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "a2c973f72b2f03b9bbbdbec83359088fb6ceb7796da43b5bc53a39e370490b5d"
+        }
       ],
       "provenance": {
         "generator": "OpenAI built-in image generation tool",
@@ -43,56 +100,412 @@
       "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
       "alt": "Close-up of the Fanatec control on Xerom's Regular Rig.",
       "aspectRatio": "4:3",
-      "focalPoint": { "x": 0.43, "y": 0.48 },
+      "focalPoint": {
+        "x": 0.43,
+        "y": 0.48
+      },
       "cropGuidance": "Preserve the black control, reflected blue light, and visible Fanatec marking; desktop/tablet 16:9 cards use object-position 43% 58%, while phone rows use center.",
-      "origin": { "path": "/Users/aaronbasil/Downloads/Edited/Regular_Rig.jpg", "width": 4672, "height": 7008, "sha256": "69dc78b8cd839fe5d51b0b5784dd048f7962db95a9f4ad0320b5521b4a49eb62" },
+      "origin": {
+        "path": "/Users/aaronbasil/Downloads/Edited/Regular_Rig.jpg",
+        "width": 4672,
+        "height": 7008,
+        "sha256": "69dc78b8cd839fe5d51b0b5784dd048f7962db95a9f4ad0320b5521b4a49eb62"
+      },
       "derivation": "Focal crop to 4672×3504 at vertical offset 2450, then proportional JPEG resampling with no stretching.",
       "sources": [
-        { "path": "regular-rig.480x360.jpg", "width": 480, "height": 360, "format": "jpeg", "sha256": "c953918ef5780869547deb18b0a5a447c6db12c3cd147e53a96af2f00e02b2c1" },
-        { "path": "regular-rig.800x600.jpg", "width": 800, "height": 600, "format": "jpeg", "sha256": "48fda987632b9fe8b5215e8ae8b55189206bbe13e3e58f35760ca5e47663b07b" },
-        { "path": "regular-rig.1200x900.jpg", "width": 1200, "height": 900, "format": "jpeg", "sha256": "674b675422453463a400504f98d4581bbe2faaed1403952381e530ec83ea79a8" }
+        {
+          "path": "regular-rig.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "c953918ef5780869547deb18b0a5a447c6db12c3cd147e53a96af2f00e02b2c1"
+        },
+        {
+          "path": "regular-rig.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "48fda987632b9fe8b5215e8ae8b55189206bbe13e3e58f35760ca5e47663b07b"
+        },
+        {
+          "path": "regular-rig.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "674b675422453463a400504f98d4581bbe2faaed1403952381e530ec83ea79a8"
+        }
       ]
     },
     "proRig": {
       "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
       "alt": "Close-up of the Porsche-branded wheel centre on Xerom's Pro Rig.",
       "aspectRatio": "4:3",
-      "focalPoint": { "x": 0.42, "y": 0.50 },
+      "focalPoint": {
+        "x": 0.42,
+        "y": 0.5
+      },
       "cropGuidance": "Keep the Porsche crest fully visible with the white light bars as secondary context.",
-      "origin": { "path": "/Users/aaronbasil/Downloads/Edited/Pro_Rig.jpg", "width": 4672, "height": 7008, "sha256": "7c44fae0f81863ee077d78c85217a5a5cf36b3a86b8dc6883590d63afdb33ebb" },
+      "origin": {
+        "path": "/Users/aaronbasil/Downloads/Edited/Pro_Rig.jpg",
+        "width": 4672,
+        "height": 7008,
+        "sha256": "7c44fae0f81863ee077d78c85217a5a5cf36b3a86b8dc6883590d63afdb33ebb"
+      },
       "derivation": "Focal crop to 4672×3504 at vertical offset 2250, then proportional JPEG resampling with no stretching.",
       "sources": [
-        { "path": "pro-rig.480x360.jpg", "width": 480, "height": 360, "format": "jpeg", "sha256": "ccd84bdbe1ff5b1851db313276cb44b72fdc2b7c356cbcc66d6093a2e2c04864" },
-        { "path": "pro-rig.800x600.jpg", "width": 800, "height": 600, "format": "jpeg", "sha256": "a018b2878c77f4d5e649f3d7e28f64a89c86ea488b4aa3781b248b018d031693" },
-        { "path": "pro-rig.1200x900.jpg", "width": 1200, "height": 900, "format": "jpeg", "sha256": "3b983e661b403339a198e4d6939c820557ecc2e40fef9f38e7847a9f99b3689f" }
+        {
+          "path": "pro-rig.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "ccd84bdbe1ff5b1851db313276cb44b72fdc2b7c356cbcc66d6093a2e2c04864"
+        },
+        {
+          "path": "pro-rig.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "a018b2878c77f4d5e649f3d7e28f64a89c86ea488b4aa3781b248b018d031693"
+        },
+        {
+          "path": "pro-rig.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "3b983e661b403339a198e4d6939c820557ecc2e40fef9f38e7847a9f99b3689f"
+        }
       ]
     },
     "ps5Lounge": {
       "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
       "alt": "Two PS5 controllers ready in front of the Xerom lounge screen.",
       "aspectRatio": "4:3",
-      "focalPoint": { "x": 0.48, "y": 0.55 },
+      "focalPoint": {
+        "x": 0.48,
+        "y": 0.55
+      },
       "cropGuidance": "Keep both controllers, especially the foreground controller, within the frame; the blurred screen may remain contextual.",
-      "origin": { "path": "/Users/aaronbasil/Downloads/Edited/PS5_Lounge.jpg", "width": 4672, "height": 7008, "sha256": "13818d5fbbeb909983972dd1a608ae37f598e6fbdbb6315b47166b447ba76f75" },
+      "origin": {
+        "path": "/Users/aaronbasil/Downloads/Edited/PS5_Lounge.jpg",
+        "width": 4672,
+        "height": 7008,
+        "sha256": "13818d5fbbeb909983972dd1a608ae37f598e6fbdbb6315b47166b447ba76f75"
+      },
       "derivation": "Focal crop to 4672×3504 at vertical offset 2950, then proportional JPEG resampling with no stretching.",
       "sources": [
-        { "path": "ps5-lounge.480x360.jpg", "width": 480, "height": 360, "format": "jpeg", "sha256": "5a96d282a3dce3840ae7d0d119f4af4a37c0ef68c5ae0f08f6aede656f6966ad" },
-        { "path": "ps5-lounge.800x600.jpg", "width": 800, "height": 600, "format": "jpeg", "sha256": "bc064d9d29dbf7ba8cd81c2aed3c03884df4e3612b21557394f65a478fd90943" },
-        { "path": "ps5-lounge.1200x900.jpg", "width": 1200, "height": 900, "format": "jpeg", "sha256": "c9ac1782894bba58608eee5671e59d083896b8e91b5c854bdbf2b23518b4dc9d" }
+        {
+          "path": "ps5-lounge.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "5a96d282a3dce3840ae7d0d119f4af4a37c0ef68c5ae0f08f6aede656f6966ad"
+        },
+        {
+          "path": "ps5-lounge.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "bc064d9d29dbf7ba8cd81c2aed3c03884df4e3612b21557394f65a478fd90943"
+        },
+        {
+          "path": "ps5-lounge.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "c9ac1782894bba58608eee5671e59d083896b8e91b5c854bdbf2b23518b4dc9d"
+        }
       ]
     },
     "cafe": {
       "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
       "alt": "Three colourful drinks from the Xerom cafe.",
       "aspectRatio": "4:3",
-      "focalPoint": { "x": 0.50, "y": 0.54 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.54
+      },
       "cropGuidance": "Keep all three cups and the centre Xerom mark visible; preserve the dark negative space above them.",
-      "origin": { "path": "/Users/aaronbasil/Downloads/Edited/Atmosphere.jpg", "width": 4672, "height": 7008, "sha256": "e316ea229305b771c5ad5ad51e5fa0bc8c1c511bcc142e0d3c7fa80e59a571aa" },
+      "origin": {
+        "path": "/Users/aaronbasil/Downloads/Edited/Atmosphere.jpg",
+        "width": 4672,
+        "height": 7008,
+        "sha256": "e316ea229305b771c5ad5ad51e5fa0bc8c1c511bcc142e0d3c7fa80e59a571aa"
+      },
       "derivation": "Focal crop to 4672×3504 at vertical offset 3100, then proportional JPEG resampling with no stretching.",
       "sources": [
-        { "path": "cafe-atmosphere.480x360.jpg", "width": 480, "height": 360, "format": "jpeg", "sha256": "95426648245dcbbc46781e78833ac0f5eaa139c82b0f83467cefc1ac6da9d1df" },
-        { "path": "cafe-atmosphere.800x600.jpg", "width": 800, "height": 600, "format": "jpeg", "sha256": "6fcbd86ba20276300e898970207e038910c290aa7f36093d4334e468aa636c4f" },
-        { "path": "cafe-atmosphere.1200x900.jpg", "width": 1200, "height": 900, "format": "jpeg", "sha256": "7bc32ae0bf06323414a6d100b2ed670c38e111cf1627c55e844a3c9bc57743c4" }
+        {
+          "path": "cafe-atmosphere.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "95426648245dcbbc46781e78833ac0f5eaa139c82b0f83467cefc1ac6da9d1df"
+        },
+        {
+          "path": "cafe-atmosphere.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "6fcbd86ba20276300e898970207e038910c290aa7f36093d4334e468aa636c4f"
+        },
+        {
+          "path": "cafe-atmosphere.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "7bc32ae0bf06323414a6d100b2ed670c38e111cf1627c55e844a3c9bc57743c4"
+        }
+      ]
+    },
+    "regularRigOwner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "A row of sim racing rigs at Xerom",
+      "aspectRatio": "4:3",
+      "cropGuidance": "Keep the row of screens, wheels and seats visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_regular_rig.jpeg",
+        "width": 960,
+        "height": 1280,
+        "sha256": "5e49853ede071e22f8b2d9b2d01789a2ae8d9656e1a28733c3dabee17c111ac5"
+      },
+      "derivation": "Focal crop 960×720 at 0,267; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "regular-rig-owner-2026-09.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "b711b046994ec4bbb63b69b6fc4ad08d0208af659d6cfdcb37f1af08cc4d1255"
+        },
+        {
+          "path": "regular-rig-owner-2026-09.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "64ebe144bc913edd034f62167e2be8a99bbdac0db6f50b1ae7f953ee5bbfa61f"
+        },
+        {
+          "path": "regular-rig-owner-2026-09.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "9abf9d4ae56b7e9ac270910ff25fce55647cddb5e70b7f95961554c937b64a4e"
+        }
+      ]
+    },
+    "proRigOwner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "Porsche-branded racing wheel and pedals at Xerom",
+      "aspectRatio": "4:3",
+      "cropGuidance": "Keep the wheel and crest central.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_pro_rig.jpeg",
+        "width": 960,
+        "height": 1280,
+        "sha256": "a5b922eae8de952848fe8d3863d34c3f31495103115159e5f2d74cf5c68bf7a1"
+      },
+      "derivation": "Focal crop 960×720 at 0,306; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "pro-rig-owner-2026-09.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "1af39673d1a0279c4278563f35d1f8f208cb337c0dd51c714f086eb9c199a9f7"
+        },
+        {
+          "path": "pro-rig-owner-2026-09.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "76aa6eef6c3456ef111bc8d4b92a0dabc61ca132867a7ccdf85563cd5145431c"
+        },
+        {
+          "path": "pro-rig-owner-2026-09.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "11530e7d6e4d428630b82119b1f306b473fc036f6baa6e8fe70bd8ce77cf605c"
+        }
+      ]
+    },
+    "ps5LoungeOwner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "PS5 lounge with a sofa, screen and console at Xerom",
+      "aspectRatio": "4:3",
+      "cropGuidance": "Keep the TV, console and sofa visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_ps5.jpeg",
+        "width": 960,
+        "height": 1280,
+        "sha256": "62a466591352fa64eada5a75c76736fd8461a8ae69aa6ae4d8e433709244c4be"
+      },
+      "derivation": "Focal crop 960×720 at 0,306; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "ps5-lounge-owner-2026-09.480x360.jpg",
+          "width": 480,
+          "height": 360,
+          "format": "jpeg",
+          "sha256": "a672a6577073bf53aba76e292dc1c6ff50efa2830fba2f1689366ef7d043fb90"
+        },
+        {
+          "path": "ps5-lounge-owner-2026-09.800x600.jpg",
+          "width": 800,
+          "height": 600,
+          "format": "jpeg",
+          "sha256": "7ff02246b04209b7cdc03ea6964916fd7aef5b504127308c17f332c4860928e3"
+        },
+        {
+          "path": "ps5-lounge-owner-2026-09.1200x900.jpg",
+          "width": 1200,
+          "height": 900,
+          "format": "jpeg",
+          "sha256": "dbae08c4ffcb8e1cb6170b2bcaef47b516f5045382a6291214fc5a0080ab0fb1"
+        }
+      ]
+    },
+    "experience1Owner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "Close-up of a Porsche-branded racing wheel at Xerom",
+      "aspectRatio": "5:4",
+      "cropGuidance": "Keep the wheel crest visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_experience1.jpeg",
+        "width": 853,
+        "height": 1280,
+        "sha256": "87d4cf79348d728b7fcf60d17718fa54db8f5c0655e03441eeba814d9d1ccb8d"
+      },
+      "derivation": "Focal crop 853×682 at 0,273; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "experience-1-owner-2026-09.480x384.jpg",
+          "width": 480,
+          "height": 384,
+          "format": "jpeg",
+          "sha256": "42b388b8c91849f1c3173d4d0c899cb4d6a3591868b1c823cbfb68244cf6bbac"
+        },
+        {
+          "path": "experience-1-owner-2026-09.800x640.jpg",
+          "width": 800,
+          "height": 640,
+          "format": "jpeg",
+          "sha256": "50aac09b4f8136eda95eac778bde22d4d37469374265cbc64dea930805b5c88a"
+        },
+        {
+          "path": "experience-1-owner-2026-09.1200x960.jpg",
+          "width": 1200,
+          "height": 960,
+          "format": "jpeg",
+          "sha256": "8617f4678d731ba8f5390ae1584db4cdb98195fe9ff1b2b6d1e6db3470c03df9"
+        }
+      ]
+    },
+    "experience2Owner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "Guests playing table games together at Xerom",
+      "aspectRatio": "5:4",
+      "cropGuidance": "Keep the table games and both guests visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_experience2.jpeg",
+        "width": 853,
+        "height": 1280,
+        "sha256": "dbf65cdd9536cfc7e741f8ee3b3a8f3c2b328e7a433b6c88dde4751439965647"
+      },
+      "derivation": "Focal crop 853×682 at 0,184; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "experience-2-owner-2026-09.480x384.jpg",
+          "width": 480,
+          "height": 384,
+          "format": "jpeg",
+          "sha256": "0ae8024ad160ce79eb99714dcaf4e24921715a87f878da44208cd165298e03b6"
+        },
+        {
+          "path": "experience-2-owner-2026-09.800x640.jpg",
+          "width": 800,
+          "height": 640,
+          "format": "jpeg",
+          "sha256": "1f149171460373be57159d4746de0124ec59e91f5f7d389084fcf17619609598"
+        },
+        {
+          "path": "experience-2-owner-2026-09.1200x960.jpg",
+          "width": 1200,
+          "height": 960,
+          "format": "jpeg",
+          "sha256": "7dc2411ab3f6f794ba5e88f99ea688617c5e25722db2b10a9b11d37383ed8ae5"
+        }
+      ]
+    },
+    "experience3Owner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "Model race cars and framed displays on a wall at Xerom",
+      "aspectRatio": "5:4",
+      "cropGuidance": "Keep the three framed displays and shelf cars visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_experience3.jpeg",
+        "width": 960,
+        "height": 1280,
+        "sha256": "0b7840986c9313266245131bd42c43ab5f1649e53f74b8a912bc899d1a7ddf10"
+      },
+      "derivation": "Focal crop 960×768 at 0,115; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "experience-3-owner-2026-09.480x384.jpg",
+          "width": 480,
+          "height": 384,
+          "format": "jpeg",
+          "sha256": "d1f17a8c56ffffa54738b1e60ae84e2f4168b4448f8de558b6f645eeaff86c59"
+        },
+        {
+          "path": "experience-3-owner-2026-09.800x640.jpg",
+          "width": 800,
+          "height": 640,
+          "format": "jpeg",
+          "sha256": "8ecf20d222b96f844bac73d01b686df2b28ea9a2a4c00d5157d75bbf6f613218"
+        },
+        {
+          "path": "experience-3-owner-2026-09.1200x960.jpg",
+          "width": 1200,
+          "height": 960,
+          "format": "jpeg",
+          "sha256": "cc49f7a4f20a1f62ac542b7d334dfccbc65cfc5bf572ef3ed5c8322861e52478"
+        }
+      ]
+    },
+    "experience4Owner202609": {
+      "status": "OWNER_SUPPLIED_PRODUCTION_MEDIA",
+      "alt": "Sim racing stations beneath Xerom’s illuminated X",
+      "aspectRatio": "5:4",
+      "cropGuidance": "Keep the illuminated X and row of stations visible.",
+      "origin": {
+        "path": "Edited/from_owner/xerom_experience4.jpeg",
+        "width": 960,
+        "height": 1280,
+        "sha256": "b47b8d4128dae126f9b9588a99fa8d9f059451caa051d06ca93998beed19dd99"
+      },
+      "derivation": "Focal crop 960×768 at 0,230; Lanczos 3 resampling to 480px, 800px and 1200px widths with JPEG quality 86. The 1200px derivative is a modest deterministic upscale; it adds no new scene detail.",
+      "sources": [
+        {
+          "path": "experience-4-owner-2026-09.480x384.jpg",
+          "width": 480,
+          "height": 384,
+          "format": "jpeg",
+          "sha256": "52426b0c0675e6ff36d8a51da7dd763849b182a95ddd5c2bf5c4817444b49715"
+        },
+        {
+          "path": "experience-4-owner-2026-09.800x640.jpg",
+          "width": 800,
+          "height": 640,
+          "format": "jpeg",
+          "sha256": "194da3fc6d92d21561b02d7c96b8c9afc9212d02921b197d9461e0272c1a025b"
+        },
+        {
+          "path": "experience-4-owner-2026-09.1200x960.jpg",
+          "width": 1200,
+          "height": 960,
+          "format": "jpeg",
+          "sha256": "707c6f2dbf4bae27bbe841e3f38856f59bfb684684aed75e365dbe04a1552561"
+        }
       ]
     }
   }

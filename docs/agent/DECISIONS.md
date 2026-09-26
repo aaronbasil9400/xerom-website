@@ -266,3 +266,8 @@ Use a single booking-coordinator Durable Object for final booking serialization 
 ## 2026-09-25 — Taller Choose Your Setup image frame
 
 - Per owner direction, change the slideshow frame from 4:3 to 5:4 to make the images slightly taller while preserving a fixed ratio across desktop and mobile widths.
+## 2026-09-26 — Owner photo refresh
+
+- Use the supplied September 2026 Regular Rig, Pro Rig, and PS5 photos in the centralized media configuration so all live card, dock, experience, and CTA placements update together. Keep the existing hero and cafe images until the owner supplies final replacements.
+- Use all four supplied Xerom Experience photos in the fixed 5:4 Choose Your Setup slideshow, preserving the existing timing and accessible navigation.
+- Produce subject-focused 4:3 and 5:4 JPEG derivatives with deterministic Lanczos resampling. A modest 1200px upscale supports high-density delivery without inventing photographic detail; the original upload hashes and crop coordinates are recorded in the media manifest.

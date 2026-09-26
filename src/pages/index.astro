@@ -29,11 +29,11 @@ const runtimeHours = Object.entries(runtimeConfig.hours.weekly).map(([day, inter
 const todayHours = todayOpeningHours(runtimeConfig.hours);
 const activeCount = (serviceId: "regular-sim" | "pro-sim" | "ps5") => runtimeConfig.resources.filter((resource) => resource.serviceId === serviceId && resource.lifecycle === "active").length;
 const headlineWords = runtimeConfig.websiteContent.homepage.headline.split(/\s+/);
-// Temporary slideshow images: replace these existing owner photos when the next photo set arrives.
 const setupSlides = [
-  { title: "Pro Rig", image: media.proRig, alt: services["pro-sim"].imageAlt },
-  { title: "Regular Rig", image: media.regularRig, alt: services["regular-sim"].imageAlt, className: "setup-slideshow-slide--regular" },
-  { title: "PS5 Lounge", image: media.ps5Lounge, alt: services.ps5.imageAlt },
+  { title: "Racing wheel detail", image: media.setupExperience[0], alt: "Close-up of a Porsche-branded racing wheel at Xerom" },
+  { title: "Games around the table", image: media.setupExperience[1], alt: "Guests playing table games together at Xerom" },
+  { title: "Racing display wall", image: media.setupExperience[2], alt: "Model race cars and framed displays on a wall at Xerom" },
+  { title: "Sim racing stations", image: media.setupExperience[3], alt: "Sim racing stations beneath Xerom’s illuminated X" },
 ] as const;
 ---
 

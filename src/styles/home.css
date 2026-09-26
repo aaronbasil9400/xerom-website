@@ -24,7 +24,6 @@
 .dock-card + .dock-card { border-left: 0; }
 .dock-media { align-self: stretch; margin: -.65rem 0 -.65rem -.8rem; overflow: hidden; }
 .dock-media img { width: 100%; height: 100%; object-fit: cover; }
-.dock-race .dock-media img { object-position: 43% 58%; }
 .dock-number { color: var(--red); font-family: "Barlow Condensed",sans-serif; font-size: 2rem; font-style: italic; font-weight: 900; line-height: 1; }
 .dock-copy { min-width: 0; }
 .dock-copy strong { display: block; font-family: "Barlow Condensed",sans-serif; font-size: 1.55rem; font-style: italic; font-weight: 900; line-height: 1; text-transform: uppercase; }
@@ -48,7 +47,6 @@
 .home-session-link { position: relative; display: block; min-height: 16rem; text-decoration: none; overflow: hidden; }
 .home-session-link > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease-out); }
 .home-session-link:hover > img { transform: scale(1.035); }
-.home-session-card:first-child img { object-position: 43% 58%; }
 .home-session-scrim { position: absolute; inset: 0; background: linear-gradient(0deg,rgba(5,5,5,.98),rgba(5,5,5,.78) 36%,rgba(5,5,5,.05) 72%); }
 .home-session-content { position: absolute; right: 3.8rem; bottom: .85rem; left: .85rem; }
 .home-session-title { display: block; font-family: "Barlow Condensed",sans-serif; font-size: 1.35rem; font-style: italic; font-weight: 900; line-height: 1; text-transform: uppercase; }
@@ -79,7 +77,6 @@
 .setup-slideshow-slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .42s var(--ease-out); }
 .setup-slideshow-slide[data-active="true"] { opacity: 1; pointer-events: auto; }
 .hardware-frame .setup-slideshow-image { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; object-position: center; }
-.setup-slideshow-slide--regular .setup-slideshow-image { object-position: 43% 58%; }
 
 .home-final-cta { position: relative; display: grid; min-height: 18rem; grid-template-columns: 1fr auto; align-items: center; gap: 2rem; margin-bottom: clamp(3rem,6vw,5rem); padding: clamp(1.5rem,5vw,4rem); border: 1px solid var(--red); background: var(--panel); isolation: isolate; overflow: hidden; }
 .home-final-cta > img { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 52%; }

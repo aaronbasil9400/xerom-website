@@ -112,7 +112,7 @@ Xerom should feel like the shared race night has already started: a near-black b
 
 The system is direct, kinetic, and operational without becoming a generic esports dashboard. Rectangular panels, fine structural strokes, clipped action controls, and sparse circular markers make the surface feel assembled for a live event. The official red-and-white Xerom wordmark remains an authored brand asset and is never reconstructed from type.
 
-Production service imagery is owner-approved Xerom photography. The Regular Rig, Pro Rig, PS5 Lounge, and cafe rasters are real owner-supplied media with deterministic 4:3 derivatives recorded in `src/assets/images/media-manifest.json`. Only the social-group hero remains an explicitly named AI placeholder and may demonstrate composition only; it is not evidence of the real venue or customers.
+Production service imagery is owner-supplied Xerom photography. The Regular Rig, Pro Rig, and PS5 Lounge cards use the September 2026 owner photo set; the existing cafe raster remains until final cafe/menu media arrives. The four Xerom Experience photos are shown in the homepage setup slideshow. Crops and derivative provenance are recorded in `src/assets/images/media-manifest.json`. Only the social-group hero remains an explicitly named AI placeholder and may demonstrate composition only; it is not evidence of the real venue or customers.
 
 **Key Characteristics:**
 
@@ -232,7 +232,7 @@ The brand glyph is the deliberate exception to the stroked icon family. `public/
 - **Background:** Broadcast Panel over Canvas Black.
 - **Shadow Strategy:** Flat; hierarchy comes from the Structural Line border and media contrast.
 - **Internal Padding:** Primarily 1rem, expanding to 2rem–5rem in the large CTA panel.
-- **Media:** Regular Rig, Pro Rig, PS5 Lounge, and Cafe cards use owner-supplied production photographs. Each family has verified 480×360, 800×600, and 1200×900 JPEG derivatives and focal/crop guidance in `src/assets/images/media-manifest.json`; Astro imports the 1200px master and generates optimized delivery formats. The design may crop these 4:3 sources to square route tiles, 16:9 homepage proof cards, the current 5:4 Choose Your Setup frame, or compact phone rows only while preserving the documented subject focal point. The Regular Rig is a reviewed exception with exact responsive behavior: its desktop/tablet 16:9 card uses `object-position: 43% 58%` so the Fanatec marking remains visible, while phone rows at 560px and below reset to `object-position: center`. Experience media enlarges subtly to 1.035 scale over 800ms on hover. The 16:9 social-group hero remains AI placeholder media and must keep placeholder filename and alt language until owner-approved photography replaces it.
+- **Media:** Regular Rig, Pro Rig, and PS5 Lounge cards use the September 2026 owner photographs, with 4:3 crops in 480×360, 800×600, and 1200×900 JPEG sizes. The existing Cafe card photo remains in place. Four 5:4 Xerom Experience photographs use 480×384, 800×640, and 1200×960 derivatives in Choose Your Setup. Astro imports the 1200px versions and generates optimized delivery formats. The crops preserve the main subject, and the 1200px derivatives are modest deterministic upscales from the supplied files. Experience cards enlarge subtly to 1.035 scale over 800ms on hover. The 16:9 social-group hero remains AI placeholder media and must keep placeholder filename and alt language until owner-approved photography replaces it.
 
 **The Provenance Gate Rule.** A service photograph may be treated as production media only when its owner-supplied status and derivatives are recorded in the media manifest. The current social-group hero does not pass that gate.
 
@@ -256,7 +256,7 @@ Price proof lives in the Pick Your Pace section immediately after the hero on ph
 
 ### Choose Your Setup
 
-The split section keeps a fixed 5:4 hardware frame and cycles the current Pro Rig, Regular Rig, and PS5 Lounge photos until the next owner photo set arrives. It advances every 3.5 seconds without visible controls; touch users can swipe, and keyboard users can use the left/right arrow keys. Images are decoded before autoplay, and the frame keeps its dimensions at every breakpoint. Rotation stops offscreen, when the document is hidden, on hover or keyboard focus, and by default for reduced-motion users; the fade is removed for reduced motion.
+The split section keeps a fixed 5:4 hardware frame and cycles four owner-supplied Xerom Experience photos: racing wheel detail, guests at table games, the racing display wall, and the sim racing stations. It advances every 3.5 seconds without visible controls; touch users can swipe, and keyboard users can use the left/right arrow keys. Images are decoded before autoplay, and the frame keeps its dimensions at every breakpoint. Rotation stops offscreen, when the document is hidden, on hover or keyboard focus, and by default for reduced-motion users; the fade is removed for reduced motion.
 
 ### Opening Hours
 

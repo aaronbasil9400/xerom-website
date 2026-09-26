@@ -74,7 +74,7 @@ Xerom combines approachable social sim racing, a distinct Pro Sim option, PS5 lo
 - Current pricing promotional image: `/Users/aaronbasil/Desktop/Screenshot 2026-09-09 at 9.13.58 PM.png`.
 - Instagram source: `https://www.instagram.com/xerom.my`.
 - Google Maps source supplied in the brief: `https://www.google.com/maps/place/Xerom+SimRacing+%26+Cafe/@3.0095979,101.4357844,17z/`.
-- The official logo and owner-supplied Regular Rig, Pro Rig, PS5 Lounge, and cafe photography are available in the repository. The social-group hero and social-share image remain temporary media pending final owner photos.
+- The official logo and owner-supplied Regular Rig, Pro Rig, PS5 Lounge, and cafe photography are available in the repository. A new owner photo set supplied on 2026-09-26 provides replacement rig/PS5 imagery and four Xerom Experience photos for the homepage slideshow. The social-group hero and social-share image remain temporary media pending final owner photos; the current cafe image remains while cafe/menu material is pending.
 - The public Instagram profile was inspected in an interactive browser on 2026-09-09. Visible cues included black/red/white promotional graphics, close-up racing hardware, casual groups, the venue’s red/white crossed light lines, and the profile language “Where speed meets comfort” and “FIRST EVER in Klang, Selangor.”
 
 ## Product Principles

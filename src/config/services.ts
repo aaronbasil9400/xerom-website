@@ -17,9 +17,9 @@ export interface ServiceDefinition {
 }
 
 export const services: Record<ServiceId, ServiceDefinition> = {
-  "regular-sim": { ...serviceCore["regular-sim"], image: media.regularRig, imageAlt: "Close-up of the Fanatec control on Xerom’s Regular Rig" },
-  "pro-sim": { ...serviceCore["pro-sim"], image: media.proRig, imageAlt: "Close-up of the Porsche-branded wheel centre on Xerom’s Pro Rig" },
-  ps5: { ...serviceCore.ps5, image: media.ps5Lounge, imageAlt: "Two PS5 controllers ready in front of the Xerom lounge screen" },
+  "regular-sim": { ...serviceCore["regular-sim"], image: media.regularRig, imageAlt: "A row of sim racing rigs at Xerom" },
+  "pro-sim": { ...serviceCore["pro-sim"], image: media.proRig, imageAlt: "Porsche-branded racing wheel and pedals at Xerom" },
+  ps5: { ...serviceCore.ps5, image: media.ps5Lounge, imageAlt: "PS5 lounge with a sofa, screen and console at Xerom" },
 };
 
 export const serviceList = Object.values(services);

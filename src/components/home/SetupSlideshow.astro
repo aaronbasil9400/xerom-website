@@ -6,7 +6,6 @@ interface Slide {
   title: string;
   image: ImageMetadata;
   alt: string;
-  className?: string;
 }
 
 interface Props {
@@ -30,7 +29,7 @@ const { slides, intervalMs = 3500 } = Astro.props;
   <div class="setup-slideshow-viewport">
     {slides.map((slide, index) => (
       <div
-        class:list={["setup-slideshow-slide", slide.className]}
+        class="setup-slideshow-slide"
         data-slideshow-slide
         data-slide-index={index}
         data-active={index === 0 ? "true" : "false"}

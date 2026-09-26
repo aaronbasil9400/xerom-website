@@ -6,7 +6,8 @@ Only owner-supplied inputs that cannot be safely chosen from the existing busine
 
 - [ ] Provide the canonical domain and preferred hostname for production cutover. Until then, keep `https://xerom-website.xerombookings.workers.dev`, `noindex`, and the hostname-scoped Turnstile widget.
 - [ ] Provide final owner-approved social-group hero and social-share/OG photography with usage rights. Keep the current clearly labelled hero placeholder and OG image until supplied.
-- [ ] Provide replacement owner-approved photos for the homepage Choose Your Setup slideshow. Keep the existing Pro Rig, Regular Rig, and PS5 Lounge photos as replaceable interim slides.
+- [ ] Provide final cafe/menu photography and verified menu details when ready. Keep the current cafe image and copy until then; the new `Edited/from_owner/xerom_cafe.jpeg` is held for owner review.
+- [x] Provide replacement photos for the homepage Choose Your Setup slideshow. Four owner-supplied Xerom Experience photos were received and placed on 2026-09-26.
 
 ## Closed business configuration
 

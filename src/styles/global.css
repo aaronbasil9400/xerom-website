@@ -98,7 +98,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .experience-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 .experience-section { padding-top: clamp(2rem, 3vw, 3rem); }
 .experience-section .experience-card img { aspect-ratio: 16 / 9; }
-.experience-card-regular img { object-position: 43% 58%; }
 .experience-card { position: relative; min-width: 0; border: 1px solid var(--line); background: var(--panel); overflow: hidden; }
 .experience-card img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .8s var(--ease-out); }
 .experience-card:hover img { transform: scale(1.035); }
@@ -304,7 +303,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .experience-card { display: grid; grid-template-columns: 38% 1fr; }
   .experience-card img { height: 100%; aspect-ratio: auto; }
   .experience-section .experience-card img { aspect-ratio: auto; }
-  .experience-card-regular img { object-position: center; }
   .experience-body { align-content: center; }
   .signal-track { animation-duration: 20s; }
   .site-footer { grid-template-columns: 1fr; }

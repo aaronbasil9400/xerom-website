@@ -13,6 +13,9 @@ test("homepage presents the approved story without overflow", async ({ page }) =
   await expect(setupSlideshow).toBeVisible();
   await expect(setupSlideshow).toHaveAttribute("data-interval", "3500");
   await expect(setupSlideshow.locator("button")).toHaveCount(0);
+  await expect(setupSlideshow.locator("[data-slideshow-slide]")).toHaveCount(4);
+  await expect(setupSlideshow.locator("img")).toHaveCount(4);
+  await expect(setupSlideshow.locator("img").first()).toHaveAttribute("alt", "Close-up of a Porsche-branded racing wheel at Xerom");
   const setupFrame = await setupSlideshow.locator(".setup-slideshow-viewport").boundingBox();
   if (!setupFrame) throw new Error("Choose Your Setup slideshow frame is missing");
   expect(setupFrame.width / setupFrame.height).toBeCloseTo(5 / 4, 2);
@@ -116,7 +119,7 @@ test("Choose Your Setup slideshow responds to touch swipes", async ({ page }, te
   await slideshow.dispatchEvent("pointerdown", { pointerId: 7, pointerType: "touch", clientX: 300, clientY: 300 });
   await slideshow.dispatchEvent("pointerup", { pointerId: 7, pointerType: "touch", clientX: 220, clientY: 302 });
   await expect(slideshow.locator('[data-slide-index="1"]')).toHaveAttribute("data-active", "true");
-  await expect(slideshow.locator("[data-slideshow-status]")).toHaveText("2 of 3: Regular Rig");
+  await expect(slideshow.locator("[data-slideshow-status]")).toHaveText("2 of 4: Games around the table");
   await expect(slideshow.locator("button")).toHaveCount(0);
 });
 

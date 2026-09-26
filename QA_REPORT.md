@@ -712,3 +712,15 @@ Browser checks for this checkpoint used the local Astro mock-mode server on 2026
 Commit `6587800` was pushed to `origin/minor_changes` and Cloudflare uploaded branch preview version `2ea013fa-723f-4cbd-8fd5-ad714aa1ac5f` under alias `minor-changes`. `npm run build:staging` and a dry run against the generated Astro Wrangler config passed. The requested `xerom-website` URL was then deployed at Worker version `c032fa67-ba2c-4132-b943-200324bdbcdd`; Cloudflare reports that version at 100% traffic.
 
 Read-only Playwright against `https://xerom-website.aaronbasil9400.workers.dev` passed the homepage check at 375, 390, 430, 768, 1024 and 1440px. Separate 390px and 1440px browser checks returned HTTP 200, rendered `TODAY · WED 2 pm–1 am Weekly hours`, reached `/visit#hours`, had zero horizontal overflow, and recorded no console errors or failed requests. Cropped deployed card screenshots were visually inspected. No booking, Calendar, R2 publication or owner setting was changed.
+
+## Owner photo refresh (2026-09-26)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Media provenance and transforms | Pass | Seven new owner photo families (three service photos, four Xerom Experience slides) have original SHA-256 hashes, crop coordinates, and 480/800/1200px derivative hashes in `src/assets/images/media-manifest.json`; `npm run assets:verify` verified all 42 manifested derivatives. The 1200px images are deterministic Lanczos resizes, not AI-generated scene content. |
+| Static and unit checks | Pass | `npm run lint` and `npm run check`: 0 errors, warnings, or hints. `npm test`: 24 files, 128 tests passed, including the final-resource concurrency test. `npm run build`: passed. |
+| Browser suite | Pass | Local Astro mock-mode server at `http://127.0.0.1:4324`; `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4324 npm run test:e2e`: 78 passed, 54 intentional viewport-specific skips. The first run exposed a stale three-slide test expectation; it was updated to four slides, and the full suite passed on rerun. |
+| Responsive media QA | Pass | Chromium at 375, 390, 430, 768, 1024, and 1440 CSS px: no page-level overflow, broken images, browser errors, or HTTP failures. Reviewed cropped card and slideshow captures in `.impeccable/review/owner-media-2026-09-26/` and full homepage captures in `.impeccable/review/homepage-upgrade/after/`. Slideshow keyboard, touch swipe, autoplay, and reduced-motion checks passed in Playwright. |
+| Design detector | Advisory | Manual Impeccable detector was run once over the changed surface. It reported broad pre-existing CSS typography/color advisories and a pre-existing layout-transition warning on unchanged rules; no new rule was introduced by this media update. |
+
+The hero and current cafe imagery remain in place per owner direction. No live Calendar, booking, R2, or Cloudflare deployment mutation was made. Final hero and cafe/menu inputs are tracked in `CONTENT_TODO.md`.
