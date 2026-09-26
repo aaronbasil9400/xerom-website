@@ -65,6 +65,10 @@ test("Race Control phone navigation ignores a saved desktop collapse preference"
 test("Race Control settings routes load the canonical unsaved draft without leaking calendar IDs", async ({ page }) => {
   for (const path of ["resources", "hours", "pricing", "offers", "rules"]) {
     await page.goto(`/race-control/settings/${path}`);
+    if (path === "resources") {
+      await expect(page.getByRole("link", { name: "Experience", exact: true })).toHaveAttribute("aria-current", "page");
+      await expect(page.getByRole("heading", { name: "Experience editor", exact: true })).toBeVisible();
+    }
     await expect(page.locator("[data-settings-state]")).toContainText(/Seed draft|Private draft/);
     await expect(page.locator("[data-settings-fields]")).toBeVisible();
     await expect(page.locator("body")).not.toContainText("fixture-calendar-ref");
@@ -75,7 +79,8 @@ test("Race Control settings routes load the canonical unsaved draft without leak
 test("Bookings exposes combinable filters and normalized CSV export", async ({ page }) => {
   await page.goto("/race-control/bookings");
   await expect(page.getByLabel("Phone number")).toBeVisible();
-  await expect(page.getByLabel("Resource type")).toHaveValue("");
+  await expect(page.getByLabel("Experience type")).toHaveValue("");
+  await expect(page.getByRole("columnheader", { name: "Experience" })).toBeVisible();
   await expect(page.getByLabel("Duration")).toHaveValue("");
   const downloadPromise = page.waitForEvent("download").catch(() => null);
   await page.route("**/api/admin/bookings?**", async (route) => {
@@ -84,7 +89,7 @@ test("Bookings exposes combinable filters and normalized CSV export", async ({ p
     return route.continue();
   });
   await page.getByLabel("Phone number").fill("0123");
-  await page.getByLabel("Resource type").selectOption("regular-sim");
+  await page.getByLabel("Experience type").selectOption("regular-sim");
   await page.getByLabel("Duration").selectOption("60");
   await page.getByRole("button", { name: "Export CSV" }).click();
   const download = await downloadPromise;

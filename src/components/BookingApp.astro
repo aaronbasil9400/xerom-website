@@ -396,7 +396,7 @@ const runtimeVenue = runtimeConfig.websiteContent.venue;
       const controllerLine = controllerItem && controllerItem.quantity > 0
         ? `\nControllers: ${controllerItem.quantity * Number(app?.dataset.includedControllers ?? 0)} included + ${controllerItem.additionalControllers ?? 0} additional`
         : "";
-      const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nName: ${payload.customer.name}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\nDuration: ${formatDuration(confirmedDuration)}\nResources: ${summary}${controllerLine}\n\nI'd like to confirm the booking. Thanks!`;
+      const message = `Hi Xerom! I just made a booking through xerom.my.\n\nBooking: ${data.bookingId}\nName: ${payload.customer.name}\nDate: ${localDate(data.start!)}\nTime: ${localTime(data.start!)}\nDuration: ${formatDuration(confirmedDuration)}\nExperience: ${summary}${controllerLine}\n\nI'd like to confirm the booking. Thanks!`;
       const whatsappUrl = `https://wa.me/${app?.dataset.whatsapp}?text=${encodeURIComponent(message)}`;
       (success.querySelector("[data-whatsapp-link]") as HTMLAnchorElement).href = whatsappUrl;
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");

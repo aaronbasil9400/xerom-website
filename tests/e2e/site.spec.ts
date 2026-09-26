@@ -192,7 +192,7 @@ test("mock booking flow reaches confirmation", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /booking confirmed/i })).toBeVisible();
   await expect(page.locator("[data-booking-id]")).toContainText("XR-");
   const whatsappUrl = await page.evaluate(() => (window as typeof window & { __openedWhatsapp?: string }).__openedWhatsapp ?? "");
-  expect(decodeURIComponent(whatsappUrl)).toContain("Resources: 1 × Regular Rig · 1 × PS5 Lounge (+2 controllers)");
+  expect(decodeURIComponent(whatsappUrl)).toContain("Experience: 1 × Regular Rig · 1 × PS5 Lounge (+2 controllers)");
   expect(decodeURIComponent(whatsappUrl)).toContain("Controllers: 2 included + 2 additional");
   await expect(page.locator("[data-whatsapp-status]")).toContainText("booking is confirmed");
 });

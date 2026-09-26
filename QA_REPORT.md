@@ -724,3 +724,10 @@ Read-only Playwright against `https://xerom-website.aaronbasil9400.workers.dev` 
 | Design detector | Advisory | Manual Impeccable detector was run once over the changed surface. It reported broad pre-existing CSS typography/color advisories and a pre-existing layout-transition warning on unchanged rules; no new rule was introduced by this media update. |
 
 The hero and current cafe imagery remain in place per owner direction. No live Calendar, booking, R2, or Cloudflare deployment mutation was made. Final hero and cafe/menu inputs are tracked in `CONTENT_TODO.md`.
+
+## Booking and Race Control Experience label (2026-09-26)
+
+- Changed only the customer WhatsApp confirmation field label from `Resources:` to `Experience:`; selected services, quantities, controller detail, booking payloads, and Calendar resource allocation are unchanged.
+- Race Control's main settings navigation/title, bookings filter and column, and booking inspector now use `Experience` for the visible booking category. The block-time selector retains `Resources` because it includes the operational Booking Control calendar.
+- `npm run lint` and `npm run check`: 0 errors/warnings/hints. `npm test`: 128 passed, including the final-resource concurrency test. `npm run build`: passed. Focused Playwright booking and Race Control checks: 24 passed across 375, 390, 430, 768, 1024, and 1440 CSS px. The browser test asserted the encoded WhatsApp message contains `Experience:` and the Race Control navigation, title, filter, and column use the new label.
+- Local Playwright ran with mock booking mode. No live reservation or WhatsApp message was created or sent during verification.

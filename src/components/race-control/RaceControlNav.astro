@@ -3,7 +3,7 @@ interface Props { active: string; live?: boolean }
 const { active, live = false } = Astro.props;
 const links = [
   { id:'schedule', label:'Schedule', href:'/race-control/schedule' }, { id:'bookings', label:'Bookings', href:'/race-control/bookings' },
-  { id:'resources', label:'Resources', href:'/race-control/settings/resources' }, { id:'hours', label:'Hours & Closures', href:'/race-control/settings/hours' },
+  { id:'resources', label:'Experience', href:'/race-control/settings/resources' }, { id:'hours', label:'Hours & Closures', href:'/race-control/settings/hours' },
   { id:'pricing', label:'Pricing', href:'/race-control/settings/pricing' }, { id:'offers', label:'Offers & Packages', href:'/race-control/settings/offers' },
   { id:'rules', label:'Advanced Rules', href:'/race-control/settings/rules' }, { id:'content', label:'Website Content', href:'/race-control/content' },
   { id:'activity', label:'Changes & Activity', href:'/race-control/activity' }, { id:'connection', label:'Connection', href:'/race-control/connection' },

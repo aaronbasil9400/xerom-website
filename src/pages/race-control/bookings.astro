@@ -12,13 +12,13 @@ import { bookingRules } from '@/config/booking';
       <label>Date to<input name="to" type="date" required /></label>
       <label>Booking or customer<input name="query" type="search" placeholder="Name or booking ID" /></label>
       <label>Phone number<input name="phone" type="search" inputmode="tel" placeholder="Full or partial" /></label>
-      <label>Resource type<select name="service"><option value="">All resources</option><option value="regular-sim">Regular Rig</option><option value="pro-sim">Pro Rig</option><option value="ps5">PS5 Lounge</option></select></label>
+      <label>Experience type<select name="service"><option value="">All experiences</option><option value="regular-sim">Regular Rig</option><option value="pro-sim">Pro Rig</option><option value="ps5">PS5 Lounge</option></select></label>
       <label>Duration<select name="duration"><option value="">All durations</option>{bookingRules.allowedDurationsMinutes.map((minutes) => <option value={minutes}>{minutes} min</option>)}</select></label>
       <button class="rc-button rc-button-primary" type="submit">Search Calendar</button>
       <button class="rc-button" type="button" data-rc-export-csv>Export CSV</button>
       <output data-rc-search-result aria-live="polite"></output>
     </form>
-    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Customer</th><th scope="col">Duration</th><th scope="col">Resources</th><th scope="col">Status</th><th scope="col">Price</th><th scope="col">Events</th><th scope="col">Action</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Demo customer · synthetic</td><td>60 min</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>Demo customer · synthetic</td><td>120 min</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr></tbody></table></div>
+    <div class="rc-table-wrap"><table class="rc-table"><caption class="sr-only">Calendar bookings</caption><thead><tr><th scope="col">Booking</th><th scope="col">When</th><th scope="col">Customer</th><th scope="col">Duration</th><th scope="col">Experience</th><th scope="col">Status</th><th scope="col">Price</th><th scope="col">Events</th><th scope="col">Action</th></tr></thead><tbody data-rc-booking-rows><tr><th scope="row">XR-DEMO-42</th><td>13 Sep · 6–7 PM</td><td>Demo customer · synthetic</td><td>60 min</td><td>Regular 01 + Pro 01</td><td><span class="rc-status">Confirmed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr><tr><th scope="row">XR-DEMO-17</th><td>13 Sep · 4–6 PM</td><td>Demo customer · synthetic</td><td>120 min</td><td>PS5 01</td><td><span class="rc-status rc-status-muted">Completed · fixture</span></td><td>—</td><td>1</td><td>—</td></tr></tbody></table></div>
   </section>
 </RaceControlLayout>
 
