@@ -22,7 +22,7 @@ const liveEnabled = Boolean(runtimeEnv.GOOGLE_SERVICE_ACCOUNT_EMAIL && runtimeEn
     </div>
     <div class="rc-toolbar-group">
       <button type="button" class="active" disabled>Day</button><button type="button" disabled>Agenda</button>
-      <label><span>Service</span><select data-rc-service-filter disabled={!liveEnabled}><option value="all">All services</option><option value="regular-sim">Regular Sim</option><option value="pro-sim">Pro Sim</option><option value="ps5">PS5</option><option value="control">Venue control</option></select></label>
+      <label><span>Service</span><select data-rc-service-filter disabled={!liveEnabled}><option value="all">All services</option><option value="regular-sim">Regular Sim</option><option value="pro-sim">Pro Sim</option><option value="ps5">PS5</option></select></label>
       <label class="rc-toolbar-search"><span>Search</span><input data-rc-schedule-search type="search" placeholder={liveEnabled ? 'Booking, resource or status' : 'Search coming next'} disabled={!liveEnabled} /></label>
     </div>
     <div class="rc-toolbar-actions"><a class="rc-button" href="#block-time">Block time</a><a class="rc-button rc-button-primary" href="#new-booking">New booking</a></div>

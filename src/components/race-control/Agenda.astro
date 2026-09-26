@@ -25,7 +25,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
 </section>
 
 <script>
-  import { assignTimelineLanes } from "@/lib/race-control/timeline";
+  import { assignTimelineLanes, orderScheduleResources } from "@/lib/race-control/timeline";
 
   type BookingDetails = { customerName: string; customerPhone: string; customerEmail?: string; durationMinutes: number; includedControllers: number; additionalControllers: number; totalControllers: number; priceTotal: number | null; createdAt: string | null };
   type LiveEvent = { id: string; summary: string; start: string; end: string; privateProperties: Record<string,string>; bookingDetails: BookingDetails; resourceId: string; resourceName: string; serviceId: string };
@@ -155,7 +155,7 @@ const mobileEvents = events.map((event, index) => ({ event, resource: resources[
       const payload = await response.json() as { serverNow: string; error?: { message?: string }; data: { businessWindow: ScheduleWindow; resources: LiveResource[] } };
       if (!response.ok) throw new Error(payload.error?.message ?? "Schedule unavailable.");
       if (requestId !== requestSequence || requestedBusinessDate !== dateInput.value) { refreshQueued = true; return; }
-      loadedResources = payload.data.resources;
+      loadedResources = orderScheduleResources(payload.data.resources);
       loadedWindow = payload.data.businessWindow;
       loadedEvents = loadedResources.flatMap((resource) => resource.events.map((event) => ({ ...event, resourceId: event.resourceId ?? resource.resourceId, resourceName: resource.displayName, serviceId: event.serviceId ?? resource.serviceId }))).sort((a, b) => Date.parse(a.start) - Date.parse(b.start));
       renderLiveEvents();

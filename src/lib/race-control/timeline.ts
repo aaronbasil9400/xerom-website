@@ -3,6 +3,28 @@ export interface TimelineInterval {
   end: string;
 }
 
+export interface OrderedResource {
+  resourceId: string;
+  displayName: string;
+}
+
+/** Internal calendars (venue closures, recovery fences) that stay out of the owner-facing schedule grid. */
+export const HIDDEN_SCHEDULE_RESOURCE_IDS: readonly string[] = ["booking-control"];
+
+const resourceNameCollator = new Intl.Collator("en-MY", { numeric: true, sensitivity: "base" });
+
+/**
+ * Orders rigs and lounges alphabetically for the schedule view (numeric-aware, so
+ * "Regular Rig 04" follows "Regular Rig 03" and "Regular Rig 10" follows "Regular Rig 09")
+ * and drops internal resource calendars such as venue control.
+ */
+export function orderScheduleResources<T extends OrderedResource>(resources: readonly T[]): T[] {
+  return resources
+    .filter((resource) => !HIDDEN_SCHEDULE_RESOURCE_IDS.includes(resource.resourceId))
+    .slice()
+    .sort((left, right) => resourceNameCollator.compare(left.displayName, right.displayName) || left.resourceId.localeCompare(right.resourceId));
+}
+
 export interface TimelineLane<T extends TimelineInterval> {
   event: T;
   lane: number;
