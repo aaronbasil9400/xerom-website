@@ -174,6 +174,13 @@ test("mock booking flow reaches confirmation", async ({ page }) => {
   await page.locator('[data-service-row="ps5"]').getByRole("button", { name: /add one ps5 lounge/i }).click();
   await page.getByLabel("Additional controllers").selectOption("2");
   await page.getByRole("button", { name: /choose a time/i }).click();
+  const dateBounds = await page.getByLabel("Date").evaluate((input) => {
+    const field = input.getBoundingClientRect();
+    const container = input.closest(".availability-toolbar")!.getBoundingClientRect();
+    return { left: field.left, right: field.right, containerLeft: container.left, containerRight: container.right };
+  });
+  expect(dateBounds.left).toBeGreaterThanOrEqual(dateBounds.containerLeft - 1);
+  expect(dateBounds.right).toBeLessThanOrEqual(dateBounds.containerRight + 1);
   await page.getByLabel("Date").evaluate((input: HTMLInputElement) => {
     const date = new Date();
     date.setDate(date.getDate() + 1);
